@@ -36,7 +36,7 @@ IBM Cloud Databases supports only Key Protect encryption for backups, not Hyper 
 
 ```hcl
 provider "ibm" {
-  ibmcloud_api_key = "XXXXXXXXXX"
+  ibmcloud_api_key = ""
   region           = "us-south"
 }
 
@@ -95,7 +95,7 @@ You need the following permissions to run this module.
 - [ Complete example with autoscaling, BYOK encryption, service credentials creation, index creation and updates to cluster-wide settings](examples/complete)
 <!-- END EXAMPLES HOOK -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-### Requirements
+## Requirements
 
 | Name | Version |
 |------|---------|
@@ -103,13 +103,13 @@ You need the following permissions to run this module.
 | <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.54.0, < 2.0.0 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.9.1 |
 
-### Modules
+## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_cbr_rule"></a> [cbr\_rule](#module\_cbr\_rule) | git::https://github.com/terraform-ibm-modules/terraform-ibm-cbr//cbr-rule-module | v1.6.1 |
+| <a name="module_cbr_rule"></a> [cbr\_rule](#module\_cbr\_rule) | terraform-ibm-modules/cbr/ibm//cbr-rule-module | 1.6.1 |
 
-### Resources
+## Resources
 
 | Name | Type |
 |------|------|
@@ -119,7 +119,7 @@ You need the following permissions to run this module.
 | [time_sleep.wait_for_authorization_policy](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
 | [ibm_database_connection.database_connection](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/data-sources/database_connection) | data source |
 
-### Inputs
+## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
@@ -146,7 +146,7 @@ You need the following permissions to run this module.
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags associated with the instance (Optional, array of strings). | `list(string)` | `[]` | no |
 | <a name="input_users"></a> [users](#input\_users) | A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service\_credential\_names) is sufficient to control access to the Elasticsearch instance. This blocks creates native elasticsearch database users, more info on that can be found here https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-connection-strings&interface=cli#connection-strings-add-users | <pre>list(object({<br>    name     = string<br>    password = string # pragma: allowlist secret<br>    type     = string # "type" is required to generate the connection string for the outputs.<br>    role     = optional(string)<br>  }))</pre> | `[]` | no |
 
-### Outputs
+## Outputs
 
 | Name | Description |
 |------|-------------|
