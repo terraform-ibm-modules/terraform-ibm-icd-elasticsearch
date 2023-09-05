@@ -237,7 +237,7 @@
       "name": "service_endpoints",
       "type": "string",
       "description": "Sets the endpoint of the instance, valid values are 'public', 'private', or 'public-and-private'",
-      "default": "private",
+      "default": "public",
       "required": true,
       "source": [
         "data.ibm_database_connection.database_connection.endpoint_type",

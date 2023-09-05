@@ -33,7 +33,7 @@ variable "plan_validation" {
 variable "service_endpoints" {
   type        = string
   description = "Sets the endpoint of the instance, valid values are 'public', 'private', or 'public-and-private'"
-  default     = "private"
+  default     = "public"
 
   validation {
     condition     = can(regex("public|public-and-private|private", var.service_endpoints))

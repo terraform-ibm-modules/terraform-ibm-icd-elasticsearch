@@ -1,11 +1,10 @@
-# IBM Cloud Databases for Elasticsearch module
+# ICD Elasticsearch Module
 
-[![Graduated](<https://img.shields.io/badge/Status-Graduated%20(GA%20candidate)-green>)](https://github.ibm.com/GoldenEye/documentation/blob/master/status.md)
-[![CI](https://img.shields.io/badge/CI-Toolchain%20Tekton%20Pipeline-3662FF?logo=ibm)](https://cloud.ibm.com/devops/toolchains/c3916535-165a-4275-9b1f-c58575839951?env_id=ibm:yp:us-south)
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+[![Graduated (Supported)](https://img.shields.io/badge/Status-Graduated%20(Supported)-brightgreen)](https://terraform-ibm-modules.github.io/documentation/#/badge-status)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![latest release](https://shields-server.m03l6u0cqkx.eu-de.codeengine.appdomain.cloud/github/v/release/GoldenEye/icd-elasticsearch-module?logo=GitHub)](https://github.ibm.com/GoldenEye/icd-elasticsearch-module/releases/latest)
+[![latest release](https://img.shields.io/github/v/release/terraform-ibm-modules/terraform-ibm-icd-elasticsearch?logo=GitHub&sort=semver)](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/releases/latest)
 [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 This module implements an instance of the IBM Cloud Databases for Elasticsearch service.
 
@@ -41,11 +40,11 @@ provider "ibm" {
 }
 
 module "icd_elasticsearch" {
-  # replace "master" with a GIT release version to lock into a specific release
-  source            = "git::https://github.ibm.com/GoldenEye/icd-elasticsearch-module?ref=master"
-  resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
-  name              = "elasticsearch"
-  region            = "us-south"
+  source  = "terraform-ibm-modules/icd-elasticsearch/ibm"
+  region                   = var.region
+  version = "latest" # Replace "latest" with a release version to lock into a specific release
+  resource_group_id    = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
+  region               = "us-south"
 }
 
 ```
@@ -141,7 +140,7 @@ You need the following permissions to run this module.
 | <a name="input_region"></a> [region](#input\_region) | The region where you want to deploy your instance. | `string` | `"us-south"` | no |
 | <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | The resource group ID where the Elasticsearch instance will be created. | `string` | n/a | yes |
 | <a name="input_service_credential_names"></a> [service\_credential\_names](#input\_service\_credential\_names) | Map of name, role for service credentials that you want to create for the database | `map(string)` | `{}` | no |
-| <a name="input_service_endpoints"></a> [service\_endpoints](#input\_service\_endpoints) | Sets the endpoint of the instance, valid values are 'public', 'private', or 'public-and-private' | `string` | `"private"` | no |
+| <a name="input_service_endpoints"></a> [service\_endpoints](#input\_service\_endpoints) | Sets the endpoint of the instance, valid values are 'public', 'private', or 'public-and-private' | `string` | `"public"` | no |
 | <a name="input_skip_iam_authorization_policy"></a> [skip\_iam\_authorization\_policy](#input\_skip\_iam\_authorization\_policy) | Set to true to skip the creation of an IAM authorization policy that permits all Elasticsearch database instances in the resource group to read the encryption key from the KMS instance. If set to false, pass in a value for the KMS instance in the existing\_kms\_instance\_guid variable. In addition, no policy is created if var.kms\_encryption\_enabled is set to false. | `bool` | `false` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags associated with the instance (Optional, array of strings). | `list(string)` | `[]` | no |
 | <a name="input_users"></a> [users](#input\_users) | A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service\_credential\_names) is sufficient to control access to the Elasticsearch instance. This blocks creates native elasticsearch database users, more info on that can be found here https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-connection-strings&interface=cli#connection-strings-add-users | <pre>list(object({<br>    name     = string<br>    password = string # pragma: allowlist secret<br>    type     = string # "type" is required to generate the connection string for the outputs.<br>    role     = optional(string)<br>  }))</pre> | `[]` | no |
@@ -165,8 +164,8 @@ You need the following permissions to run this module.
 <!-- Leave this section as is so that your module has a link to local development environment set up steps for contributors to follow -->
 ## Contributing
 
-You can report issues and request features for this module in the GoldenEye [issues](https://github.ibm.com/GoldenEye/issues) repo.See [Report a Bug or Create Enhancement Request](https://github.ibm.com/GoldenEye/documentation/blob/master/issues.md).
+You can report issues and request features for this module in GitHub issues in the module repo. See [Report an issue or request a feature](https://github.com/terraform-ibm-modules/.github/blob/main/.github/SUPPORT.md).
 
-To set up your local development environment, see [Local development setup](https://github.ibm.com/GoldenEye/documentation/blob/master/local-dev-setup.md) in the project documentation.
+To set up your local development environment, see [Local development setup](https://terraform-ibm-modules.github.io/documentation/#/local-dev-setup) in the project documentation.
 <!-- Source for this readme file: https://github.com/terraform-ibm-modules/common-dev-assets/tree/main/module-assets/ci/module-template-automation -->
 <!-- END CONTRIBUTING HOOK -->
