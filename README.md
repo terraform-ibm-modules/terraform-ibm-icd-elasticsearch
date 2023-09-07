@@ -32,13 +32,13 @@ unless real values don't help users know what to change.
 
 ```hcl
 provider "ibm" {
-  ibmcloud_api_key = ""
+  ibmcloud_api_key = "XXXXXXXXXXXXXX"
   region           = "us-south"
 }
+
 module "icd_elasticsearch" {
   source            = "terraform-ibm-modules/icd-elasticsearch/ibm"
-  region            = var.region
-  version           = "latest" # Replace "latest" with a release version  to lock into a specific release
+  version           = "X.X.X"  # Replace "X.X.X" with a release version to lock into a specific release
   resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
   region            = "us-south"
 }
