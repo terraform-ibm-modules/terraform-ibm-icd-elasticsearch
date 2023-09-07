@@ -12,12 +12,13 @@
 * [terraform-ibm-icd-elasticsearch](#terraform-ibm-icd-elasticsearch)
 * [Examples](./examples)
     * [Basic example](./examples/basic)
-    * [Complete example](./examples/complete)
+    * [Complete example with autoscaling, BYOK encryption, service credentials creation, index creation and updates to cluster-wide settings](./examples/complete)
 * [Contributing](#contributing)
 
+## terraform-ibm-icd-elasticsearch
 <!-- END OVERVIEW HOOK -->
 
-## terraform-ibm-icd-elasticsearch
+
 This module implements an instance of the IBM Cloud Databases for Elasticsearch service.
 
 ### Usage
@@ -51,37 +52,9 @@ You need the following permissions to run this module.
     - **Databases for Elasticsearch** service
         - `Editor` role access
 
-<!-- PERMISSIONS REQUIRED TO RUN MODULE
-If this module requires permissions, uncomment the following block and update
-the sample permissions, following the format.
-Replace the sample Account and IBM Cloud service names and roles with the
-information in the console at
-Manage > Access (IAM) > Access groups > Access policies.
--->
-
-<!--
-You need the following permissions to run this module.
-
-- Account Management
-    - **Sample Account Service** service
-        - `Editor` platform access
-        - `Manager` service access
-    - IAM Services
-        - **Sample Cloud Service** service
-            - `Administrator` platform access
--->
-
-<!-- NO PERMISSIONS FOR MODULE
-If no permissions are required for the module, uncomment the following
-statement instead the previous block.
--->
-
-<!-- No permissions are needed to run this module.-->
-
-
 <!-- Below content is automatically populated via pre-commit hook -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-## Requirements
+### Requirements
 
 | Name | Version |
 |------|---------|
@@ -89,13 +62,13 @@ statement instead the previous block.
 | <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.54.0, < 2.0.0 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.9.1 |
 
-## Modules
+### Modules
 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_cbr_rule"></a> [cbr\_rule](#module\_cbr\_rule) | terraform-ibm-modules/cbr/ibm//cbr-rule-module | 1.6.1 |
 
-## Resources
+### Resources
 
 | Name | Type |
 |------|------|
@@ -105,7 +78,7 @@ statement instead the previous block.
 | [time_sleep.wait_for_authorization_policy](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
 | [ibm_database_connection.database_connection](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/data-sources/database_connection) | data source |
 
-## Inputs
+### Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
@@ -132,7 +105,7 @@ statement instead the previous block.
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags associated with the instance (Optional, array of strings). | `list(string)` | `[]` | no |
 | <a name="input_users"></a> [users](#input\_users) | A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service\_credential\_names) is sufficient to control access to the Elasticsearch instance. This blocks creates native elasticsearch database users, more info on that can be found here https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-connection-strings&interface=cli#connection-strings-add-users | <pre>list(object({<br>    name     = string<br>    password = string # pragma: allowlist secret<br>    type     = string # "type" is required to generate the connection string for the outputs.<br>    role     = optional(string)<br>  }))</pre> | `[]` | no |
 
-## Outputs
+### Outputs
 
 | Name | Description |
 |------|-------------|
