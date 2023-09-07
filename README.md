@@ -1,4 +1,4 @@
-# ICD Elasticsearch Module
+## ICD Elasticsearch Module
 
 [![Graduated (Supported)](https://img.shields.io/badge/Status-Graduated%20(Supported)-brightgreen)](https://terraform-ibm-modules.github.io/documentation/#/badge-status)
 [![latest release](https://img.shields.io/github/v/release/terraform-ibm-modules/terraform-ibm-icd-elasticsearch?logo=GitHub&sort=semver)](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/releases/latest)
@@ -7,6 +7,16 @@
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 This module implements an instance of the IBM Cloud Databases for Elasticsearch service.
+
+<!-- BEGIN OVERVIEW HOOK -->
+## Overview
+* [Terraform IBM ICD Elasticsearch Module](#ICD)
+* [Examples](./examples)
+    * [Basic example](./examples/basic)
+    * [Complete example](./examples/complete)
+* [Contributing](#contributing)
+
+<!-- END OVERVIEW HOOK -->
 
 
 ## Usage
