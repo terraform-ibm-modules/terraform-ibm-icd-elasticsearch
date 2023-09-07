@@ -6,11 +6,10 @@
 [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
-This module implements an instance of the IBM Cloud Databases for Elasticsearch service.
 
 <!-- BEGIN OVERVIEW HOOK -->
 ## Overview
-* [Terraform IBM ICD Elasticsearch Module](#ICD)
+* [terraform-ibm-icd-elasticsearch](#terraform-ibm-icd-elasticsearch)
 * [Examples](./examples)
     * [Basic example](./examples/basic)
     * [Complete example](./examples/complete)
@@ -18,17 +17,23 @@ This module implements an instance of the IBM Cloud Databases for Elasticsearch 
 
 <!-- END OVERVIEW HOOK -->
 
+## terraform-ibm-icd-elasticsearch
+This module implements an instance of the IBM Cloud Databases for Elasticsearch service.
 
-## Usage
+### Usage
 
-IBM Cloud Databases supports only Key Protect encryption for backups, not Hyper Protect Crypto Services. If you enable key management encryption and no value is passed for 'backup_encryption_key_crn', the value of 'kms_key_crn' is used. And if a HPCS value is set for `kms_key_crn`, the database backup encryption uses the default encryption keys. For more information, see [Hyper Protect Crypto Services Integration](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs) in the IBM Cloud Docs.
+<!--
+Add an example of the use of the module in the following code block.
+
+Use real values instead of "var.<var_name>" or other placeholder values
+unless real values don't help users know what to change.
+-->
 
 ```hcl
 provider "ibm" {
   ibmcloud_api_key = ""
   region           = "us-south"
 }
-
 module "icd_elasticsearch" {
   source  = "terraform-ibm-modules/icd-elasticsearch/ibm"
   region                   = var.region
@@ -36,36 +41,7 @@ module "icd_elasticsearch" {
   resource_group_id    = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
   region               = "us-south"
 }
-
 ```
-<!--
-Include the following 'Controls' section if the module implements NIST controls
-Remove the 'section if the module does not implement controls
--->
-
-<!-- GoldenEye core team only
-## Compliance and security
-
-This module implements the following NIST controls. For more information about how this module implements the controls in the following list, see [NIST controls](docs/controls.md).
-
-| Profile | Category | ID       | Description |
-|---------|----------|----------|-------------|
-| NIST    | SC-7     | SC-7(3)  | Limit the number of external network connections to the information system. |
-
-The 'Profile' and 'ID' columns are used by the IBM Cloud catalog to import
-the controls into the catalog page.
-
-In the example here, remove the SC-7 row and include a row for each control
-that the module implements.
-
-Include the control enhancement in the ID column ('SC-7(3)' in this example).
-
-Identify how the module is complying with the controls. Summarize the
-rationale or implementation in the 'Description' column.
-
-For details about the controls, see the NIST Risk Management Framework page at
-https://csrc.nist.gov/Projects/risk-management/sp800-53-controls/release-search#/controls?version=4.0.
--->
 
 ## Required IAM access policies
 
@@ -75,14 +51,35 @@ You need the following permissions to run this module.
     - **Databases for Elasticsearch** service
         - `Editor` role access
 
+<!-- PERMISSIONS REQUIRED TO RUN MODULE
+If this module requires permissions, uncomment the following block and update
+the sample permissions, following the format.
+Replace the sample Account and IBM Cloud service names and roles with the
+information in the console at
+Manage > Access (IAM) > Access groups > Access policies.
+-->
 
-<!-- END MODULE HOOK -->
-<!-- BEGIN EXAMPLES HOOK -->
-## Examples
+<!--
+You need the following permissions to run this module.
 
-- [ Basic example](examples/basic)
-- [ Complete example with autoscaling, BYOK encryption, service credentials creation, index creation and updates to cluster-wide settings](examples/complete)
-<!-- END EXAMPLES HOOK -->
+- Account Management
+    - **Sample Account Service** service
+        - `Editor` platform access
+        - `Manager` service access
+    - IAM Services
+        - **Sample Cloud Service** service
+            - `Administrator` platform access
+-->
+
+<!-- NO PERMISSIONS FOR MODULE
+If no permissions are required for the module, uncomment the following
+statement instead the previous block.
+-->
+
+<!-- No permissions are needed to run this module.-->
+
+
+<!-- Below content is automatically populated via pre-commit hook -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
@@ -149,7 +146,6 @@ You need the following permissions to run this module.
 | <a name="output_service_credentials_object"></a> [service\_credentials\_object](#output\_service\_credentials\_object) | Service credentials object |
 | <a name="output_version"></a> [version](#output\_version) | Elasticsearch version |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-<!-- BEGIN CONTRIBUTING HOOK -->
 
 <!-- Leave this section as is so that your module has a link to local development environment set up steps for contributors to follow -->
 ## Contributing
@@ -157,5 +153,3 @@ You need the following permissions to run this module.
 You can report issues and request features for this module in GitHub issues in the module repo. See [Report an issue or request a feature](https://github.com/terraform-ibm-modules/.github/blob/main/.github/SUPPORT.md).
 
 To set up your local development environment, see [Local development setup](https://terraform-ibm-modules.github.io/documentation/#/local-dev-setup) in the project documentation.
-<!-- Source for this readme file: https://github.com/terraform-ibm-modules/common-dev-assets/tree/main/module-assets/ci/module-template-automation -->
-<!-- END CONTRIBUTING HOOK -->
