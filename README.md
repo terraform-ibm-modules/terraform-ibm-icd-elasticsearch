@@ -36,11 +36,11 @@ provider "ibm" {
   region           = "us-south"
 }
 module "icd_elasticsearch" {
-  source  = "terraform-ibm-modules/icd-elasticsearch/ibm"
-  region                   = var.region
-  version = "latest" # Replace "latest" with a release version to lock into a specific release
-  resource_group_id    = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
-  region               = "us-south"
+  source            = "terraform-ibm-modules/icd-elasticsearch/ibm"
+  region            = var.region
+  version           = "latest" # Replace "latest" with a release version  to lock into a specific release
+  resource_group_id = "xxXXxxXXxXxXXXXxxXxxxXXXXxXXXXX"
+  region            = "us-south"
 }
 ```
 
