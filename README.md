@@ -32,7 +32,7 @@ unless real values don't help users know what to change.
 
 ```hcl
 provider "ibm" {
-  ibmcloud_api_key = ""
+  ibmcloud_api_key = "XXXXXXXXXXXXXX"
   region           = "us-south"
 }
 
