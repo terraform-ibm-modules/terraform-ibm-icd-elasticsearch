@@ -1,4 +1,12 @@
-# Complete example
+# Complete example with autoscaling, BYOK encryption, service credentials creation, index creation and updates to cluster-wide settings
 
-<!-- There is a pre-commit hook that will take the title of each example add include it in the repos main README.md  -->
-<!-- Add text below should describe exactly what resources are provisioned / configured by the example  -->
+An end-to-end example that provisions the following infrastructure:
+
+- A resource group, if one is not passed in.
+- A Key Protect instance with a root key.
+- An instance of Databases for Elasticsearch with BYOK encryption and autoscaling.
+- A Secrets Manager instance if one is not passed in.
+- Service credentials for the database instance.
+- A Secrets Manager secret containing the service credentials.
+- An Elasticsearch index
+- Updates to the cluster-wide settings
