@@ -170,7 +170,7 @@
         "line": 59
       },
       "immutable": true,
-      "options": "standard, enterprise"
+      "options": "standard, enterprise, enterprise-sharding"
     },
     "plan_validation": {
       "name": "plan_validation",
