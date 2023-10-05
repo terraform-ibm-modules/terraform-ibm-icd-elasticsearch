@@ -48,11 +48,10 @@ variable "elasticsearch_version" {
   validation {
     condition = anytrue([
       var.elasticsearch_version == null,
+      var.elasticsearch_version == "8.7",
       var.elasticsearch_version == "7.17",
-      var.elasticsearch_version == "7.10",
-      var.elasticsearch_version == "7.9"
     ])
-    error_message = "Version must be 7.9 or 7.10 or 7.17 (Enterprise plan only). If no value passed, the current ICD preferred version is used."
+    error_message = "Version must be 8.7 or 7.17 (Enterprise plan only). If no value passed, the current ICD preferred version is used."
   }
 }
 

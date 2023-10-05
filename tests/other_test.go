@@ -18,7 +18,7 @@ func TestRunBasicExample(t *testing.T) {
 		ResourceGroup:      resourceGroup,
 		BestRegionYAMLPath: regionSelectionPath,
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version": "7.10", // test the version that is not currently tested in pr_test.go
+			"elasticsearch_version": "8.7", // test latest or untested version of the Elasticsearch
 		},
 	})
 
