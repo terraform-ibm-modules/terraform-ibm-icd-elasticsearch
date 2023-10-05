@@ -54,8 +54,7 @@ func TestRunCompleteExample(t *testing.T) {
 		ResourceGroup:      resourceGroup,
 		BestRegionYAMLPath: regionSelectionPath,
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version":       "8.7",        // latest supported version
-			"plan":                        "enterprise", // this version requires enterprise plan
+			"elasticsearch_version":       "8.7", // latest supported version
 			"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
 			"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
 			"users": []map[string]interface{}{
@@ -91,8 +90,7 @@ func TestRunUpgradeExample(t *testing.T) {
 		ResourceGroup:      resourceGroup,
 		BestRegionYAMLPath: regionSelectionPath,
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version":       "7.17",     // lowest supported version
-			"plan":                        "standard", // this version requires standard plan
+			"elasticsearch_version":       "7.17", // lowest supported version
 			"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
 			"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
 		},

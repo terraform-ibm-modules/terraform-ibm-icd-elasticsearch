@@ -11,7 +11,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 100
+        "line": 99
       }
     },
     "auto_scaling": {
@@ -20,7 +20,7 @@
       "description": "Optional rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. See https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling in the IBM Cloud Docs.",
       "pos": {
         "filename": "variables.tf",
-        "line": 119
+        "line": 118
       }
     },
     "backup_encryption_key_crn": {
@@ -29,7 +29,7 @@
       "description": "The CRN of a Key Protect key, that you want to use for encrypting disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. If no value passed, the value passed for the 'kms_key_crn' variable will be used. BYOK for backups is available only in US regions us-south and us-east, and eu-de. Only keys in the us-south and eu-de are durable to region failures. To ensure that your backups are available even if a region failure occurs, you must use a key from us-south or eu-de. Take note that Hyper Protect Crypto Services for IBM Cloud® Databases backups is not currently supported, so if no value is passed here, but a HPCS value is passed for var.kms_key_crn, databases backup encryption will use the default encryption keys.",
       "pos": {
         "filename": "variables.tf",
-        "line": 181
+        "line": 180
       }
     },
     "cbr_rules": {
@@ -46,7 +46,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 207
+        "line": 206
       }
     },
     "elasticsearch_version": {
@@ -72,7 +72,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 197
+        "line": 196
       },
       "immutable": true,
       "computed": true
@@ -87,7 +87,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 161
+        "line": 160
       }
     },
     "kms_key_crn": {
@@ -99,7 +99,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 167
+        "line": 166
       },
       "immutable": true
     },
@@ -110,7 +110,7 @@
       "default": 0,
       "pos": {
         "filename": "variables.tf",
-        "line": 85
+        "line": 84
       }
     },
     "member_disk_mb": {
@@ -120,7 +120,7 @@
       "default": 5120,
       "pos": {
         "filename": "variables.tf",
-        "line": 93
+        "line": 92
       }
     },
     "member_memory_mb": {
@@ -130,7 +130,7 @@
       "default": 1024,
       "pos": {
         "filename": "variables.tf",
-        "line": 78
+        "line": 77
       }
     },
     "members": {
@@ -140,7 +140,7 @@
       "default": 3,
       "pos": {
         "filename": "variables.tf",
-        "line": 71
+        "line": 70
       }
     },
     "name": {
@@ -160,7 +160,7 @@
       "name": "plan",
       "type": "string",
       "description": "The name of the service plan that you choose for your Elasticsearch instance",
-      "default": "standard",
+      "default": "enterprise",
       "required": true,
       "source": [
         "ibm_database.elasticsearch.plan"
@@ -230,7 +230,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 146
+        "line": 145
       }
     },
     "service_endpoints": {
@@ -256,7 +256,7 @@
       "default": false,
       "pos": {
         "filename": "variables.tf",
-        "line": 191
+        "line": 190
       }
     },
     "tags": {
@@ -292,7 +292,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 107
+        "line": 106
       }
     }
   },

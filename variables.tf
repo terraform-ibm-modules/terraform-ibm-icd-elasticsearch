@@ -58,13 +58,12 @@ variable "elasticsearch_version" {
 variable "plan" {
   type        = string
   description = "The name of the service plan that you choose for your Elasticsearch instance"
-  default     = "standard"
+  default     = "enterprise"
   validation {
     condition = anytrue([
-      var.plan == "standard",
       var.plan == "enterprise",
     ])
-    error_message = "Only supported plans are standard or enterprise"
+    error_message = "Only supported plan is enterprise"
   }
 }
 
