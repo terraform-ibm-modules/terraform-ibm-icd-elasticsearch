@@ -58,7 +58,7 @@ You need the following permissions to run this module.
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0, < 1.6.0 |
 | <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.56.1, < 2.0.0 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.9.1 |
 
@@ -95,7 +95,7 @@ You need the following permissions to run this module.
 | <a name="input_member_memory_mb"></a> [member\_memory\_mb](#input\_member\_memory\_mb) | Allocated memory per-member. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling | `number` | `1024` | no |
 | <a name="input_members"></a> [members](#input\_members) | Allocated number of members. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling | `number` | `3` | no |
 | <a name="input_name"></a> [name](#input\_name) | The name to give the Elasticsearch instance. | `string` | n/a | yes |
-| <a name="input_plan"></a> [plan](#input\_plan) | The name of the service plan that you choose for your Elasticsearch instance | `string` | `"standard"` | no |
+| <a name="input_plan"></a> [plan](#input\_plan) | The name of the service plan that you choose for your Elasticsearch instance | `string` | `"enterprise"` | no |
 | <a name="input_plan_validation"></a> [plan\_validation](#input\_plan\_validation) | Enable or disable validating the database parameters for elasticsearch during the plan phase | `bool` | `true` | no |
 | <a name="input_region"></a> [region](#input\_region) | The region where you want to deploy your instance. | `string` | `"us-south"` | no |
 | <a name="input_resource_group_id"></a> [resource\_group\_id](#input\_resource\_group\_id) | The resource group ID where the Elasticsearch instance will be created. | `string` | n/a | yes |

@@ -17,9 +17,6 @@ func TestRunBasicExample(t *testing.T) {
 		Prefix:             "es-test",
 		ResourceGroup:      resourceGroup,
 		BestRegionYAMLPath: regionSelectionPath,
-		TerraformVars: map[string]interface{}{
-			"elasticsearch_version": "7.10", // test the version that is not currently tested in pr_test.go
-		},
 	})
 
 	output, err := options.RunTestConsistency()
