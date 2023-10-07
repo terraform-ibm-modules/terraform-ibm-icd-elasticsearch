@@ -14,8 +14,6 @@
     * [Basic example](./examples/basic)
     * [Complete example with autoscaling, BYOK encryption, service credentials creation, index creation and updates to cluster-wide settings](./examples/complete)
 * [Contributing](#contributing)
-
-## terraform-ibm-icd-elasticsearch
 <!-- END OVERVIEW HOOK -->
 
 
