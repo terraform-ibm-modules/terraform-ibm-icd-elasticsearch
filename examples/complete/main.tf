@@ -8,7 +8,7 @@ locals {
 ##############################################################################
 
 module "resource_group" {
-  source = "git::https://github.com/terraform-ibm-modules/terraform-ibm-resource-group.git?ref=v1.0.6"
+  source = "git::https://github.com/terraform-ibm-modules/terraform-ibm-resource-group.git?ref=v1.1.0"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -20,7 +20,7 @@ module "resource_group" {
 
 module "key_protect_all_inclusive" {
   source            = "terraform-ibm-modules/key-protect-all-inclusive/ibm"
-  version           = "4.2.0"
+  version           = "4.4.0"
   resource_group_id = module.resource_group.resource_group_id
   # Only us-south, eu-de backup encryption keys are supported. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok for details.
   # Note: Database instance and Key Protect must be created on the same region.
@@ -93,7 +93,7 @@ resource "ibm_resource_instance" "secrets_manager" {
 # Add a Secrets Group to the secret manager instance
 module "secrets_manager_secrets_group" {
   source               = "terraform-ibm-modules/secrets-manager-secret-group/ibm"
-  version              = "1.0.1"
+  version              = "1.1.0"
   region               = local.sm_region
   secrets_manager_guid = local.sm_guid
   #tfsec:ignore:general-secrets-no-plaintext-exposure
@@ -104,7 +104,7 @@ module "secrets_manager_secrets_group" {
 # Add service credentials to secret manager as a username/password secret type in the created secret group
 module "secrets_manager_service_credentials_user_pass" {
   source                  = "terraform-ibm-modules/secrets-manager-secret/ibm"
-  version                 = "1.0.0"
+  version                 = "1.1.1"
   for_each                = var.service_credential_names
   region                  = local.sm_region
   secrets_manager_guid    = local.sm_guid
@@ -119,7 +119,7 @@ module "secrets_manager_service_credentials_user_pass" {
 # Add secrets manager certificate to secret manager as a certificate secret type in the created secret group
 module "secrets_manager_service_credentials_cert" {
   source                    = "terraform-ibm-modules/secrets-manager-secret/ibm"
-  version                   = "1.0.0"
+  version                   = "1.1.1"
   region                    = local.sm_region
   secrets_manager_guid      = local.sm_guid
   secret_group_id           = module.secrets_manager_secrets_group.secret_group_id
