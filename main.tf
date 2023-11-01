@@ -46,7 +46,6 @@ resource "ibm_database" "elasticsearch" {
   depends_on                = [ibm_iam_authorization_policy.policy]
   name                      = var.name
   plan                      = var.plan
-  plan_validation           = var.plan_validation
   location                  = var.region
   service                   = "databases-for-elasticsearch"
   version                   = var.elasticsearch_version
