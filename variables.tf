@@ -24,12 +24,6 @@ variable "tags" {
   default     = []
 }
 
-variable "plan_validation" {
-  type        = bool
-  description = "Enable or disable validating the database parameters for elasticsearch during the plan phase"
-  default     = true
-}
-
 variable "service_endpoints" {
   type        = string
   description = "Sets the endpoint of the instance, valid values are 'public', 'private', or 'public-and-private'"
