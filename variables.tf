@@ -37,7 +37,7 @@ variable "service_endpoints" {
 
 variable "elasticsearch_version" {
   type        = string
-  description = "Version of Elasticsearch to deploy"
+  description = "Version of Elasticsearch to deploy, must be 8.7, 8.10 or 7.17 (Enterprise plan only). If no value passed, the current ICD preferred version is used."
   default     = null
   validation {
     condition = anytrue([
