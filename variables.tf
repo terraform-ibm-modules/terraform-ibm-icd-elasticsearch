@@ -57,6 +57,7 @@ variable "plan" {
   validation {
     condition = anytrue([
       var.plan == "enterprise",
+      var.plan == "platinum",
     ])
     error_message = "Only supported plan is enterprise"
   }
