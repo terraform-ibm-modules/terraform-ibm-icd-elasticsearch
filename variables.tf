@@ -43,9 +43,10 @@ variable "elasticsearch_version" {
     condition = anytrue([
       var.elasticsearch_version == null,
       var.elasticsearch_version == "8.7",
+      var.elasticsearch_version == "8.10",
       var.elasticsearch_version == "7.17",
     ])
-    error_message = "Version must be 8.7 or 7.17 (Enterprise plan only). If no value passed, the current ICD preferred version is used."
+    error_message = "Version must be 8.7, 8.10 or 7.17 (Enterprise plan only). If no value passed, the current ICD preferred version is used."
   }
 }
 
