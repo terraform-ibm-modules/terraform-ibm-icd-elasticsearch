@@ -42,8 +42,8 @@ func TestMain(m *testing.M) {
 func TestRunCompleteExample(t *testing.T) {
 	t.Parallel()
 
-	// Generate a 10 char long random string for the admin_pass
-	randomBytes := make([]byte, 10)
+	// Generate a 15 char long random string for the admin_pass
+	randomBytes := make([]byte, 15)
 	_, err := rand.Read(randomBytes)
 	randomPass := "A" + base64.URLEncoding.EncodeToString(randomBytes)[:10]
 
