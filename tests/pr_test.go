@@ -42,11 +42,11 @@ func TestMain(m *testing.M) {
 func TestRunCompleteExample(t *testing.T) {
 	t.Parallel()
 
-  // Generate a 15 char long random string for the admin_pass
+	// Generate a 15 char long random string for the admin_pass
 	randomBytes := make([]byte, 13)
 	rand.Read(randomBytes)
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
-  
+
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
 		TerraformDir:       completeExampleTerraformDir,
