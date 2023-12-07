@@ -64,8 +64,7 @@ func TestRunCompleteExample(t *testing.T) {
 					"type":     "database",
 				},
 			},
-			"admin_pass":    randomPass,
-			"force_destroy": true, // this is added to avoid test failure in pipeline.
+			"admin_pass": randomPass,
 		},
 	})
 	options.SkipTestTearDown = true
