@@ -1,4 +1,4 @@
-// Tests in this file are run in the PR pipeline
+// Tests in this file are run in the PR pipeline.
 package test
 
 import (
