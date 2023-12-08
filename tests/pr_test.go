@@ -55,6 +55,7 @@ func TestRunCompleteExample(t *testing.T) {
 		BestRegionYAMLPath: regionSelectionPath,
 		TerraformVars: map[string]interface{}{
 			"elasticsearch_version":       "8.10",
+			"access_tags":                 permanentResources["accessTags"],
 			"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
 			"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
 			"users": []map[string]interface{}{

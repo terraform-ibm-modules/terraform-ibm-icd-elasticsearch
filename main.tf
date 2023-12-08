@@ -128,6 +128,14 @@ resource "ibm_database" "elasticsearch" {
   }
 }
 
+resource "ibm_resource_tag" "elasticsearch_tag" {
+  count       = length(var.access_tags) == 0 ? 0 : 1
+  resource_id = ibm_database.elasticsearch.resource_crn
+  tags        = var.access_tags
+  tag_type    = "access"
+}
+
+
 ##############################################################################
 # Context Based Restrictions
 ##############################################################################
