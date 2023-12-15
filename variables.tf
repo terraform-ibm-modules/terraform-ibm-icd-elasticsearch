@@ -18,6 +18,12 @@ variable "name" {
   description = "The name to give the Elasticsearch instance."
 }
 
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the Elasticsearch instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
+  default     = []
+}
+
 variable "tags" {
   type        = list(string)
   description = "Tags associated with the instance (Optional, array of strings)."
