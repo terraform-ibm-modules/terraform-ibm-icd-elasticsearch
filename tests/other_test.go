@@ -4,8 +4,9 @@ package test
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"github.com/gruntwork-io/terratest/modules/terraform"
 	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/terraform"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
@@ -31,8 +32,8 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 	t.Parallel()
 
 	// Generate a 15 char long random string for the admin_pass
-	randomBytes := make([]byte, 12)
-	_, err := rand.Read(randomBytes)
+	randomBytes := make([]byte, 13)
+	rand.Read(randomBytes)
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
