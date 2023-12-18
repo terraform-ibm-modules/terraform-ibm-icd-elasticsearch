@@ -20,4 +20,5 @@ module "icd_elasticsearch" {
   region                = var.region
   elasticsearch_version = var.elasticsearch_version
   tags                  = var.resource_tags
+  access_tags           = var.access_tags
 }

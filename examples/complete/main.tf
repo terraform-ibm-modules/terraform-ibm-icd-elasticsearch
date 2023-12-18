@@ -41,6 +41,7 @@ module "icd_elasticsearch" {
   region                     = var.region
   plan                       = var.plan
   kms_encryption_enabled     = true
+  access_tags                = var.access_tags
   admin_pass                 = var.admin_pass
   users                      = var.users
   existing_kms_instance_guid = module.key_protect_all_inclusive.key_protect_guid
@@ -63,6 +64,7 @@ resource "elasticsearch_index" "test" {
   name               = "terraform-test"
   number_of_shards   = 1
   number_of_replicas = 1
+  force_destroy      = true
 }
 
 resource "elasticsearch_cluster_settings" "global" {

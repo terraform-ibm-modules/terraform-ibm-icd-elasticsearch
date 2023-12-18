@@ -1,4 +1,4 @@
-// Tests in this file are run in the PR pipeline
+// Tests in this file are run in the PR pipeline.
 package test
 
 import (
@@ -43,8 +43,8 @@ func TestRunCompleteExample(t *testing.T) {
 	t.Parallel()
 
 	// Generate a 15 char long random string for the admin_pass
-	randomBytes := make([]byte, 12)
-	_, err := rand.Read(randomBytes)
+	randomBytes := make([]byte, 13)
+	rand.Read(randomBytes)
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
@@ -55,6 +55,7 @@ func TestRunCompleteExample(t *testing.T) {
 		BestRegionYAMLPath: regionSelectionPath,
 		TerraformVars: map[string]interface{}{
 			"elasticsearch_version":       "8.10",
+			"access_tags":                 permanentResources["accessTags"],
 			"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
 			"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
 			"users": []map[string]interface{}{

@@ -128,6 +128,14 @@ resource "ibm_database" "elasticsearch" {
   }
 }
 
+resource "ibm_resource_tag" "elasticsearch_tag" {
+  count       = length(var.access_tags) == 0 ? 0 : 1
+  resource_id = ibm_database.elasticsearch.resource_crn
+  tags        = var.access_tags
+  tag_type    = "access"
+}
+
+
 ##############################################################################
 # Context Based Restrictions
 ##############################################################################
@@ -135,7 +143,7 @@ resource "ibm_database" "elasticsearch" {
 module "cbr_rule" {
   count            = length(var.cbr_rules) > 0 ? length(var.cbr_rules) : 0
   source           = "terraform-ibm-modules/cbr/ibm//modules/cbr-rule-module"
-  version          = "1.16.0"
+  version          = "1.17.1"
   rule_description = var.cbr_rules[count.index].description
   enforcement_mode = var.cbr_rules[count.index].enforcement_mode
   rule_contexts    = var.cbr_rules[count.index].rule_contexts

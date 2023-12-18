@@ -28,6 +28,12 @@ variable "resource_group" {
   default     = null
 }
 
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the Elasticsearch instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
+  default     = []
+}
+
 variable "resource_tags" {
   type        = list(string)
   description = "Optional list of tags to be added to created resources"
@@ -67,7 +73,7 @@ variable "admin_pass" {
   type        = string
   default     = null
   sensitive   = true
-  description = "The password for the database administrator. If the admin password is null then the admin user ID cannot be accessed. More users can be specified in a user block. The admin password must be in the range of 10-32 characters and cannot start with a special character."
+  description = "The password for the database administrator. If the admin password is null then the admin user ID cannot be accessed. More users can be specified in a user block."
 }
 
 variable "users" {
