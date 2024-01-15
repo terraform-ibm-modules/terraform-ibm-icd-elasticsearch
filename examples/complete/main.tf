@@ -1,5 +1,5 @@
 locals {
-  sm_guid   = var.existing_sm_instance_guid == null ? ibm_resource_instance.secrets_manager[0].guid : var.existing_sm_instance_guid
+  sm_guid   = var.existing_sm_instance_guid == null ? module.secrets_manager.secrets_manager_guid : var.existing_sm_instance_guid
   sm_region = var.existing_sm_instance_region == null ? var.region : var.existing_sm_instance_region
 }
 
@@ -78,18 +78,15 @@ resource "elasticsearch_cluster_settings" "global" {
 ##############################################################################
 
 # Create Secrets Manager Instance (if not using existing one)
-resource "ibm_resource_instance" "secrets_manager" {
-  count             = var.existing_sm_instance_guid == null ? 1 : 0
-  name              = "${var.prefix}-sm" #checkov:skip=CKV_SECRET_6: does not require high entropy string as is static value
-  service           = "secrets-manager"
-  service_endpoints = "public-and-private"
-  plan              = "trial"
-  location          = var.region
-  resource_group_id = module.resource_group.resource_group_id
-
-  timeouts {
-    create = "30m" # Extending provisioning time to 30 minutes
-  }
+module "secrets_manager" {
+  source               = "terraform-ibm-modules/secrets-manager/ibm"
+  version              = "1.0.0"
+  resource_group_id    = module.resource_group.resource_group_id
+  region               = var.region
+  secrets_manager_name = "${var.prefix}-secrets-manager"
+  sm_service_plan      = var.sm_service_plan
+  service_endpoints    = "public-and-private"
+  sm_tags              = var.resource_tags
 }
 
 # Add a Secrets Group to the secret manager instance
