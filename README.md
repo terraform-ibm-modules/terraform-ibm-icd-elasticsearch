@@ -10,9 +10,12 @@
 <!-- BEGIN OVERVIEW HOOK -->
 ## Overview
 * [terraform-ibm-icd-elasticsearch](#terraform-ibm-icd-elasticsearch)
+* [Submodules](./modules)
+    * [fscloud](./modules/fscloud)
 * [Examples](./examples)
     * [Basic example](./examples/basic)
     * [Complete example with autoscaling, BYOK encryption, service credentials creation, index creation and updates to cluster-wide settings](./examples/complete)
+    * [Financial Services Cloud profile example with autoscaling enabled](./examples/fscloud)
 * [Contributing](#contributing)
 <!-- END OVERVIEW HOOK -->
 
