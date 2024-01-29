@@ -2,8 +2,6 @@
 package test
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"log"
 	"os"
 	"testing"
@@ -15,6 +13,7 @@ import (
 )
 
 const completeExampleTerraformDir = "examples/complete"
+const fscloudExampleTerraformDir = "examples/fscloud"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-elasticsearch"
@@ -39,33 +38,25 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestRunCompleteExample(t *testing.T) {
+func TestRunFSCloudExample(t *testing.T) {
 	t.Parallel()
-
-	// Generate a 15 char long random string for the admin_pass
-	randomBytes := make([]byte, 13)
-	rand.Read(randomBytes)
-	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
-
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       completeExampleTerraformDir,
-		Prefix:             "es-complete-test",
-		ResourceGroup:      resourceGroup,
-		BestRegionYAMLPath: regionSelectionPath,
+		Testing:      t,
+		TerraformDir: fscloudExampleTerraformDir,
+		Prefix:       "es-fs-test",
+		Region:       "us-south", // For FSCloud locking into us-south since that is where the HPCS permanent instance is
+		/*
+		 Comment out the 'ResourceGroup' input to force this test to create a unique resource group to ensure tests do
+		 not clash. This is due to the fact that an auth policy may already exist in this resource group since we are
+		 re-using a permanent HPCS instance. By using a new resource group, the auth policy will not already exist
+		 since this module scopes auth policies by resource group.
+		*/
+		//ResourceGroup: resourceGroup,
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version":       "8.10",
-			"access_tags":                 permanentResources["accessTags"],
-			"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
-			"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
-			"users": []map[string]interface{}{
-				{
-					"name":     "testuser",
-					"password": randomPass, // pragma: allowlist secret
-					"type":     "database",
-				},
-			},
-			"admin_pass": randomPass,
+			"elasticsearch_version":      "8.10", // Always lock this test into the latest supported elasticsearch version
+			"access_tags":                permanentResources["accessTags"],
+			"existing_kms_instance_guid": permanentResources["hpcs_south"],
+			"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
 		},
 	})
 	options.SkipTestTearDown = true
@@ -81,7 +72,7 @@ func TestRunCompleteExample(t *testing.T) {
 	options.TestTearDown()
 }
 
-func TestRunUpgradeExample(t *testing.T) {
+func TestRunCompleteUpgradeExample(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
