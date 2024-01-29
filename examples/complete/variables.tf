@@ -122,9 +122,3 @@ variable "auto_scaling" {
     }
   }
 }
-
-variable "sm_service_plan" {
-  type        = string
-  description = "Type of service plan to use to provision Secrets Manager if not using an existing one."
-  default     = "trial"
-}
