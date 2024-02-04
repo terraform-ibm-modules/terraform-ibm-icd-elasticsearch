@@ -27,7 +27,16 @@ module "key_protect_all_inclusive" {
   region                    = var.region
   key_protect_instance_name = "${var.prefix}-kp"
   resource_tags             = var.resource_tags
-  key_map                   = { "icd" = ["${var.prefix}-elasticsearch"] }
+  keys = [
+    {
+      key_ring_name = "icd"
+      keys = [
+        {
+          key_name = "${var.prefix}-elasticsearch"
+        }
+      ]
+    }
+  ]
 }
 
 ##############################################################################
@@ -44,7 +53,7 @@ module "icd_elasticsearch" {
   access_tags                = var.access_tags
   admin_pass                 = var.admin_pass
   users                      = var.users
-  existing_kms_instance_guid = module.key_protect_all_inclusive.key_protect_guid
+  existing_kms_instance_guid = module.key_protect_all_inclusive.kms_guid
   service_credential_names   = var.service_credential_names
   elasticsearch_version      = var.elasticsearch_version
   kms_key_crn                = module.key_protect_all_inclusive.keys["icd.${var.prefix}-elasticsearch"].crn
