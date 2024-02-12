@@ -102,7 +102,7 @@ func TestRunFscloudSolution(t *testing.T) {
 		Testing:       t,
 		TerraformDir:  "solutions/fscloud",
 		Region:        "us-south", // Locking into us-south since that is where the dedicated host is provisioned
-		Prefix:        "dedicated",
+		Prefix:        "fscloud-da",
 		ResourceGroup: resourceGroup,
 	})
 
@@ -111,6 +111,7 @@ func TestRunFscloudSolution(t *testing.T) {
 		"access_tags":                permanentResources["accessTags"],
 		"existing_kms_instance_guid": permanentResources["hpcs_south"],
 		"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
+		"existing_resource_group":    true,
 		"resource_group_name":        options.ResourceGroup,
 		"name":                       options.Prefix,
 	}
