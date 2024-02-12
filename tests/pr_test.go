@@ -94,3 +94,27 @@ func TestRunCompleteUpgradeExample(t *testing.T) {
 		assert.NotNil(t, output, "Expected some output")
 	}
 }
+
+func TestRunFscloudSolution(t *testing.T) {
+	t.Parallel()
+
+	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
+		Testing:       t,
+		TerraformDir:  "solutions/fscloud",
+		Region:        "us-south", // Locking into us-south since that is where the dedicated host is provisioned
+		Prefix:        "dedicated",
+		ResourceGroup: resourceGroup,
+	})
+
+	options.TerraformVars = map[string]interface{}{
+		"elasticsearch_version":      "8.10", // Always lock this test into the latest supported elasticsearch version
+		"access_tags":                permanentResources["accessTags"],
+		"existing_kms_instance_guid": permanentResources["hpcs_south"],
+		"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
+		
+	}
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
+}
