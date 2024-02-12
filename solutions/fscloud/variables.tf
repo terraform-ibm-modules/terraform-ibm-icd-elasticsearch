@@ -1,5 +1,5 @@
 variable "ibmcloud_api_key" {
-  type = string
+  type        = string
   description = "The IBM cloud api token"
 }
 variable "existing_resource_group" {

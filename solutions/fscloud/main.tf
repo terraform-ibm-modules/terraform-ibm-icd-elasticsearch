@@ -5,7 +5,7 @@ module "resource_group" {
   existing_resource_group_name = var.existing_resource_group == true ? var.resource_group_name : null
 }
 
-module elasticsearch {
+module "elasticsearch" {
   source                        = "../../modules/fscloud"
   resource_group_id             = module.resource_group.resource_group_id
   name                          = var.name

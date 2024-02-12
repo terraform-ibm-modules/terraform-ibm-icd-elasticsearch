@@ -111,7 +111,8 @@ func TestRunFscloudSolution(t *testing.T) {
 		"access_tags":                permanentResources["accessTags"],
 		"existing_kms_instance_guid": permanentResources["hpcs_south"],
 		"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
-		
+		"resource_group_name":        options.ResourceGroup,
+		"name":                       options.Prefix,
 	}
 
 	output, err := options.RunTestConsistency()
