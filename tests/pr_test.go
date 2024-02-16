@@ -95,14 +95,14 @@ func TestRunCompleteUpgradeExample(t *testing.T) {
 	}
 }
 
-func TestRunFscloudSolution(t *testing.T) {
+func TestRunSecureSolution(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:       t,
-		TerraformDir:  "solutions/fscloud",
+		TerraformDir:  "solutions/secure",
 		Region:        "us-south", // Locking into us-south since that is where the dedicated host is provisioned
-		Prefix:        "fscloud-da",
+		Prefix:        "els-sr-da",
 		ResourceGroup: resourceGroup,
 	})
 
