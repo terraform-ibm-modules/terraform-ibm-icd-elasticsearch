@@ -6,4 +6,4 @@ This architecture creates an IBM Elastic Search instance in IBM Cloud environmen
 - An IBM Elastic search instance on IBM Cloud
 - A IBM Elastic search database
 
-![fscloud-elastic-search](../../reference-architecture/da_elastic_search.svg)
+![fscloud-elastic-search](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/reference-architecture/da-elasticsearch.svg)
