@@ -1,0 +1,92 @@
+{
+    "products": [
+      {
+        "name": "deploy-arch-ibm-icd-elasticsearch",
+        "label": "Elasticsearch",
+        "product_kind": "secure",
+        "tags": [
+          "ibm_created",
+          "target_terraform",
+          "terraform",
+          "reference_architecture",
+          "solution"
+        ],
+        "keywords": [
+          "elasticsearch",
+          "IaC",
+          "infrastructure as code",
+          "terraform",
+          "solution",
+          "elasticsearch secure",
+          "database",
+          "nosql"
+        ],
+        "short_description": "Creates and configures an IBM Elasticsearch instance.",
+        "long_description": "This architecture supports creating and configuring an IBM Elasticsearch instance with kms encryption, cbr rules and autoscaling.",
+        "offering_docs_url": "https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/README.md",
+        "offering_icon_url": "",
+        "provider_name": "IBM",
+        "features": [
+          {
+            "title": "Creates an IBM Elasticsearch instance",
+            "description": "Creates an IBM Elasticsearch instance."
+          },
+          {
+            "title": "Creates cbr rules",
+            "description": "Creates and configures cbr rules."
+          },
+          {
+            "title": "Autoscaling",
+            "description": "Provides the autoscaling feature"
+          },
+          {
+            "title": "Attach access tags",
+            "description": "Attach access tags to the IBM Cloudant instance."
+          }
+        ],
+        "flavors": [
+          {
+            "label": "Secure",
+            "name": "secure",
+            "install_type": "fullstack",
+            "working_directory": "solutions/secure",
+            "compliance": {
+              "authority": "scc-v3",
+              "profiles": [
+                {
+                  "profile_name": "IBM Cloud Framework for Financial Services",
+                  "profile_version": "1.5.0"
+                }
+              ]},
+            "iam_permissions": [
+              {
+                "role_crns": [
+                  "crn:v1:bluemix:public:iam::::serviceRole:Manager"
+                ],
+                "service_name": "databases for elasticsearch"
+              }
+            ],
+            "architecture": {
+              "descriptions": "This architecture supports creating and configuring an IBM Elasticsearch instance",
+              "features": [
+                {
+                  "title": "IBM Cloudant secure instance on existing IBM Cloud secure environment",
+                  "description": "Yes"
+                }
+              ],
+              "diagrams": [
+                {
+                  "diagram": {
+                    "caption": "IBM Secure Dedicated",
+                    "url": "",
+                    "type": "image/svg+xml"
+                  },
+                  "description": "This architecture supports creating and configuring an IBM Elasticsearch instance in an existing IBM environment."
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }

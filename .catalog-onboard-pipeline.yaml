@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+offerings:
+  - name: deploy-arch-ibm-elasticsearch
+    kind: secure
+    catalog_id:
+    offering_id:
+    variations:
+      - name: secure
+        mark_ready: true
+        install_type: fullstack
+        scc:
+          instance_id:
+          region: us-south
