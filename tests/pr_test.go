@@ -101,7 +101,7 @@ func TestRunSecureSolution(t *testing.T) {
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:       t,
 		TerraformDir:  "solutions/secure",
-		Region:        "us-south", // Locking into us-south since that is where the dedicated host is provisioned
+		Region:        "us-south",
 		Prefix:        "els-sr-da",
 		ResourceGroup: resourceGroup,
 	})

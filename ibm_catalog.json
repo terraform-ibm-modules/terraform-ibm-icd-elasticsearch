@@ -3,7 +3,7 @@
       {
         "name": "deploy-arch-ibm-icd-elasticsearch",
         "label": "Elasticsearch",
-        "product_kind": "secure",
+        "product_kind": "solution",
         "tags": [
           "ibm_created",
           "target_terraform",
@@ -22,7 +22,7 @@
           "nosql"
         ],
         "short_description": "Creates and configures an IBM Elasticsearch instance.",
-        "long_description": "This architecture supports creating and configuring an IBM Elasticsearch instance with kms encryption, cbr rules and autoscaling.",
+        "long_description": "This architecture supports creating and configuring an IBM Elasticsearch instance with KMS encryption and CBR rules.",
         "offering_docs_url": "https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/README.md",
         "offering_icon_url": "",
         "provider_name": "IBM",
@@ -33,7 +33,7 @@
           },
           {
             "title": "Creates cbr rules",
-            "description": "Creates and configures cbr rules."
+            "description": "Creates and configures CBR rules."
           },
           {
             "title": "Autoscaling",
@@ -41,7 +41,7 @@
           },
           {
             "title": "Attach access tags",
-            "description": "Attach access tags to the IBM Cloudant instance."
+            "description": "Attach access tags to the IBM Elasticsearch instance."
           }
         ],
         "flavors": [
@@ -67,17 +67,17 @@
               }
             ],
             "architecture": {
-              "descriptions": "This architecture supports creating and configuring an IBM Elasticsearch instance",
+              "descriptions": "This architecture supports creating and configuring an IBM Elasticsearch instance with KMS encryption and CBR rules.",
               "features": [
                 {
-                  "title": "IBM Cloudant secure instance on existing IBM Cloud secure environment",
+                  "title": "IBM Elasticsearch secure instance on existing IBM Cloud secure environment",
                   "description": "Yes"
                 }
               ],
               "diagrams": [
                 {
                   "diagram": {
-                    "caption": "IBM Secure Dedicated",
+                    "caption": "IBM Secure solution",
                     "url": "",
                     "type": "image/svg+xml"
                   },
