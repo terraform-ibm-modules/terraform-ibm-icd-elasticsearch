@@ -32,7 +32,7 @@
             "description": "Creates an IBM Elasticsearch instance."
           },
           {
-            "title": "Creates cbr rules",
+            "title": "Creates CBR rules",
             "description": "Creates and configures CBR rules."
           },
           {
@@ -77,11 +77,11 @@
               "diagrams": [
                 {
                   "diagram": {
-                    "caption": "IBM Secure solution",
+                    "caption": "IBM solution DA",
                     "url": "",
                     "type": "image/svg+xml"
                   },
-                  "description": "This architecture supports creating and configuring an IBM Elasticsearch instance in an existing IBM environment."
+                  "description": "This architecture supports creating and configuring an IBM Elasticsearch instance with KMS encryption and CBR rules."
                 }
               ]
             }
