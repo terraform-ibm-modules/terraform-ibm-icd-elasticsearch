@@ -4,6 +4,7 @@ package test
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"log"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -21,6 +22,7 @@ func TestRunBasicExample(t *testing.T) {
 		Prefix:             "es-test",
 		ResourceGroup:      resourceGroup,
 		BestRegionYAMLPath: regionSelectionPath,
+		CloudInfoService:   sharedInfoSvc,
 	})
 
 	output, err := options.RunTestConsistency()
@@ -33,7 +35,10 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 
 	// Generate a 15 char long random string for the admin_pass
 	randomBytes := make([]byte, 13)
-	rand.Read(randomBytes)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
@@ -55,6 +60,7 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 			},
 			"admin_pass": randomPass,
 		},
+		CloudInfoService: sharedInfoSvc,
 	})
 	options.SkipTestTearDown = true
 	output, err := options.RunTestConsistency()
@@ -67,4 +73,30 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 	_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
 	assert.NoErrorf(t, outputErr, "Some outputs not found or nil")
 	options.TestTearDown()
+}
+
+func testPlanICDVersions(t *testing.T, version string) {
+	t.Parallel()
+
+	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
+		Testing:      t,
+		TerraformDir: "examples/basic",
+		TerraformVars: map[string]interface{}{
+			"elasticsearch_version": version,
+		},
+		CloudInfoService: sharedInfoSvc,
+	})
+	output, err := options.RunTestPlan()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
+}
+
+func TestPlanICDVersions(t *testing.T) {
+	t.Parallel()
+
+	// This test will run a terraform plan on available stable versions of elasticsearch
+	versions, _ := sharedInfoSvc.GetAvailableIcdVersions("elasticsearch")
+	for _, version := range versions {
+		t.Run(version, func(t *testing.T) { testPlanICDVersions(t, version) })
+	}
 }
