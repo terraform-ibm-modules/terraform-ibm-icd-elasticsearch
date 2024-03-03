@@ -43,7 +43,7 @@ resource "time_sleep" "wait_for_authorization_policy" {
 
 
 resource "ibm_database" "elasticsearch" {
-  depends_on                = [ibm_iam_authorization_policy.policy]
+  depends_on                = [time_sleep.wait_for_authorization_policy]
   name                      = var.name
   plan                      = var.plan
   location                  = var.region
