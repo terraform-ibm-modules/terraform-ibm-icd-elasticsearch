@@ -1,6 +1,7 @@
 variable "ibmcloud_api_key" {
   type        = string
-  description = "The IBM cloud api token"
+  description = "The IBM cloud api key"
+  sensitive   = true
 }
 variable "existing_resource_group" {
   type        = bool
@@ -10,7 +11,7 @@ variable "existing_resource_group" {
 
 variable "resource_group_name" {
   type        = string
-  description = "The name of a new or an existing resource group in which to provision the Elastic search instance in."
+  description = "The name of a new or an existing resource group in which to provision the Elasticsearch instance in."
 }
 
 variable "name" {
@@ -19,21 +20,21 @@ variable "name" {
 }
 
 variable "region" {
-  description = "The region where you want to deploy your instance. Must be the same region as the Hyper Protect Crypto Services instance."
+  description = "The region where you want to deploy your instance."
   type        = string
   default     = "us-south"
 }
 
 variable "plan" {
   type        = string
-  description = "The name of the service plan that you choose for your Elasticsearch instance"
+  description = "The name of the service plan that you choose for your Elasticsearch instance. The supported plans are - enterprise and platinum"
   default     = "enterprise"
 }
 
 variable "elasticsearch_version" {
   description = "Version of the Elasticsearch instance. If no value is passed, the current preferred version of IBM Cloud Databases is used."
   type        = string
-  default     = null
+  default     = "8.10"
 }
 
 variable "access_tags" {
@@ -103,8 +104,9 @@ variable "kms_key_crn" {
 }
 
 variable "existing_kms_instance_guid" {
-  description = "The GUID of the Hyper Protect Crypto Services instance."
+  description = "The GUID of the Hyper Protect Crypto Services instance. It is only required while creating authorization policy."
   type        = string
+  default     = null
 }
 
 variable "skip_iam_authorization_policy" {

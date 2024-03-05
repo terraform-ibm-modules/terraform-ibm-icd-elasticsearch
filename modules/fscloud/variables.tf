@@ -114,8 +114,9 @@ variable "kms_key_crn" {
 }
 
 variable "existing_kms_instance_guid" {
-  description = "The GUID of the Hyper Protect Crypto Services instance."
+  description = "The GUID of the Hyper Protect Crypto Services instance. It is only required while creating authorization policy."
   type        = string
+  default     = null
 }
 
 variable "skip_iam_authorization_policy" {

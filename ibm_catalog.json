@@ -8,7 +8,7 @@
           "ibm_created",
           "target_terraform",
           "terraform",
-          "reference_architecture",
+          "databases",
           "solution"
         ],
         "keywords": [
@@ -63,7 +63,7 @@
                 "role_crns": [
                   "crn:v1:bluemix:public:iam::::serviceRole:Manager"
                 ],
-                "service_name": "databases for elasticsearch"
+                "service_name": "databases-for-elasticsearch"
               }
             ],
             "architecture": {
