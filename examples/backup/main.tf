@@ -28,12 +28,12 @@ data "ibm_database_backups" "backup_database" {
 
 # New etcd instance pointing to the backup instance
 module "restored_elasticsearch_db" {
-  source               = "../.."
-  resource_group_id = module.resource_group.resource_group_id
-  name              = "${var.prefix}-elasticsearch-restored"
+  source                = "../.."
+  resource_group_id     = module.resource_group.resource_group_id
+  name                  = "${var.prefix}-elasticsearch-restored"
   region                = var.region
   elasticsearch_version = var.elasticsearch_version
   tags                  = var.resource_tags
   access_tags           = var.access_tags
-  backup_crn        = var.elasticsearch_db_backup_crn == null ? data.ibm_database_backups.backup_database[0].backups[0].backup_id : var.elasticsearch_db_backup_crn
+  backup_crn            = var.elasticsearch_db_backup_crn == null ? data.ibm_database_backups.backup_database[0].backups[0].backup_id : var.elasticsearch_db_backup_crn
 }
