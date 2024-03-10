@@ -11,7 +11,7 @@ variable "existing_resource_group" {
 
 variable "resource_group_name" {
   type        = string
-  description = "The name of a new or an existing resource group in which to provision the Elasticsearch instance in."
+  description = "The name of a new or an existing resource group in which to provision the Databases for Elasicsearch in."
 }
 
 variable "name" {
@@ -45,7 +45,7 @@ variable "access_tags" {
 
 variable "members" {
   type        = number
-  description = "Allocated number of members. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
+  description = "The number of members that are allocated. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
   default     = 3
 }
 
