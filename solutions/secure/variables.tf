@@ -15,7 +15,7 @@ variable "resource_group_name" {
 }
 
 variable "name" {
-  description = "Name of the Elasticsearch instance"
+  description = "The name of the Elasticsearch instance"
   type        = string
 }
 
@@ -32,7 +32,7 @@ variable "plan" {
 }
 
 variable "elasticsearch_version" {
-  description = "Version of the Elasticsearch instance. If no value is passed, the current preferred version of IBM Cloud Databases is used."
+  description = "The version of the Elasticsearch instance. If no value is passed, the current preferred version of IBM Cloud Databases is used."
   type        = string
   default     = "8.10"
 }
@@ -51,24 +51,24 @@ variable "members" {
 
 variable "member_memory_mb" {
   type        = number
-  description = "Allocated memory per-member. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
+  description = "The memory per member that is allocated. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
   default     = 1024
 }
 
 variable "member_cpu_count" {
   type        = number
-  description = "Allocated dedicated CPU per member. For shared CPU, set to 0. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
+  description = "The dedicated CPU per member that is allocated. For shared CPU, set to 0. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
   default     = 0
 }
 
 variable "member_disk_mb" {
   type        = number
-  description = "Allocated disk per-member. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
+  description = "The disk that is allocated per-member. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
   default     = 5120
 }
 
 variable "service_credential_names" {
-  description = "Map of name, role for service credentials that you want to create for the database"
+  description = "The map of name, role for service credentials that you want to create for the database"
   type        = map(string)
   default     = {}
 }
@@ -89,12 +89,12 @@ variable "users" {
   }))
   default     = []
   sensitive   = true
-  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the Elasticsearch instance. This blocks creates native Elasticsearch database users, more info on that can be found here https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui"
+  description = "The list of users that have access to the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the Elasticsearch instance. This blocks creates native Elasticsearch database users, more info on that can be found here https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui"
 }
 
 variable "tags" {
   type        = list(any)
-  description = "Optional list of tags to be added to the Elasticsearch instance."
+  description = "The list of tags to be added to the Elasticsearch instance."
   default     = []
 }
 
@@ -104,7 +104,7 @@ variable "kms_key_crn" {
 }
 
 variable "existing_kms_instance_guid" {
-  description = "The GUID of the Hyper Protect Crypto Services instance. It is only required while creating authorization policy."
+  description = "The GUID of the Hyper Protect Crypto Services instance. The value is used only to create an authorization policy."
   type        = string
   default     = null
 }
@@ -138,7 +138,7 @@ variable "auto_scaling" {
       rate_units               = optional(string, "mb")
     })
   })
-  description = "Optional rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. See https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling&interface=cli#autoscaling-considerations in the IBM Cloud Docs."
+  description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. See https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling&interface=cli#autoscaling-considerations in the IBM Cloud Docs."
   default     = null
 }
 
@@ -153,6 +153,6 @@ variable "cbr_rules" {
     }))) }))
     enforcement_mode = string
   }))
-  description = "(Optional, list) List of CBR rules to create"
+  description = "The list of CBR rules to create"
   default     = []
 }

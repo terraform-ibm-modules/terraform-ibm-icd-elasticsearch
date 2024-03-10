@@ -2,7 +2,7 @@
     "products": [
       {
         "name": "deploy-arch-ibm-icd-elasticsearch",
-        "label": "Elasticsearch",
+        "label": "Databases-for-Elasticsearch",
         "product_kind": "solution",
         "tags": [
           "ibm_created",
@@ -21,26 +21,26 @@
           "database",
           "nosql"
         ],
-        "short_description": "Creates and configures an IBM Elasticsearch instance.",
-        "long_description": "This architecture supports creating and configuring an IBM Elasticsearch instance with KMS encryption and CBR rules.",
+        "short_description": "Creates and configures an instance of IBM Cloud Databases for Elasticsearch.",
+        "long_description": "This architecture supports creating and configuring an IBM Elasticsearch instance with KMS encryption and Context Based Restriction rules.",
         "offering_docs_url": "https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/README.md",
         "offering_icon_url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/main/images/elasticsearch_icon.svg",
         "provider_name": "IBM",
         "features": [
           {
-            "title": "Creates an IBM Elasticsearch instance",
-            "description": "Creates an IBM Elasticsearch instance."
+            "title": "Creates an instance of Databases for Elasticsearch",
+            "description": "Creates an IBM Elasticsearch resource instance on the IBM Cloud environment."
           },
           {
-            "title": "Creates CBR rules",
-            "description": "Creates and configures CBR rules."
+            "title": "Creates Context Based Restriction rules",
+            "description": "Creates and configures Context Based Restriction rules."
           },
           {
-            "title": "Autoscaling",
+            "title": "Supports sutoscaling",
             "description": "Provides the autoscaling feature"
           },
           {
-            "title": "Attach access tags",
+            "title": "Attaches access tags",
             "description": "Attach access tags to the IBM Elasticsearch instance."
           }
         ],
@@ -67,7 +67,7 @@
               }
             ],
             "architecture": {
-              "descriptions": "This architecture supports creating and configuring an IBM Elasticsearch instance with KMS encryption and CBR rules.",
+              "descriptions": "This architecture creates an IBM Elastic Search instance in IBM Cloud environment and supports provisioning of a Resource Group, Context Based Restriction rules and supports autoscaling",
               "features": [
                 {
                   "title": "IBM Elasticsearch secure instance on existing IBM Cloud secure environment",
@@ -77,11 +77,11 @@
               "diagrams": [
                 {
                   "diagram": {
-                    "caption": "IBM solution DA",
-                    "url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/main/reference-architecture/da-elasticsearch.svg",
+                    "caption": "IBM solution deployable architecture",
+                    "url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/main/reference-architecture/deployable-architecture-elasticsearch.svg",
                     "type": "image/svg+xml"
                   },
-                  "description": "This architecture supports creating and configuring an IBM Elasticsearch instance with KMS encryption and CBR rules."
+                  "description": "This architecture supports creating and configuring an IBM Elasticsearch instance with KMS encryption and Context Based Restriction rules."
                 }
               ]
             }
