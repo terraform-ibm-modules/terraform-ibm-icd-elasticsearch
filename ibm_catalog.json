@@ -36,8 +36,12 @@
             "description": "Creates and configures Context Based Restriction rules."
           },
           {
-            "title": "Supports sutoscaling",
-            "description": "Provides the autoscaling feature"
+            "title": "Supports kms encryption",
+            "description": "Provides the kms encryption feature."
+          },
+          {
+            "title": "Supports autoscaling",
+            "description": "Provides the autoscaling feature."
           },
           {
             "title": "Attaches access tags",
@@ -61,23 +65,23 @@
             "iam_permissions": [
               {
                 "role_crns": [
-                  "crn:v1:bluemix:public:iam::::serviceRole:Manager"
+                  "crn:v1:bluemix:public:iam::::serviceRole:Administrator"
                 ],
                 "service_name": "databases-for-elasticsearch"
               }
             ],
             "architecture": {
-              "descriptions": "This architecture creates an IBM Elastic Search instance in IBM Cloud environment and supports provisioning of a Resource Group, Context Based Restriction rules and supports autoscaling",
+              "descriptions": "This architecture creates an IBM Elasticsearch instance in IBM Cloud environment and supports provisioning of a Resource Group, Context Based Restriction rules and supports autoscaling",
               "features": [
                 {
                   "title": "IBM Elasticsearch secure instance on existing IBM Cloud secure environment",
-                  "description": "Yes"
+                  "description": "This architecture creates an IBM Elasticsearch instance in IBM Cloud environment and supports provisioning of a Resource Group, Context Based Restriction rules and supports autoscaling"
                 }
               ],
               "diagrams": [
                 {
                   "diagram": {
-                    "caption": "IBM solution deployable architecture",
+                    "caption": "IBM solution deployable architecture for Elasticsearch",
                     "url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/main/reference-architecture/deployable-architecture-elasticsearch.svg",
                     "type": "image/svg+xml"
                   },
