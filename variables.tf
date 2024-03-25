@@ -43,16 +43,15 @@ variable "service_endpoints" {
 
 variable "elasticsearch_version" {
   type        = string
-  description = "Version of Elasticsearch to deploy, must be 8.7, 8.10 or 7.17 (Enterprise plan only or Platinum if 8.10 or above). If no value passed, the current ICD preferred version is used."
+  description = "Version of Elasticsearch to deploy, must be 8.7 or 8.10 (Enterprise plan only or Platinum if 8.10 or above). If no value passed, the current ICD preferred version is used."
   default     = null
   validation {
     condition = anytrue([
       var.elasticsearch_version == null,
       var.elasticsearch_version == "8.7",
       var.elasticsearch_version == "8.10",
-      var.elasticsearch_version == "7.17",
     ])
-    error_message = "Version must be 8.7, 8.10 or 7.17 (Enterprise plan only or Platinum if 8.10 or above). If no value passed, the current ICD preferred version is used."
+    error_message = "Version must be 8.7 or 8.10 (Enterprise plan only or Platinum if 8.10 or above). If no value passed, the current ICD preferred version is used."
   }
 }
 
@@ -225,4 +224,21 @@ variable "cbr_rules" {
   description = "(Optional, list) List of CBR rules to create"
   default     = []
   # Validation happens in the rule module
+}
+
+##############################################################
+# Backup
+##############################################################
+
+variable "backup_crn" {
+  type        = string
+  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
+  default     = null
+  validation {
+    condition = anytrue([
+      var.backup_crn == null,
+      can(regex("^crn:.*:backup:", var.backup_crn))
+    ])
+    error_message = "backup_crn must be null OR starts with 'crn:' and contains ':backup:'"
+  }
 }

@@ -55,6 +55,7 @@ resource "ibm_database" "elasticsearch" {
   adminpassword             = var.admin_pass
   key_protect_key           = var.kms_key_crn
   backup_encryption_key_crn = local.backup_encryption_key_crn
+  backup_id                 = var.backup_crn
 
   dynamic "users" {
     for_each = nonsensitive(var.users != null ? var.users : [])
