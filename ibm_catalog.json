@@ -68,6 +68,12 @@
                   "crn:v1:bluemix:public:iam::::serviceRole:Administrator"
                 ],
                 "service_name": "databases-for-elasticsearch"
+              },
+              {
+                "role_crns": [
+                  "crn:v1:bluemix:public:iam::::serviceRole:Administrator"
+                ],
+                "service_name": "cbr"
               }
             ],
             "architecture": {
