@@ -1,11 +1,11 @@
 # IBM Cloud Databases for Elasticsearch
 
-This architecture creates an IBM Elastic Search instance in IBM Cloud environment and supports provisioning the following resources:
+This architecture creates an IBM Elasticsearch instance in IBM Cloud environment and supports provisioning the following resources:
 
-- A resource group, if one is not passed in.
+- A Resource Group, if one is not passed in.
 - An IBM Elasticsearch instance on IBM Cloud
 - Creation of CBR rules
-- Supports kms encryption
+- Supports KMS encryption
 - Supports autoscaling
 
 ![fscloud-elastic-search](../../reference-architecture/deployable-architecture-elasticsearch.svg)
