@@ -126,7 +126,7 @@ func TestRunSecureSolution(t *testing.T) {
 }
 
 func TestRunSecureUpgradeSolution(t *testing.T) {
-	t.parallel()
+	t.Parallel()
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:       t,
