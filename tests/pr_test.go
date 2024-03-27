@@ -108,7 +108,7 @@ func TestRunSecureSolution(t *testing.T) {
 func TestRunSecureUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptionsSecureSolution(t, "els-sr-da-upg")
+	options := setupOptionsSecureSolution(t, "els-sr-upg-da")
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
