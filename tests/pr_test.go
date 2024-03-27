@@ -81,15 +81,18 @@ func TestRunFSCloudExample(t *testing.T) {
 func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOptions {
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:      t,
-		TerraformDir: secureSolutionTerraformDir,
-		Prefix:       prefix,
+		Testing:       t,
+		TerraformDir:  secureSolutionTerraformDir,
+		Region:        "us-south",
+		Prefix:        prefix,
+		ResourceGroup: resourceGroup,
 	})
 
 	options.TerraformVars = map[string]interface{}{
-		"prefix":              options.Prefix,
-		"region":              "us-south",
-		"resource_group_name": options.Prefix,
+		"access_tags":                permanentResources["accessTags"],
+		"existing_kms_instance_guid": permanentResources["hpcs_south"],
+		"resource_group_name":        options.Prefix,
+		"name":                       options.Prefix,
 	}
 
 	return options
@@ -108,7 +111,7 @@ func TestRunSecureSolution(t *testing.T) {
 func TestRunSecureUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptionsSecureSolution(t, "els-sr-upg-da")
+	options := setupOptionsSecureSolution(t, "els-sr-da-upg")
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
