@@ -4,6 +4,5 @@
   "tags": $TAGS,
   "name": $PREFIX,
   "resource_group_name": $PREFIX,
-  "kms_key_crn": $KMS_KEY_CRN
   "existing_kms_instance_guid": $EXISTING_KMS_INSTANCE_GUID
 }

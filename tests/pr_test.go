@@ -15,6 +15,7 @@ import (
 
 const completeExampleTerraformDir = "examples/complete"
 const fscloudExampleTerraformDir = "examples/fscloud"
+const secureSolutionTerraformDir = "solutions/secure"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-elasticsearch"
@@ -77,48 +78,27 @@ func TestRunFSCloudExample(t *testing.T) {
 	options.TestTearDown()
 }
 
-func TestRunCompleteUpgradeExample(t *testing.T) {
-	t.Parallel()
+func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOptions {
 
-	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       completeExampleTerraformDir,
-		Prefix:             "es-test-upg",
-		ResourceGroup:      resourceGroup,
-		BestRegionYAMLPath: regionSelectionPath,
-		TerraformVars: map[string]interface{}{
-			"elasticsearch_version":       "8.7", // lowest supported version
-			"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
-			"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
-		},
-		CloudInfoService: sharedInfoSvc,
+	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
+		Testing:       t,
+		TerraformDir:  secureSolutionTerraformDir,
+		Prefix:        prefix,
+		ResourceGroup: resourceGroup,
 	})
 
-	output, err := options.RunTestUpgrade()
-	if !options.UpgradeTestSkipped {
-		assert.Nil(t, err, "This should not have errored")
-		assert.NotNil(t, output, "Expected some output")
+	options.TerraformVars = map[string]interface{}{
+		"prefix": options.Prefix,
+		"region": "us-south",
 	}
+
+	return options
 }
 
 func TestRunSecureSolution(t *testing.T) {
 	t.Parallel()
 
-	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:       t,
-		TerraformDir:  "solutions/secure",
-		Region:        "us-south",
-		Prefix:        "els-sr-da",
-		ResourceGroup: resourceGroup,
-	})
-
-	options.TerraformVars = map[string]interface{}{
-		"access_tags":                permanentResources["accessTags"],
-		"existing_kms_instance_guid": permanentResources["hpcs_south"],
-		"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
-		"resource_group_name":        options.Prefix,
-		"name":                       options.Prefix,
-	}
+	options := setupOptionsSecureSolution(t, "els-sr-da")
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -128,21 +108,7 @@ func TestRunSecureSolution(t *testing.T) {
 func TestRunSecureUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
-	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:       t,
-		TerraformDir:  "solutions/secure",
-		Region:        "us-south",
-		Prefix:        "els-sr-da-upg",
-		ResourceGroup: resourceGroup,
-	})
-
-	options.TerraformVars = map[string]interface{}{
-		"access_tags":                permanentResources["accessTags"],
-		"existing_kms_instance_guid": permanentResources["hpcs_south"],
-		"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
-		"resource_group_name":        options.Prefix,
-		"name":                       options.Prefix,
-	}
+	options := setupOptionsSecureSolution(t, "els-sr-da-upg")
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
