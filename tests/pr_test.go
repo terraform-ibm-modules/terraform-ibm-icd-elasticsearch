@@ -81,15 +81,15 @@ func TestRunFSCloudExample(t *testing.T) {
 func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOptions {
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:       t,
-		TerraformDir:  secureSolutionTerraformDir,
-		Prefix:        prefix,
-		ResourceGroup: resourceGroup,
+		Testing:      t,
+		TerraformDir: secureSolutionTerraformDir,
+		Prefix:       prefix,
 	})
 
 	options.TerraformVars = map[string]interface{}{
-		"prefix": options.Prefix,
-		"region": "us-south",
+		"prefix":              options.Prefix,
+		"region":              "us-south",
+		"resource_group_name": options.Prefix,
 	}
 
 	return options
