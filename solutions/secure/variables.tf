@@ -98,9 +98,26 @@ variable "tags" {
   default     = []
 }
 
-variable "kms_key_crn" {
+variable "kms_region" {
   type        = string
-  description = "The root key CRN of the Hyper Protect Crypto Service (HPCS) to use for disk encryption."
+  default     = "us-south"
+  description = "The region in which KMS instance exists."
+}
+
+variable "kms_endpoint_type" {
+  type        = string
+  description = "The type of endpoint to be used for commincating with the KMS instance. Allowed values are: 'public' or 'private' (default)"
+  default     = "private"
+  validation {
+    condition     = can(regex("public|private", var.kms_endpoint_type))
+    error_message = "The kms_endpoint_type value must be 'public' or 'private'."
+  }
+}
+
+variable "existing_kms_key_crn" {
+  type        = string
+  description = "The existing root key CRN of the Hyper Protect Crypto Service (HPCS) to use for disk encryption."
+  default     = null
 }
 
 variable "existing_kms_instance_guid" {
@@ -113,6 +130,18 @@ variable "skip_iam_authorization_policy" {
   type        = bool
   description = "Set to true to skip the creation of an IAM authorization policy that permits all Elasticsearch database instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
   default     = false
+}
+
+variable "elasticsearch_key_ring_name" {
+  type        = string
+  default     = "elasticsearch-key-ring"
+  description = "The name to give the Key Ring which will be created for the Elasticsearch Key. Not used if supplying an existing Key."
+}
+
+variable "elasticsearch_key_name" {
+  type        = string
+  default     = "elasticsearch-key"
+  description = "The name to give the Key which will be created for the Elasticsearch. Not used if supplying an existing Key."
 }
 
 variable "auto_scaling" {
@@ -140,19 +169,4 @@ variable "auto_scaling" {
   })
   description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. See https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling&interface=cli#autoscaling-considerations in the IBM Cloud Docs."
   default     = null
-}
-
-variable "cbr_rules" {
-  type = list(object({
-    description = string
-    account_id  = string
-    rule_contexts = list(object({
-      attributes = optional(list(object({
-        name  = string
-        value = string
-    }))) }))
-    enforcement_mode = string
-  }))
-  description = "The list of CBR rules to create"
-  default     = []
 }

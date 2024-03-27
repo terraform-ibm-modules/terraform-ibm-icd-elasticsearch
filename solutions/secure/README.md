@@ -4,7 +4,6 @@ This architecture creates an IBM Elasticsearch instance in IBM Cloud environment
 
 - A Resource Group, if one is not passed in.
 - An IBM Elasticsearch instance on IBM Cloud
-- Creation of CBR rules
 - Supports KMS encryption
 - Supports autoscaling
 

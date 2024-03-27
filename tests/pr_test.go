@@ -116,12 +116,37 @@ func TestRunSecureSolution(t *testing.T) {
 		"access_tags":                permanentResources["accessTags"],
 		"existing_kms_instance_guid": permanentResources["hpcs_south"],
 		"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
-		"existing_resource_group":    true,
-		"resource_group_name":        options.ResourceGroup,
+		"resource_group_name":        options.Prefix,
 		"name":                       options.Prefix,
 	}
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
+}
+
+func TestRunSecureUpgradeSolution(t *testing.T) {
+	t.parallel()
+
+	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
+		Testing:       t,
+		TerraformDir:  "solutions/secure",
+		Region:        "us-south",
+		Prefix:        "els-sr-da-upg",
+		ResourceGroup: resourceGroup,
+	})
+
+	options.TerraformVars = map[string]interface{}{
+		"access_tags":                permanentResources["accessTags"],
+		"existing_kms_instance_guid": permanentResources["hpcs_south"],
+		"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
+		"resource_group_name":        options.Prefix,
+		"name":                       options.Prefix,
+	}
+
+	output, err := options.RunTestUpgrade()
+	if !options.UpgradeTestSkipped {
+		assert.Nil(t, err, "This should not have errored")
+		assert.NotNil(t, output, "Expected some output")
+	}
 }
