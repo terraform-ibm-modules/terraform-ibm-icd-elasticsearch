@@ -4,5 +4,6 @@
   "tags": $TAGS,
   "name": $PREFIX,
   "resource_group_name": $PREFIX,
-  "existing_kms_instance_guid": $EXISTING_KMS_INSTANCE_GUID
+  "existing_kms_instance_guid": $HPCS_US_SOUTH_GUID,
+  "kms_region": "us-south"
 }
