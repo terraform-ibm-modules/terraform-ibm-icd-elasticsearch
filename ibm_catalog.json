@@ -8,7 +8,7 @@
           "ibm_created",
           "target_terraform",
           "terraform",
-          "databases",
+          "database",
           "solution"
         ],
         "keywords": [
@@ -61,7 +61,7 @@
             "iam_permissions": [
               {
                 "role_crns": [
-                  "crn:v1:bluemix:public:iam::::serviceRole:Editor"
+                  "crn:v1:bluemix:public:iam::::role:Editor"
                 ],
                 "service_name": "databases-for-elasticsearch"
               }
