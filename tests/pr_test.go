@@ -15,6 +15,7 @@ import (
 
 const completeExampleTerraformDir = "examples/complete"
 const fscloudExampleTerraformDir = "examples/fscloud"
+const secureSolutionTerraformDir = "solutions/secure"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-elasticsearch"
@@ -77,22 +78,41 @@ func TestRunFSCloudExample(t *testing.T) {
 	options.TestTearDown()
 }
 
-func TestRunCompleteUpgradeExample(t *testing.T) {
+func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOptions {
+
+	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
+		Testing:       t,
+		TerraformDir:  secureSolutionTerraformDir,
+		Region:        "us-south",
+		Prefix:        prefix,
+		ResourceGroup: resourceGroup,
+	})
+
+	options.TerraformVars = map[string]interface{}{
+		"access_tags":                permanentResources["accessTags"],
+		"existing_kms_instance_guid": permanentResources["hpcs_south"],
+		"kms_endpoint_type":          "public",
+		"resource_group_name":        options.Prefix,
+		"name":                       options.Prefix,
+	}
+
+	return options
+}
+
+func TestRunSecureSolution(t *testing.T) {
 	t.Parallel()
 
-	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       completeExampleTerraformDir,
-		Prefix:             "es-test-upg",
-		ResourceGroup:      resourceGroup,
-		BestRegionYAMLPath: regionSelectionPath,
-		TerraformVars: map[string]interface{}{
-			"elasticsearch_version":       "8.7", // lowest supported version
-			"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
-			"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
-		},
-		CloudInfoService: sharedInfoSvc,
-	})
+	options := setupOptionsSecureSolution(t, "els-sr-da")
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
+}
+
+func TestRunSecureUpgradeSolution(t *testing.T) {
+	t.Parallel()
+
+	options := setupOptionsSecureSolution(t, "els-sr-da-upg")
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
