@@ -8,7 +8,7 @@
           "ibm_created",
           "target_terraform",
           "terraform",
-          "database",
+          "data_management",
           "solution"
         ],
         "keywords": [
