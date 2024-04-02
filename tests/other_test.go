@@ -23,6 +23,10 @@ func TestRunBasicExample(t *testing.T) {
 		ResourceGroup:      resourceGroup,
 		BestRegionYAMLPath: regionSelectionPath,
 		CloudInfoService:   sharedInfoSvc,
+
+		TerraformVars: map[string]interface{}{
+			"elasticsearch_version": "8.10", // Always lock this test into the latest supported elasticsearch version
+		},
 	})
 
 	output, err := options.RunTestConsistency()
