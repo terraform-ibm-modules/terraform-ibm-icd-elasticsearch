@@ -4,7 +4,7 @@ terraform {
   required_providers {
     ibm = {
       source  = "IBM-Cloud/ibm"
-      version = ">=1.61.0, <2.0.0"
+      version = ">=1.62.0, <2.0.0"
     }
     # The elasticsearch provider is not actually required by the module itself, just this example, so OK to use ">=" here instead of locking into a version
     elasticsearch = {
