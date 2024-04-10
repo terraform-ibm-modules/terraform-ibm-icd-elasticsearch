@@ -39,14 +39,23 @@ output "service_credentials_object" {
   sensitive   = true
 }
 
+output "adminuser" {
+  description = "Database admin user name"
+  value       = ibm_database.elasticsearch.adminuser
+}
+
 output "hostname" {
-  description = "Database hostname. Only contains value when var.service_credential_names or var.users are set."
-  value       = length(var.service_credential_names) > 0 ? nonsensitive(ibm_resource_key.service_credentials[keys(var.service_credential_names)[0]].credentials["connection.https.hosts.0.hostname"]) : length(var.users) > 0 ? nonsensitive(flatten(data.ibm_database_connection.database_connection[0].https[0].hosts[0].hostname)) : null
+  description = "Database connection hostname"
+  value       = data.ibm_database_connection.database_connection.https[0].hosts[0].hostname
 }
 
 output "port" {
-  description = "Database port. Only contains value when var.service_credential_names or var.users are set."
-  value       = length(var.service_credential_names) > 0 ? nonsensitive(ibm_resource_key.service_credentials[keys(var.service_credential_names)[0]].credentials["connection.https.hosts.0.port"]) : length(var.users) > 0 ? nonsensitive(flatten(data.ibm_database_connection.database_connection[0].https[0].hosts[0].port)) : null
+  description = "Database connection port"
+  value       = data.ibm_database_connection.database_connection.https[0].hosts[0].port
 }
 
-##############################################################################
+output "certificate_base64" {
+  description = "Database connection certificate"
+  value       = data.ibm_database_connection.database_connection.https[0].certificate[0].certificate_base64
+  sensitive   = true
+}

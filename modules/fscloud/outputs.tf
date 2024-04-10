@@ -39,12 +39,23 @@ output "service_credentials_object" {
   sensitive   = true
 }
 
+output "adminuser" {
+  description = "Database admin user name"
+  value       = module.elasticsearch.adminuser
+}
+
 output "hostname" {
-  description = "Elasticsearch instance hostname"
+  description = "Database connection hostname"
   value       = module.elasticsearch.hostname
 }
 
 output "port" {
-  description = "Elasticsearch instance port"
+  description = "Database connection port"
   value       = module.elasticsearch.port
+}
+
+output "certificate_base64" {
+  description = "Database connection certificate"
+  value       = module.elasticsearch.certificate_base64
+  sensitive   = true
 }
