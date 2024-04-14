@@ -129,6 +129,20 @@ resource "ibm_database" "elasticsearch" {
   }
 }
 
+resource "elasticsearch_index" "es_index" {
+  count               = var.create_index ? 1 : 0
+  name                = var.index_name
+  number_of_shards    = var.number_of_shards
+  number_of_replicas  = var.number_of_replicas
+  force_destroy       = var.force_destroy
+}
+
+resource "elasticsearch_cluster_settings" "es_cluster_settings" {
+  count                       = var.add_cluster_configuration ? 1 : 0
+  cluster_max_shards_per_node = var.cluster_max_shards_per_node
+  action_auto_create_index    = var.action_auto_create_index
+}
+
 resource "ibm_resource_tag" "elasticsearch_tag" {
   count       = length(var.access_tags) == 0 ? 0 : 1
   resource_id = ibm_database.elasticsearch.resource_crn

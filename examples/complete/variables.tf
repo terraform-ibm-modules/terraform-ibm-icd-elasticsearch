@@ -88,6 +88,54 @@ variable "users" {
   description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters."
 }
 
+variable "create_index" {
+  description = "Set it to true if index is to be created"
+  type = bool
+  default = true
+}
+
+variable "index_name" {
+  description = "The name of the index of the elasticsearch "
+  type = string
+  default = "terraform-test"
+}
+
+variable "number_of_shards" {
+  description = "The total number of shards the indexed data is to be divided into"
+  type = number
+  default = 1
+}
+
+variable "number_of_replicas" {
+  description = "The total number of replicas of the primary shard in an index"
+  type = number
+  default = 1
+}
+
+variable "force_destroy" {
+  description = "Whether an existing index with the same name should be destroyed before creating a new one."
+  type = bool
+  default = true
+}
+
+variable "add_cluster_configuration" {
+  description = "Set it to true if cluster configuration is to be added"
+  type = bool
+  default = true
+}
+
+variable "cluster_max_shards_per_node" {
+  description = "The maximum number of shards that can be assigned to a single node in a cluster."
+  type = number
+  default = 10
+}
+
+variable "action_auto_create_index" {
+  description = "Each string in the list could correspond to an index pattern that triggers automatic index creation"
+  type = list(string)
+  default = ["my-index-000001,index10,-index1*,+ind*"]
+}
+
 variable "auto_scaling" {
   type = object({
     disk = object({
