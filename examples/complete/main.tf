@@ -44,29 +44,29 @@ module "key_protect_all_inclusive" {
 ##############################################################################
 
 module "icd_elasticsearch" {
-  source                     = "../../"
-  resource_group_id          = module.resource_group.resource_group_id
-  name                       = "${var.prefix}-elasticsearch"
-  region                     = var.region
-  plan                       = var.plan
-  kms_encryption_enabled     = true
-  access_tags                = var.access_tags
-  admin_pass                 = var.admin_pass
-  users                      = var.users
-  create_index               = var.create_index
-  index_name                 = var.index_name
-  number_of_shards           = var.number_of_shards
-  number_of_replicas         = var.number_of_replicas
-  force_destroy              = var.force_destroy
-  add_cluster_configuration  = var.add_cluster_configuration
-  cluster_max_shards_per_node= var.cluster_max_shards_per_node
-  action_auto_create_index   = var.action_auto_create_index
-  existing_kms_instance_guid = module.key_protect_all_inclusive.kms_guid
-  service_credential_names   = var.service_credential_names
-  elasticsearch_version      = var.elasticsearch_version
-  kms_key_crn                = module.key_protect_all_inclusive.keys["icd.${var.prefix}-elasticsearch"].crn
-  tags                       = var.resource_tags
-  auto_scaling               = var.auto_scaling
+  source                      = "../../"
+  resource_group_id           = module.resource_group.resource_group_id
+  name                        = "${var.prefix}-elasticsearch"
+  region                      = var.region
+  plan                        = var.plan
+  kms_encryption_enabled      = true
+  access_tags                 = var.access_tags
+  admin_pass                  = var.admin_pass
+  users                       = var.users
+  create_index                = var.create_index
+  index_name                  = var.index_name
+  number_of_shards            = var.number_of_shards
+  number_of_replicas          = var.number_of_replicas
+  force_destroy               = var.force_destroy
+  add_cluster_configuration   = var.add_cluster_configuration
+  cluster_max_shards_per_node = var.cluster_max_shards_per_node
+  action_auto_create_index    = var.action_auto_create_index
+  existing_kms_instance_guid  = module.key_protect_all_inclusive.kms_guid
+  service_credential_names    = var.service_credential_names
+  elasticsearch_version       = var.elasticsearch_version
+  kms_key_crn                 = module.key_protect_all_inclusive.keys["icd.${var.prefix}-elasticsearch"].crn
+  tags                        = var.resource_tags
+  auto_scaling                = var.auto_scaling
 }
 
 ##############################################################################

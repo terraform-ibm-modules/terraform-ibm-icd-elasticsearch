@@ -156,50 +156,50 @@ variable "service_credential_names" {
 
 variable "create_index" {
   description = "Set it to true if index is to be created"
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "index_name" {
   description = "The name of the index of the elasticsearch "
-  type = string
-  default = null
+  type        = string
+  default     = null
 }
 
 variable "number_of_shards" {
   description = "The total number of shards the indexed data is to be divided into"
-  type = number
-  default = 1
+  type        = number
+  default     = 1
 }
 
 variable "number_of_replicas" {
   description = "The total number of replicas of the primary shard in an index"
-  type = number
-  default = 1
+  type        = number
+  default     = 1
 }
 
 variable "force_destroy" {
   description = "Whether an existing index with the same name should be destroyed before creating a new one."
-  type = bool
-  default = true
+  type        = bool
+  default     = true
 }
 
 variable "add_cluster_configuration" {
   description = "Set it to true if cluster configuration is to be added"
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "cluster_max_shards_per_node" {
   description = "The maximum number of shards that can be assigned to a single node in a cluster."
-  type = number
-  default = null
+  type        = number
+  default     = null
 }
 
 variable "action_auto_create_index" {
-  description = "Each string in the list could correspond to an index pattern that triggers automatic index creation"
-  type = list(string)
-  default = null
+  description = "This corresponds to an index pattern that triggers automatic index creation"
+  type        = string
+  default     = null
 }
 
 ##############################################################

@@ -14,11 +14,13 @@ module "resource_group" {
 ##############################################################################
 
 module "icd_elasticsearch" {
-  source                = "../../"
-  resource_group_id     = module.resource_group.resource_group_id
-  name                  = "${var.prefix}-elasticsearch"
-  region                = var.region
-  elasticsearch_version = var.elasticsearch_version
-  tags                  = var.resource_tags
-  access_tags           = var.access_tags
+  source                    = "../../"
+  resource_group_id         = module.resource_group.resource_group_id
+  name                      = "${var.prefix}-elasticsearch"
+  region                    = var.region
+  elasticsearch_version     = var.elasticsearch_version
+  tags                      = var.resource_tags
+  access_tags               = var.access_tags
+  create_index              = var.create_index
+  add_cluster_configuration = var.add_cluster_configuration
 }

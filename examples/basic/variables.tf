@@ -39,3 +39,15 @@ variable "resource_tags" {
   description = "Optional list of tags to be added to created resources"
   default     = []
 }
+
+variable "create_index" {
+  description = "Set it to true if index is to be created"
+  type        = bool
+  default     = false
+}
+
+variable "add_cluster_configuration" {
+  description = "Set it to true if cluster configuration is to be added"
+  type        = bool
+  default     = false
+}

@@ -10,5 +10,9 @@ terraform {
       source  = "hashicorp/time"
       version = ">= 0.9.1"
     }
+    elasticsearch = {
+      source  = "phillbaker/elasticsearch"
+      version = ">= 2.0.7"
+    }
   }
 }

@@ -130,11 +130,11 @@ resource "ibm_database" "elasticsearch" {
 }
 
 resource "elasticsearch_index" "es_index" {
-  count               = var.create_index ? 1 : 0
-  name                = var.index_name
-  number_of_shards    = var.number_of_shards
-  number_of_replicas  = var.number_of_replicas
-  force_destroy       = var.force_destroy
+  count              = var.create_index ? 1 : 0
+  name               = var.index_name
+  number_of_shards   = var.number_of_shards
+  number_of_replicas = var.number_of_replicas
+  force_destroy      = var.force_destroy
 }
 
 resource "elasticsearch_cluster_settings" "es_cluster_settings" {
