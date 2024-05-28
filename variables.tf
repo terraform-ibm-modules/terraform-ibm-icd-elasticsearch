@@ -43,16 +43,15 @@ variable "service_endpoints" {
 
 variable "elasticsearch_version" {
   type        = string
-  description = "Version of Elasticsearch to deploy, must be 8.7, 8.10 or 8.12 (Enterprise plan only or Platinum if 8.10 or above). If no value passed, the current ICD preferred version is used."
+  description = "Version of Elasticsearch to deploy, must be 8.10 or 8.12 (Enterprise plan only or Platinum if 8.10 or above). If no value passed, the current ICD preferred version is used."
   default     = null
   validation {
     condition = anytrue([
       var.elasticsearch_version == null,
-      var.elasticsearch_version == "8.7",
       var.elasticsearch_version == "8.10",
       var.elasticsearch_version == "8.12",
     ])
-    error_message = "Version must be 8.7, 8.10 or 8.12 (Enterprise plan only or Platinum if 8.10 or above). If no value passed, the current ICD preferred version is used."
+    error_message = "Version must be 8.10 or 8.12 (Enterprise plan only or Platinum if 8.10 or above). If no value passed, the current ICD preferred version is used."
   }
 }
 

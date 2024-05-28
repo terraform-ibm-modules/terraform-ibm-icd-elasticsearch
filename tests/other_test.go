@@ -52,7 +52,7 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 		ResourceGroup:      resourceGroup,
 		BestRegionYAMLPath: regionSelectionPath,
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version":       "8.7",
+			"elasticsearch_version":       "8.10",
 			"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
 			"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
 			"users": []map[string]interface{}{
