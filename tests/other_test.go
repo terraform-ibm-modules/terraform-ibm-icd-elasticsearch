@@ -25,7 +25,7 @@ func TestRunBasicExample(t *testing.T) {
 		CloudInfoService:   sharedInfoSvc,
 
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version": "8.10", // Always lock this test into the latest supported elasticsearch version
+			"elasticsearch_version": "8.12", // Always lock this test into the latest supported elasticsearch version
 		},
 	})
 
