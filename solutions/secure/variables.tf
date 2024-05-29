@@ -116,12 +116,12 @@ variable "kms_endpoint_type" {
 
 variable "existing_kms_key_crn" {
   type        = string
-  description = "The existing root key CRN of the Hyper Protect Crypto Service (HPCS) to use for disk encryption."
+  description = "The CRN of an existing Hyper Protect or Key Protect root key to use for disk encryption."
   default     = null
 }
 
 variable "existing_kms_instance_guid" {
-  description = "The GUID of the Hyper Protect Crypto Services instance. The value is used only to create an authorization policy."
+  description = "The GUID of an existing Hyper Protect or Key Protect instance. Used to create an authorization policy and a KMS root key if 'existing_kms_key_crn' is not specified."
   type        = string
   default     = null
 }
