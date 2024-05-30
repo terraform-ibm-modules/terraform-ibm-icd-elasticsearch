@@ -121,7 +121,7 @@ variable "existing_kms_key_crn" {
 }
 
 variable "existing_kms_instance_guid" {
-  description = "The GUID of an existing Hyper Protect or Key Protect instance. Used to create an authorization policy and a KMS root key if 'existing_kms_key_crn' is not specified."
+  description = "The GUID of an existing Hyper Protect or Key Protect instance in the same account as the Elasticsearch database instance. Always used to create an authorization policy and if 'existing_kms_key_crn' is not specified also used to create a KMS root key"
   type        = string
   default     = null
 }
