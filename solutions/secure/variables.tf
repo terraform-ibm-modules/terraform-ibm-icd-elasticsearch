@@ -116,7 +116,7 @@ variable "kms_endpoint_type" {
 
 variable "existing_kms_key_crn" {
   type        = string
-  description = "The CRN of an existing Hyper Protect or Key Protect root key to use for disk encryption."
+  description = "The CRN of an existing Hyper Protect or Key Protect root key to use for disk encryption. A new KMS root will be created if omitted."
   default     = null
 }
 
