@@ -29,10 +29,12 @@ module "key_protect_all_inclusive" {
   resource_tags             = var.resource_tags
   keys = [
     {
-      key_ring_name = "icd"
+      key_ring_name         = "icd"
+      force_delete_key_ring = true
       keys = [
         {
-          key_name = "${var.prefix}-elasticsearch"
+          key_name     = "${var.prefix}-elasticsearch"
+          force_delete = true
         }
       ]
     }

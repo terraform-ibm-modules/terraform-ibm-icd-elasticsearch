@@ -39,3 +39,15 @@ variable "resource_tags" {
   description = "Optional list of tags to be added to created resources"
   default     = []
 }
+
+variable "member_host_flavor" {
+  type        = string
+  description = "Allocated host flavor per member. For more information, see https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor"
+  default     = null
+}
+
+variable "member_memory_mb" {
+  type        = number
+  description = "Allocated memory per-member."
+  default     = 4096
+}
