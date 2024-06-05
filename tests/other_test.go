@@ -111,7 +111,7 @@ func TestRunBasicExampleWithFlavorMultitenant(t *testing.T) {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
 		TerraformDir:       "examples/basic",
-		Prefix:             "es-flvr-multitenant",
+		Prefix:             "elastic-flvr-multitenant",
 		BestRegionYAMLPath: regionSelectionPath,
 		ResourceGroup:      resourceGroup,
 		TerraformVars: map[string]interface{}{
