@@ -142,7 +142,7 @@ variable "skip_iam_authorization_policy" {
 variable "elasticsearch_key_ring_name" {
   type        = string
   default     = "elasticsearch-key-ring"
-  description = "The name to give the Key Ring which will be created for the Elasticsearch Key. Not used if supplying an existing Key. If prefix input variable is passed then it will get prefixed infront of the value in the format of '<prefix>-value'"
+  description = "The name to give the key ring that is created for the Databases for Elasticsearch key. Not used if `existing_kms_key_crn` is specified. If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
 }
 
 variable "elasticsearch_key_name" {
