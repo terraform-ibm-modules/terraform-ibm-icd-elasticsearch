@@ -3,6 +3,7 @@
 This architecture creates an Elasticsearch instance on IBM Cloud and supports provisioning of the following resources:
 
 - A resource group, if one is not passed in.
+- A KMS root key, if one is not passed in.
 - An Elasticsearch instance on IBM Cloud with KMS encryption.
 - Autoscaling rules for the Elasticsearch instance, if provided.
 
