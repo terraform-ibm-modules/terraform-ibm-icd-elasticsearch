@@ -148,7 +148,7 @@ variable "elasticsearch_key_ring_name" {
 variable "elasticsearch_key_name" {
   type        = string
   default     = "elasticsearch-key"
-  description = "The name to give the Key which will be created for the Elasticsearch. Not used if supplying an existing Key. If prefix input variable is passed then it will get prefixed infront of the value in the format of '<prefix>-value'"
+  description = "The name to give the key that is created for the Databases for Elasticsearch key. Not used if `existing_kms_key_crn` is specified. If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
 }
 
 variable "auto_scaling" {
