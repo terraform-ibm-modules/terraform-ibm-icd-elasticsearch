@@ -16,7 +16,7 @@ variable "resource_group_name" {
 
 variable "prefix" {
   type        = string
-  description = "(Optional) Prefix to append to all resources created by this solution."
+  description = "Prefix to add to all resources created by this solution."
   default     = null
 }
 
