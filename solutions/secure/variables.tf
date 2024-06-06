@@ -22,7 +22,7 @@ variable "prefix" {
 
 variable "name" {
   type        = string
-  description = "The name of the Elasticsearch instance. If prefix input variable is passed then it will get prefixed infront of the value in the format of '<prefix>-value'"
+  description = "The name of the Databases for Elasticsearch instance. If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
   default     = "elasticsearch"
 }
 
