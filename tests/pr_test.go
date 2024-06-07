@@ -58,10 +58,10 @@ func TestRunFSCloudExample(t *testing.T) {
 		*/
 		//ResourceGroup: resourceGroup,
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version":      "8.12", // Always lock this test into the latest supported elasticsearch version
-			"access_tags":                permanentResources["accessTags"],
-			"existing_kms_instance_guid": permanentResources["hpcs_south"],
-			"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
+			"elasticsearch_version":     "8.12", // Always lock this test into the latest supported elasticsearch version
+			"access_tags":               permanentResources["accessTags"],
+			"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+			"kms_key_crn":               permanentResources["hpcs_south_root_key_crn"],
 		},
 		CloudInfoService: sharedInfoSvc,
 	})
@@ -89,11 +89,11 @@ func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOpt
 	})
 
 	options.TerraformVars = map[string]interface{}{
-		"access_tags":                permanentResources["accessTags"],
-		"existing_kms_instance_guid": permanentResources["hpcs_south"],
-		"kms_endpoint_type":          "public",
-		"resource_group_name":        options.Prefix,
-		"name":                       options.Prefix,
+		"access_tags":               permanentResources["accessTags"],
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"kms_endpoint_type":         "public",
+		"resource_group_name":       options.Prefix,
+		"name":                      options.Prefix,
 	}
 
 	return options

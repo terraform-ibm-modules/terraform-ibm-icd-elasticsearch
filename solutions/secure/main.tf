@@ -1,7 +1,9 @@
 locals {
-  existing_kms_instance_crn_split = split(":", var.existing_kms_instance_crn)
-  existing_kms_instance_guid      = element(local.existing_kms_instance_crn_split, length(local.existing_kms_instance_crn_split) - 3)
-  existing_kms_instance_region    = element(local.existing_kms_instance_crn_split, length(local.existing_kms_instance_crn_split) - 5)
+  existing_kms_instance_crn_split = var.existing_kms_instance_crn != null ? split(":", var.existing_kms_instance_crn) : null
+  existing_kms_instance_guid      = var.existing_kms_instance_crn != null ? element(local.existing_kms_instance_crn_split, length(local.existing_kms_instance_crn_split) - 3) : null
+  existing_kms_instance_region    = var.existing_kms_instance_crn != null ? element(local.existing_kms_instance_crn_split, length(local.existing_kms_instance_crn_split) - 5) : null
+  # tflint-ignore: terraform_unused_declarations
+  validate_existing_kms_crn = var.existing_kms_key_crn == null && var.existing_kms_instance_crn == null ? tobool("Both var.existing_kms_key_crn and var.existing_kms_instance_crn must not be null simultaneously.") : true
 }
 
 
