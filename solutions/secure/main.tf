@@ -1,9 +1,8 @@
 locals {
-  parsed_existing_kms_instance_crn = var.existing_kms_instance_crn != null ? split(":", var.existing_kms_instance_crn) : []
-  kms_region                       = length(local.parsed_existing_kms_instance_crn) > 0 ? local.parsed_existing_kms_instance_crn[5] : null
-  kms_instance_guid                = var.existing_kms_instance_crn != null ? element(split(":", var.existing_kms_instance_crn), length(split(":", var.existing_kms_instance_crn)) - 3) : module.kms[0].kms_instance_guid
+  existing_kms_instance_crn_split = split(":", var.existing_kms_instance_crn)
+  existing_kms_instance_guid      = element(local.existing_kms_instance_crn_split, length(local.existing_kms_instance_crn_split) - 3)
+  existing_kms_instance_region    = element(local.existing_kms_instance_crn_split, length(local.existing_kms_instance_crn_split) - 5)
 }
-
 
 module "resource_group" {
   source                       = "terraform-ibm-modules/resource-group/ibm"
@@ -21,8 +20,8 @@ module "kms" {
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
   version                     = "4.13.1"
   create_key_protect_instance = false
-  region                      = local.kms_region
-  existing_kms_instance_guid  = local.kms_instance_guid
+  region                      = local.existing_kms_instance_region
+  existing_kms_instance_guid  = local.existing_kms_instance_guid
   key_ring_endpoint_type      = var.kms_endpoint_type
   key_endpoint_type           = var.kms_endpoint_type
   keys = [
@@ -55,7 +54,7 @@ module "elasticsearch" {
   plan                          = var.plan
   skip_iam_authorization_policy = var.skip_iam_authorization_policy
   elasticsearch_version         = var.elasticsearch_version
-  existing_kms_instance_guid    = local.kms_instance_guid
+  existing_kms_instance_guid    = local.existing_kms_instance_guid
   kms_key_crn                   = local.kms_key_crn
   access_tags                   = var.access_tags
   tags                          = var.tags
