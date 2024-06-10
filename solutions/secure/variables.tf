@@ -98,12 +98,6 @@ variable "tags" {
   default     = []
 }
 
-variable "kms_region" {
-  type        = string
-  default     = "us-south"
-  description = "The region in which KMS instance exists."
-}
-
 variable "kms_endpoint_type" {
   type        = string
   description = "The type of endpoint to be used for commincating with the KMS instance. Allowed values are: 'public' or 'private' (default)"
@@ -120,8 +114,8 @@ variable "existing_kms_key_crn" {
   default     = null
 }
 
-variable "existing_kms_instance_guid" {
-  description = "The GUID of an existing Hyper Protect or Key Protect instance in the same account as the Elasticsearch database instance. Always used to create an authorization policy and if 'existing_kms_key_crn' is not specified also used to create a KMS root key"
+variable "existing_kms_instance_crn" {
+  description = "The CRN of an existing Hyper Protect or Key Protect instance in the same account as the Elasticsearch database instance. Always used to create an authorization policy and if 'existing_kms_key_crn' is not specified also used to create a KMS root key"
   type        = string
   default     = null
 }

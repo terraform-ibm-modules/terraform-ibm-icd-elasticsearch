@@ -89,11 +89,11 @@ func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOpt
 	})
 
 	options.TerraformVars = map[string]interface{}{
-		"access_tags":                permanentResources["accessTags"],
-		"existing_kms_instance_guid": permanentResources["hpcs_south"],
-		"kms_endpoint_type":          "public",
-		"resource_group_name":        options.Prefix,
-		"name":                       options.Prefix,
+		"access_tags":               permanentResources["accessTags"],
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"kms_endpoint_type":         "public",
+		"resource_group_name":       options.Prefix,
+		"name":                      options.Prefix,
 	}
 
 	return options
