@@ -11,12 +11,19 @@ variable "existing_resource_group" {
 
 variable "resource_group_name" {
   type        = string
-  description = "The name of a new or an existing resource group in which to provision the Databases for Elasicsearch in."
+  description = "The name of a new or an existing resource group in which to provision the Databases for Elasicsearch in.  If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
+}
+
+variable "prefix" {
+  type        = string
+  description = "Prefix to add to all resources created by this solution."
+  default     = null
 }
 
 variable "name" {
-  description = "The name of the Elasticsearch instance"
   type        = string
+  description = "The name of the Databases for Elasticsearch instance. If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
+  default     = "elasticsearch"
 }
 
 variable "region" {
@@ -129,13 +136,13 @@ variable "skip_iam_authorization_policy" {
 variable "elasticsearch_key_ring_name" {
   type        = string
   default     = "elasticsearch-key-ring"
-  description = "The name to give the Key Ring which will be created for the Elasticsearch Key. Not used if supplying an existing Key."
+  description = "The name to give the key ring that is created for the Databases for Elasticsearch key. Not used if `existing_kms_key_crn` is specified. If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
 }
 
 variable "elasticsearch_key_name" {
   type        = string
   default     = "elasticsearch-key"
-  description = "The name to give the Key which will be created for the Elasticsearch. Not used if supplying an existing Key."
+  description = "The name to give the key that is created for the Databases for Elasticsearch key. Not used if `existing_kms_key_crn` is specified. If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
 }
 
 variable "auto_scaling" {
