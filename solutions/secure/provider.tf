@@ -4,3 +4,11 @@ provider "ibm" {
   region           = var.region
   ibmcloud_timeout = 60
 }
+
+provider "restapi" {
+  uri = "https://"
+  headers = {
+    "Content-Type" = "application/json"
+  }
+  write_returns_object = true
+}

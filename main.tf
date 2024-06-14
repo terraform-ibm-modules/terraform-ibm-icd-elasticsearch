@@ -215,3 +215,20 @@ data "ibm_database_connection" "database_connection" {
   user_id       = ibm_database.elasticsearch.adminuser
   user_type     = "database"
 }
+
+resource "restapi_object" "put_trained_model" {
+  path          = "${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}/_ml/trained_models/.elser_model_1?pretty"
+  create_method = "PUT"
+  data = jsonencode({
+    input = {
+      field_names = ["text_field"]
+    }
+  })
+}
+
+resource "restapi_object" "start_trained_model_deployment" {
+  path          = "${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}/_ml/trained_models/.elser_model_1/deployment/_start?deployment_id=for_search&pretty"
+  create_method = "POST"
+
+  data = jsonencode({})
+}
