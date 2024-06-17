@@ -171,3 +171,9 @@ variable "auto_scaling" {
   description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. See https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling&interface=cli#autoscaling-considerations in the IBM Cloud Docs."
   default     = null
 }
+
+variable "enable_elser_model" {
+  type        = bool
+  description = "Set it to true to install and start the elser model"
+  default     = true
+}

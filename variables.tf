@@ -242,3 +242,9 @@ variable "backup_crn" {
     error_message = "backup_crn must be null OR starts with 'crn:' and contains ':backup:'"
   }
 }
+
+variable "enable_elser_model" {
+  type        = bool
+  description = "Set it to true to install and start the elser model"
+  default     = false
+}

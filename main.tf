@@ -217,6 +217,7 @@ data "ibm_database_connection" "database_connection" {
 }
 
 resource "restapi_object" "put_trained_model" {
+  count         = var.enable_elser_model ? 1 : 0
   path          = "${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}/_ml/trained_models/.elser_model_1?pretty"
   create_method = "PUT"
   data = jsonencode({
@@ -227,6 +228,7 @@ resource "restapi_object" "put_trained_model" {
 }
 
 resource "restapi_object" "start_trained_model_deployment" {
+  count         = var.enable_elser_model ? 1 : 0
   path          = "${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}/_ml/trained_models/.elser_model_1/deployment/_start?deployment_id=for_search&pretty"
   create_method = "POST"
 
