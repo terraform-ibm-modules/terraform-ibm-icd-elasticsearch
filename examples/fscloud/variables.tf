@@ -95,3 +95,9 @@ variable "auto_scaling" {
     }
   }
 }
+
+variable "enable_elser_model" {
+  type        = bool
+  description = "Set it to true to install and start the elser model"
+  default     = false
+}
