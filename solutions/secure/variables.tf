@@ -58,7 +58,7 @@ variable "members" {
 
 variable "member_memory_mb" {
   type        = number
-  description = "The memory per member that is allocated. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
+  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
   default     = 4096
 }
 
