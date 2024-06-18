@@ -4,7 +4,7 @@ provider "ibm" {
 }
 
 provider "restapi" {
-  uri = "https://"
+  uri = "https:"
   headers = {
     authorization  = var.ibmcloud_api_key
     "Content-Type" = "application/json"
