@@ -99,7 +99,7 @@ variable "member_disk_mb" {
 
 variable "member_host_flavor" {
   type        = string
-  description = "Allocated host flavor per member. For more information, see https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor"
+  description = "Allocated host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
   default     = null
   # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
