@@ -2,6 +2,8 @@
 package test
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"log"
 	"os"
 	"testing"
@@ -80,6 +82,14 @@ func TestRunFSCloudExample(t *testing.T) {
 
 func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOptions {
 
+	// Generate a 15 char long random string for the admin_pass
+	randomBytes := make([]byte, 13)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
+
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:       t,
 		TerraformDir:  secureSolutionTerraformDir,
@@ -93,6 +103,7 @@ func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOpt
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
 		"kms_endpoint_type":         "public",
 		"resource_group_name":       options.Prefix,
+		"admin_pass":                randomPass,
 	}
 
 	return options
