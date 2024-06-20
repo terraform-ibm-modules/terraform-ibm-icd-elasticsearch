@@ -8,11 +8,11 @@ terraform {
     }
     time = {
       source  = "hashicorp/time"
-      version = ">= 0.9.1"
+      version = ">= 0.9.1, <1.0.0"
     }
     restapi = {
       source  = "Mastercard/restapi"
-      version = ">= 1.19.1"
+      version = ">= 1.19.1, <2.0.0"
     }
   }
 }

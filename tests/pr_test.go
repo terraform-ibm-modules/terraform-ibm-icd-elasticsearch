@@ -4,6 +4,7 @@ package test
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -13,6 +14,7 @@ import (
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/cloudinfo"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
+	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testschematic"
 )
 
 const completeExampleTerraformDir = "examples/complete"
@@ -80,7 +82,8 @@ func TestRunFSCloudExample(t *testing.T) {
 	options.TestTearDown()
 }
 
-func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOptions {
+func TestRunSecureSolutionSchematics(t *testing.T) {
+	t.Parallel()
 
 	// Generate a 15 char long random string for the admin_pass
 	randomBytes := make([]byte, 13)
@@ -90,43 +93,25 @@ func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOpt
 	}
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 
-	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:       t,
-		TerraformDir:  secureSolutionTerraformDir,
-		Region:        "us-south",
-		Prefix:        prefix,
-		ResourceGroup: resourceGroup,
+	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
+		Testing:                t,
+		TarIncludePatterns:     []string{"*.tf", fmt.Sprintf("%s/*.tf", secureSolutionTerraformDir)},
+		TemplateFolder:         secureSolutionTerraformDir,
+		Region:                 "us-south",
+		Prefix:                 "els-sr-da",
+		ResourceGroup:          resourceGroup,
+		DeleteWorkspaceOnFail:  false,
+		WaitJobCompleteMinutes: 60,
 	})
 
-	options.TerraformVars = map[string]interface{}{
-		"access_tags":               permanentResources["accessTags"],
-		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
-		"kms_endpoint_type":         "public",
-		"resource_group_name":       options.Prefix,
-		"admin_pass":                randomPass,
+	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
+		{Name: "kms_endpoint_type", Value: "public", DataType: "string"},
+		{Name: "resource_group_name", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass", Value: randomPass, DataType: "string"},
 	}
 
-	return options
-}
-
-func TestRunSecureSolution(t *testing.T) {
-	t.Parallel()
-
-	options := setupOptionsSecureSolution(t, "els-sr-da")
-
-	output, err := options.RunTestConsistency()
+	err = options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
-}
-
-func TestRunSecureUpgradeSolution(t *testing.T) {
-	t.Parallel()
-
-	options := setupOptionsSecureSolution(t, "els-sr-da-upg")
-
-	output, err := options.RunTestUpgrade()
-	if !options.UpgradeTestSkipped {
-		assert.Nil(t, err, "This should not have errored")
-		assert.NotNil(t, output, "Expected some output")
-	}
 }
