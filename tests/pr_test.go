@@ -120,19 +120,20 @@ func TestRunSecureUpgradeSolution(t *testing.T) {
 	}
 }
 
-func TestRunBasicExampleWithFlavor(t *testing.T) {
+func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
 		TerraformDir:       "examples/basic",
-		Prefix:             "elastic-flvr",
-		BestRegionYAMLPath: regionSelectionPath,
+		Prefix:             "es-test",
 		ResourceGroup:      resourceGroup,
+		BestRegionYAMLPath: regionSelectionPath,
+		CloudInfoService:   sharedInfoSvc,
+
 		TerraformVars: map[string]interface{}{
-			"member_host_flavor": "b3c.4x16.encrypted",
+			"elasticsearch_version": "8.12", // Always lock this test into the latest supported elasticsearch version
 		},
-		CloudInfoService: sharedInfoSvc,
 	})
 
 	output, err := options.RunTestConsistency()

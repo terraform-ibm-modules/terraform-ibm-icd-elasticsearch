@@ -21,6 +21,4 @@ module "icd_elasticsearch" {
   elasticsearch_version = var.elasticsearch_version
   tags                  = var.resource_tags
   access_tags           = var.access_tags
-  member_host_flavor    = var.member_host_flavor
-  member_memory_mb      = var.member_memory_mb
 }

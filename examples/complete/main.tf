@@ -61,6 +61,8 @@ module "icd_elasticsearch" {
   kms_key_crn                = module.key_protect_all_inclusive.keys["icd.${var.prefix}-elasticsearch"].crn
   tags                       = var.resource_tags
   auto_scaling               = var.auto_scaling
+  member_host_flavor         = "multitenant"
+  member_memory_mb           = 4096
 }
 
 # wait 15 secs to allow IAM credential access to kick in before configuring instance

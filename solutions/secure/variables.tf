@@ -74,6 +74,18 @@ variable "member_disk_mb" {
   default     = 5120
 }
 
+# Use new hosting model for all DA
+variable "member_host_flavor" {
+  type        = string
+  description = "The host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  default     = "multitenant"
+  # Prevent null or "", require multitenant or a machine type
+  validation {
+    condition     = (length(var.member_host_flavor) > 0)
+    error_message = "Member host flavor must be specified. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  }
+}
+
 variable "service_credential_names" {
   description = "The map of name, role for service credentials that you want to create for the database"
   type        = map(string)

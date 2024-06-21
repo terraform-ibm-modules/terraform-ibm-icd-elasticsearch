@@ -74,10 +74,11 @@ module "elasticsearch" {
   kms_key_crn                   = local.kms_key_crn
   access_tags                   = var.access_tags
   tags                          = var.tags
-  members                       = var.members
-  member_memory_mb              = var.member_memory_mb
   admin_pass                    = var.admin_pass
   users                         = var.users
+  members                       = var.members
+  member_host_flavor            = var.member_host_flavor
+  member_memory_mb              = var.member_memory_mb
   member_disk_mb                = var.member_disk_mb
   member_cpu_count              = var.member_cpu_count
   auto_scaling                  = var.auto_scaling
