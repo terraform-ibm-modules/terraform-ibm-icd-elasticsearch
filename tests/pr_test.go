@@ -5,12 +5,16 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/cloudinfo"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
@@ -82,6 +86,47 @@ func TestRunFSCloudExample(t *testing.T) {
 	options.TestTearDown()
 }
 
+type tarIncludePatterns struct {
+	excludeDirs []string
+
+	includeFiletypes []string
+
+	includeDirs []string
+}
+
+func getTarIncludePatternsRecursively(dir string, dirsToExclude []string, fileTypesToInclude []string) ([]string, error) {
+	r := tarIncludePatterns{dirsToExclude, fileTypesToInclude, nil}
+	err := filepath.WalkDir(dir, func(path string, entry fs.DirEntry, err error) error {
+		return walk(&r, path, entry, err)
+	})
+	if err != nil {
+		fmt.Println("error")
+		return r.includeDirs, err
+	}
+	return r.includeDirs, nil
+}
+
+func walk(r *tarIncludePatterns, s string, d fs.DirEntry, err error) error {
+	if err != nil {
+		return err
+	}
+	if d.IsDir() {
+		for _, excludeDir := range r.excludeDirs {
+			if strings.Contains(s, excludeDir) {
+				return nil
+			}
+		}
+		if s == ".." {
+			r.includeDirs = append(r.includeDirs, "*.tf")
+			return nil
+		}
+		for _, includeFiletype := range r.includeFiletypes {
+			r.includeDirs = append(r.includeDirs, strings.ReplaceAll(s+"/*"+includeFiletype, "../", ""))
+		}
+	}
+	return nil
+}
+
 func TestRunSecureSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
@@ -93,9 +138,32 @@ func TestRunSecureSolutionSchematics(t *testing.T) {
 	}
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 
+	excludeDirs := []string{
+		".terraform",
+		".docs",
+		".github",
+		".git",
+		".idea",
+		"common-dev-assets",
+		"examples",
+		"tests",
+		"reference-architectures",
+	}
+	includeFiletypes := []string{
+		".tf",
+		".yaml",
+		".py",
+		".tpl",
+	}
+
+	tarIncludePatterns, recurseErr := getTarIncludePatternsRecursively("..", excludeDirs, includeFiletypes)
+
+	// if error producing tar patterns (very unexpected) fail test immediately
+	require.NoError(t, recurseErr, "Schematic Test had unexpected error traversing directory tree")
+
 	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
 		Testing:                t,
-		TarIncludePatterns:     []string{"*.tf", fmt.Sprintf("%s/*.tf", secureSolutionTerraformDir)},
+		TarIncludePatterns:     tarIncludePatterns,
 		TemplateFolder:         secureSolutionTerraformDir,
 		Region:                 "us-south",
 		Prefix:                 "els-sr-da",
@@ -105,6 +173,7 @@ func TestRunSecureSolutionSchematics(t *testing.T) {
 	})
 
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "public", DataType: "string"},
