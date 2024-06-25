@@ -6,7 +6,10 @@ provider "ibm" {
 provider "restapi" {
   uri = "https:"
   headers = {
-    "Content-Type" = "application/json"
+    Accept        = "application/json"
+    Content-Type = "application/json"
   }
   write_returns_object = true
+  create_returns_object = false
+  insecure = true
 }

@@ -225,6 +225,7 @@ resource "restapi_object" "put_trained_model" {
       field_names = ["text_field"]
     }
   })
+  object_id = data.ibm_database_connection.database_connection.id
 }
 
 resource "restapi_object" "start_trained_model_deployment" {
@@ -234,4 +235,5 @@ resource "restapi_object" "start_trained_model_deployment" {
   create_method = "POST"
 
   data = jsonencode({})
+  object_id = data.ibm_database_connection.database_connection.id
 }

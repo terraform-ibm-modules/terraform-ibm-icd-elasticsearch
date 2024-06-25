@@ -35,7 +35,7 @@ variable "region" {
 variable "plan" {
   type        = string
   description = "The name of the service plan that you choose for your Elasticsearch instance. The supported plans are - enterprise and platinum"
-  default     = "enterprise"
+  default     = "platinum"
 }
 
 variable "elasticsearch_version" {
@@ -59,13 +59,13 @@ variable "members" {
 variable "member_memory_mb" {
   type        = number
   description = "The memory per member that is allocated. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
-  default     = 1024
+  default     = 2048
 }
 
 variable "member_cpu_count" {
   type        = number
   description = "The dedicated CPU per member that is allocated. For shared CPU, set to 0. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
-  default     = 0
+  default     = 3
 }
 
 variable "member_disk_mb" {
