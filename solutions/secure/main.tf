@@ -19,7 +19,7 @@ locals {
 
 module "resource_group" {
   source                       = "terraform-ibm-modules/resource-group/ibm"
-  version                      = "1.1.5"
+  version                      = "1.1.6"
   resource_group_name          = var.existing_resource_group == false ? (var.prefix != null ? "${var.prefix}-${var.resource_group_name}" : var.resource_group_name) : null
   existing_resource_group_name = var.existing_resource_group == true ? var.resource_group_name : null
 }
@@ -34,7 +34,7 @@ module "kms" {
   }
   count                       = var.existing_kms_key_crn != null ? 0 : 1 # no need to create any KMS resources if passing an existing key
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version                     = "4.13.2"
+  version                     = "4.13.4"
   create_key_protect_instance = false
   region                      = local.existing_kms_instance_region
   existing_kms_instance_guid  = local.existing_kms_instance_guid
@@ -74,10 +74,11 @@ module "elasticsearch" {
   kms_key_crn                   = local.kms_key_crn
   access_tags                   = var.access_tags
   tags                          = var.tags
-  members                       = var.members
-  member_memory_mb              = var.member_memory_mb
   admin_pass                    = var.admin_pass
   users                         = var.users
+  members                       = var.members
+  member_host_flavor            = var.member_host_flavor
+  member_memory_mb              = var.member_memory_mb
   member_disk_mb                = var.member_disk_mb
   member_cpu_count              = var.member_cpu_count
   auto_scaling                  = var.auto_scaling
