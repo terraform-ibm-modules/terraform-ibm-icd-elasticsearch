@@ -58,8 +58,8 @@ variable "members" {
 
 variable "member_memory_mb" {
   type        = number
-  description = "The memory per member that is allocated. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
-  default     = 1024
+  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
+  default     = 4096
 }
 
 variable "member_cpu_count" {
@@ -72,6 +72,18 @@ variable "member_disk_mb" {
   type        = number
   description = "The disk that is allocated per-member. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
   default     = 5120
+}
+
+# Use new hosting model for all DA
+variable "member_host_flavor" {
+  type        = string
+  description = "The host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  default     = "multitenant"
+  # Prevent null or "", require multitenant or a machine type
+  validation {
+    condition     = (length(var.member_host_flavor) > 0)
+    error_message = "Member host flavor must be specified. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  }
 }
 
 variable "service_credential_names" {

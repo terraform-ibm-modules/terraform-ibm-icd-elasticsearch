@@ -29,10 +29,12 @@ module "key_protect_all_inclusive" {
   resource_tags             = var.resource_tags
   keys = [
     {
-      key_ring_name = "icd"
+      key_ring_name         = "icd"
+      force_delete_key_ring = true
       keys = [
         {
-          key_name = "${var.prefix}-elasticsearch"
+          key_name     = "${var.prefix}-elasticsearch"
+          force_delete = true
         }
       ]
     }
@@ -59,6 +61,8 @@ module "icd_elasticsearch" {
   kms_key_crn                = module.key_protect_all_inclusive.keys["icd.${var.prefix}-elasticsearch"].crn
   tags                       = var.resource_tags
   auto_scaling               = var.auto_scaling
+  member_host_flavor         = "multitenant"
+  member_memory_mb           = 4096
 }
 
 # wait 15 secs to allow IAM credential access to kick in before configuring instance

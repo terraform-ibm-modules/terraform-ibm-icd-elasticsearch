@@ -65,6 +65,7 @@ module "elasticsearch" {
   elasticsearch_version      = var.elasticsearch_version
   service_credential_names   = var.service_credential_names
   auto_scaling               = var.auto_scaling
+  member_host_flavor         = "b3c.4x16.encrypted"
   cbr_rules = [
     {
       description      = "${var.prefix}-elasticsearch access only from vpc"
