@@ -279,6 +279,6 @@ resource "restapi_object" "start_trained_model_deployment" {
   path          = "//admin:${ibm_database.elasticsearch.adminpassword}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}/_ml/trained_models/.elser_model_1/deployment/_start?deployment_id=for_search&pretty"
   create_method = "POST"
 
-  data = jsonencode({})
+  data      = jsonencode({})
   object_id = data.ibm_database_connection.database_connection.id
 }
