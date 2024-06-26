@@ -104,6 +104,10 @@
                   "default_value": "",
                   "options": [
                     {
+                      "displayname": "Chennai (che01)",
+                      "value": "che01"
+                    },
+                    {
                       "displayname": "Dallas (us-south)",
                       "value": "us-south"
                     },
@@ -124,8 +128,20 @@
                       "value": "jp-osa"
                     },
                     {
+                      "displayname": "Paris (par01)",
+                      "value": "par01"
+                    },
+                    {
+                      "displayname": "Sao Paulo (br-sao)",
+                      "value": "br-sao"
+                    },
+                    {
                       "displayname": "Sydney (au-syd)",
                       "value": "au-syd"
+                    },
+                    {
+                      "displayname": "Toronto (ca-tor)",
+                      "value": "ca-tor"
                     },
                     {
                       "displayname": "Tokyo (jp-tok)",
