@@ -141,7 +141,17 @@
                   "key": "name"
                 },
                 {
-                  "key": "plan"
+                  "key": "plan",
+                  "options": [
+                    {
+                      "displayname": "enterprise",
+                      "value": "enterprise"
+                    },
+                    {
+                      "displayname": "platinum",
+                      "value": "platinum"
+                    }
+                  ]
                 },
                 {
                   "key": "elasticsearch_version"
@@ -193,7 +203,8 @@
                   ]
                 },
                 {
-                  "key": "existing_kms_key_crn"
+                  "key": "existing_kms_key_crn",
+                  "required": true
                 },
                 {
                   "key": "existing_kms_instance_crn"
