@@ -273,8 +273,13 @@ resource "restapi_object" "put_trained_model" {
   object_id = data.ibm_database_connection.database_connection.id
 }
 
+resource "time_sleep" "wait_for_put_trained_model" {
+  depends_on      = [restapi_object.put_trained_model]
+  create_duration = "300s"
+}
+
 resource "restapi_object" "start_trained_model_deployment" {
-  depends_on    = [restapi_object.put_trained_model]
+  depends_on    = [time_sleep.wait_for_put_trained_model]
   count         = var.enable_elser_model ? 1 : 0
   path          = "//admin:${ibm_database.elasticsearch.adminpassword}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}/_ml/trained_models/.elser_model_1/deployment/_start?deployment_id=for_search&pretty"
   create_method = "POST"

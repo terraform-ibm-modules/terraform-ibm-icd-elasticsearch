@@ -78,7 +78,7 @@ variable "member_disk_mb" {
 variable "member_host_flavor" {
   type        = string
   description = "The host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
-  default     = "multitenant"
+  default     = "b3c.4x16.encrypted"
   # Prevent null or "", require multitenant or a machine type
   validation {
     condition     = (length(var.member_host_flavor) > 0)

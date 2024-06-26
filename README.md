@@ -81,6 +81,7 @@ You need the following permissions to run this module.
 | [restapi_object.put_trained_model](https://registry.terraform.io/providers/Mastercard/restapi/latest/docs/resources/object) | resource |
 | [restapi_object.start_trained_model_deployment](https://registry.terraform.io/providers/Mastercard/restapi/latest/docs/resources/object) | resource |
 | [time_sleep.wait_for_authorization_policy](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
+| [time_sleep.wait_for_put_trained_model](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
 | [ibm_database_connection.database_connection](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/data-sources/database_connection) | data source |
 
 ### Inputs
