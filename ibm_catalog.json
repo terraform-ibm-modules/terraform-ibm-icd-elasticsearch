@@ -84,7 +84,130 @@
                   "description": "This architecture supports creating and configuring an Elasticsearch instance with KMS encryption."
                 }
               ]
-            }
+            },
+            "configuration": [
+                {
+                  "key": "ibmcloud_api_key"
+                },
+                {
+                  "key": "existing_resource_group"
+                },
+                {
+                  "key": "resource_group_name"
+                },
+                {
+                  "key": "prefix"
+                },
+                {
+                  "key": "region",
+                  "required": true,
+                  "default_value": "",
+                  "options": [
+                    {
+                      "displayname": "Dallas (us-south)",
+                      "value": "us-south"
+                    },
+                    {
+                      "displayname": "Frankfurt (eu-de)",
+                      "value": "eu-de"
+                    },
+                    {
+                      "displayname": "London (eu-gb)",
+                      "value": "eu-gb"
+                    },
+                    {
+                      "displayname": "Madrid (eu-es)",
+                      "value": "eu-es"
+                    },
+                    {
+                      "displayname": "Osaka (jp-osa)",
+                      "value": "jp-osa"
+                    },
+                    {
+                      "displayname": "Sydney (au-syd)",
+                      "value": "au-syd"
+                    },
+                    {
+                      "displayname": "Tokyo (jp-tok)",
+                      "value": "jp-tok"
+                    },
+                    {
+                      "displayname": "Washington (us-east)",
+                      "value": "us-east"
+                    }
+                  ]
+                },
+                {
+                  "key": "name"
+                },
+                {
+                  "key": "plan"
+                },
+                {
+                  "key": "elasticsearch_version"
+                },
+                {
+                  "key": "access_tags"
+                },
+                {
+                  "key": "tags"
+                },
+                {
+                  "key": "users"
+                },
+                {
+                  "key": "members"
+                },
+                {
+                  "key": "member_memory_mb"
+                },
+                {
+                  "key": "member_cpu_count"
+                },
+                {
+                  "key": "member_disk_mb"
+                },
+                {
+                  "key": "member_host_flavor"
+                },
+                {
+                  "key": "service_credential_names"
+                },
+                {
+                  "key": "admin_pass"
+                },
+                {
+                  "key": "skip_iam_authorization_policy"
+                },
+                {
+                  "key": "kms_endpoint_type",
+                  "options": [
+                    {
+                      "displayname": "public",
+                      "value": "public"
+                    },
+                    {
+                      "displayname": "private",
+                      "value": "private"
+                    }
+                  ]
+                },
+                {
+                  "key": "existing_kms_key_crn"
+                },
+                {
+                  "key": "existing_kms_instance_crn"
+                },
+                {
+                  "key": "elasticsearch_key_ring_name"
+                },
+                {
+                  "key": "elasticsearch_key_name"
+                },
+                {
+                  "key": "auto_scaling"
+                }
+              ]
           }
         ]
       }
