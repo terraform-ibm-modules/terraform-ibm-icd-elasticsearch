@@ -24,4 +24,5 @@ module "elasticsearch" {
   member_host_flavor            = var.member_host_flavor
   auto_scaling                  = var.auto_scaling
   service_credential_names      = var.service_credential_names
+  enable_elser_model            = var.enable_elser_model
 }

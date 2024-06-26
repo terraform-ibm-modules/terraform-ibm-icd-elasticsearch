@@ -9,3 +9,14 @@ provider "elasticsearch" {
   url         = "https://${module.icd_elasticsearch.service_credentials_object.hostname}:${module.icd_elasticsearch.service_credentials_object.port}"
   cacert_file = base64decode(module.icd_elasticsearch.service_credentials_object.certificate)
 }
+
+provider "restapi" {
+  uri = "https:"
+  headers = {
+    Accept       = "application/json"
+    Content-Type = "application/json"
+  }
+  write_returns_object  = true
+  create_returns_object = false
+  insecure              = true
+}

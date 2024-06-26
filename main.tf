@@ -8,6 +8,8 @@ locals {
   validate_auth_policy = var.kms_encryption_enabled && var.skip_iam_authorization_policy == false && var.existing_kms_instance_guid == null ? tobool("When var.skip_iam_authorization_policy is set to false, and var.kms_encryption_enabled to true, a value must be passed for var.existing_kms_instance_guid in order to create the auth policy.") : true
   # tflint-ignore: terraform_unused_declarations
   validate_backup_key = var.backup_encryption_key_crn != null && var.use_default_backup_encryption_key == true ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to 'true'") : true
+  # tflint-ignore: terraform_unused_declarations
+  validate_plan = var.enable_elser_model && var.plan == "enterprise" ? tobool("When enabling elser configuration , var.plan should be 'platinum'") : true
 
   # If no value passed for 'backup_encryption_key_crn' use the value of 'kms_key_crn'. If this is a HPCS key (which is not currently supported for backup encryption), default to 'null' meaning encryption is done using randomly generated keys
   # More info https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs
@@ -259,4 +261,31 @@ data "ibm_database_connection" "database_connection" {
   deployment_id = ibm_database.elasticsearch.id
   user_id       = ibm_database.elasticsearch.adminuser
   user_type     = "database"
+}
+
+resource "restapi_object" "put_trained_model" {
+  count         = var.enable_elser_model ? 1 : 0
+  path          = "//admin:${ibm_database.elasticsearch.adminpassword}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}/_ml/trained_models/.elser_model_1?pretty"
+  create_method = "PUT"
+  data = jsonencode({
+    input = {
+      field_names = ["text_field"]
+    }
+  })
+  object_id = data.ibm_database_connection.database_connection.id
+}
+
+resource "time_sleep" "wait_for_put_trained_model" {
+  depends_on      = [restapi_object.put_trained_model]
+  create_duration = "300s"
+}
+
+resource "restapi_object" "start_trained_model_deployment" {
+  depends_on    = [time_sleep.wait_for_put_trained_model]
+  count         = var.enable_elser_model ? 1 : 0
+  path          = "//admin:${ibm_database.elasticsearch.adminpassword}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}/_ml/trained_models/.elser_model_1/deployment/_start?deployment_id=for_search&pretty"
+  create_method = "POST"
+
+  data      = jsonencode({})
+  object_id = data.ibm_database_connection.database_connection.id
 }
