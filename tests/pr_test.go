@@ -89,11 +89,10 @@ func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOpt
 	})
 
 	options.TerraformVars = map[string]interface{}{
-		"access_tags":                permanentResources["accessTags"],
-		"existing_kms_instance_guid": permanentResources["hpcs_south"],
-		"kms_endpoint_type":          "public",
-		"resource_group_name":        options.Prefix,
-		"name":                       options.Prefix,
+		"access_tags":               permanentResources["accessTags"],
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"kms_endpoint_type":         "public",
+		"resource_group_name":       options.Prefix,
 	}
 
 	return options
@@ -119,4 +118,25 @@ func TestRunSecureUpgradeSolution(t *testing.T) {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
 	}
+}
+
+func TestRunBasicExample(t *testing.T) {
+	t.Parallel()
+
+	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
+		Testing:            t,
+		TerraformDir:       "examples/basic",
+		Prefix:             "es-test",
+		ResourceGroup:      resourceGroup,
+		BestRegionYAMLPath: regionSelectionPath,
+		CloudInfoService:   sharedInfoSvc,
+
+		TerraformVars: map[string]interface{}{
+			"elasticsearch_version": "8.12", // Always lock this test into the latest supported elasticsearch version
+		},
+	})
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
 }

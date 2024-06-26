@@ -11,12 +11,19 @@ variable "existing_resource_group" {
 
 variable "resource_group_name" {
   type        = string
-  description = "The name of a new or an existing resource group in which to provision the Databases for Elasicsearch in."
+  description = "The name of a new or an existing resource group in which to provision the Databases for Elasicsearch in.  If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
+}
+
+variable "prefix" {
+  type        = string
+  description = "Prefix to add to all resources created by this solution."
+  default     = null
 }
 
 variable "name" {
-  description = "The name of the Elasticsearch instance"
   type        = string
+  description = "The name of the Databases for Elasticsearch instance. If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
+  default     = "elasticsearch"
 }
 
 variable "region" {
@@ -51,8 +58,8 @@ variable "members" {
 
 variable "member_memory_mb" {
   type        = number
-  description = "The memory per member that is allocated. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
-  default     = 1024
+  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
+  default     = 4096
 }
 
 variable "member_cpu_count" {
@@ -65,6 +72,18 @@ variable "member_disk_mb" {
   type        = number
   description = "The disk that is allocated per-member. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
   default     = 5120
+}
+
+# Use new hosting model for all DA
+variable "member_host_flavor" {
+  type        = string
+  description = "The host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  default     = "multitenant"
+  # Prevent null or "", require multitenant or a machine type
+  validation {
+    condition     = (length(var.member_host_flavor) > 0)
+    error_message = "Member host flavor must be specified. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  }
 }
 
 variable "service_credential_names" {
@@ -98,12 +117,6 @@ variable "tags" {
   default     = []
 }
 
-variable "kms_region" {
-  type        = string
-  default     = "us-south"
-  description = "The region in which KMS instance exists."
-}
-
 variable "kms_endpoint_type" {
   type        = string
   description = "The type of endpoint to be used for commincating with the KMS instance. Allowed values are: 'public' or 'private' (default)"
@@ -120,8 +133,8 @@ variable "existing_kms_key_crn" {
   default     = null
 }
 
-variable "existing_kms_instance_guid" {
-  description = "The GUID of an existing Hyper Protect or Key Protect instance in the same account as the Elasticsearch database instance. Always used to create an authorization policy and if 'existing_kms_key_crn' is not specified also used to create a KMS root key"
+variable "existing_kms_instance_crn" {
+  description = "The CRN of an existing Hyper Protect or Key Protect instance in the same account as the Elasticsearch database instance. Always used to create an authorization policy and if 'existing_kms_key_crn' is not specified also used to create a KMS root key"
   type        = string
   default     = null
 }
@@ -135,13 +148,13 @@ variable "skip_iam_authorization_policy" {
 variable "elasticsearch_key_ring_name" {
   type        = string
   default     = "elasticsearch-key-ring"
-  description = "The name to give the Key Ring which will be created for the Elasticsearch Key. Not used if supplying an existing Key."
+  description = "The name to give the key ring that is created for the Databases for Elasticsearch key. Not used if `existing_kms_key_crn` is specified. If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
 }
 
 variable "elasticsearch_key_name" {
   type        = string
   default     = "elasticsearch-key"
-  description = "The name to give the Key which will be created for the Elasticsearch. Not used if supplying an existing Key."
+  description = "The name to give the key that is created for the Databases for Elasticsearch key. Not used if `existing_kms_key_crn` is specified. If a `prefix` input variable is specified, it is added to this name in the `<prefix>-value` format."
 }
 
 variable "auto_scaling" {
