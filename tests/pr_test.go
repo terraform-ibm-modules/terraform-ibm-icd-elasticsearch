@@ -15,7 +15,7 @@ import (
 
 const completeExampleTerraformDir = "examples/complete"
 const fscloudExampleTerraformDir = "examples/fscloud"
-const secureSolutionTerraformDir = "solutions/secure"
+const standardSolutionTerraformDir = "solutions/standard"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-elasticsearch"
@@ -78,11 +78,11 @@ func TestRunFSCloudExample(t *testing.T) {
 	options.TestTearDown()
 }
 
-func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOptions {
+func setupOptionsStandardSolution(t *testing.T, prefix string) *testhelper.TestOptions {
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:       t,
-		TerraformDir:  secureSolutionTerraformDir,
+		TerraformDir:  standardSolutionTerraformDir,
 		Region:        "us-south",
 		Prefix:        prefix,
 		ResourceGroup: resourceGroup,
@@ -98,20 +98,20 @@ func setupOptionsSecureSolution(t *testing.T, prefix string) *testhelper.TestOpt
 	return options
 }
 
-func TestRunSecureSolution(t *testing.T) {
+func TestRunStandardSolution(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptionsSecureSolution(t, "els-sr-da")
+	options := setupOptionsStandardSolution(t, "els-sr-da")
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
 }
 
-func TestRunSecureUpgradeSolution(t *testing.T) {
+func TestRunStandardUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptionsSecureSolution(t, "els-sr-da-upg")
+	options := setupOptionsStandardSolution(t, "els-sr-da-upg")
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {

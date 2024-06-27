@@ -17,7 +17,7 @@
           "infrastructure as code",
           "terraform",
           "solution",
-          "elasticsearch secure",
+          "elasticsearch standard",
           "database",
           "nosql"
         ],
@@ -46,10 +46,10 @@
         ],
         "flavors": [
           {
-            "label": "Secure",
-            "name": "secure",
+            "label": "Standard",
+            "name": "standard",
             "install_type": "fullstack",
-            "working_directory": "solutions/secure",
+            "working_directory": "solutions/standard",
             "compliance": {
               "authority": "scc-v3",
               "profiles": [
