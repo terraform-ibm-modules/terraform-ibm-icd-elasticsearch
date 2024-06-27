@@ -90,7 +90,7 @@
                   "key": "ibmcloud_api_key"
                 },
                 {
-                  "key": "existing_resource_group"
+                  "key": "use_existing_resource_group"
                 },
                 {
                   "key": "resource_group_name"
@@ -170,7 +170,27 @@
                   ]
                 },
                 {
-                  "key": "elasticsearch_version"
+                  "key": "elasticsearch_version",
+                  "required": true,
+                  "default_value": "",
+                  "options": [
+                    {
+                      "displayname": "v8.12 (preferred)",
+                      "value": "8.12"
+                    },
+                    {
+                      "displayname": "v8.10",
+                      "value": "8.10"
+                    },
+                    {
+                      "displayname": "v8.7",
+                      "value": "8.7"
+                    },
+                    {
+                      "displayname": "v7.17 (deprecated)",
+                      "value": "7.17"
+                    }
+                  ]
                 },
                 {
                   "key": "access_tags"

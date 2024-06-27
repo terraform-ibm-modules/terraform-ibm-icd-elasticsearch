@@ -3,7 +3,7 @@ variable "ibmcloud_api_key" {
   description = "The IBM cloud api key"
   sensitive   = true
 }
-variable "existing_resource_group" {
+variable "use_existing_resource_group" {
   type        = bool
   description = "Whether to use an existing resource group."
   default     = false
@@ -41,7 +41,6 @@ variable "plan" {
 variable "elasticsearch_version" {
   description = "The version of the Elasticsearch instance. If no value is passed, the current preferred version of IBM Cloud Databases is used."
   type        = string
-  default     = "8.12"
 }
 
 variable "access_tags" {
