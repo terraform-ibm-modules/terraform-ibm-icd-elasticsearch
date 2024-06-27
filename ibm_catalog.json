@@ -90,7 +90,7 @@
                   "key": "ibmcloud_api_key"
                 },
                 {
-                  "key": "existing_resource_group"
+                  "key": "use_existing_resource_group"
                 },
                 {
                   "key": "resource_group_name"

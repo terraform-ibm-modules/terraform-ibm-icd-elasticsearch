@@ -3,7 +3,7 @@ variable "ibmcloud_api_key" {
   description = "The IBM cloud api key"
   sensitive   = true
 }
-variable "existing_resource_group" {
+variable "use_existing_resource_group" {
   type        = bool
   description = "Whether to use an existing resource group."
   default     = false
