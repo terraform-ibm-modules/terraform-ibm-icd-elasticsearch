@@ -20,14 +20,19 @@ The default value for the `service_credential_names` variable is an empty map (`
 
 **Sample Examples:**
 
-```json
+Example with single role:
+
+```hcl
   {
     "elastic_user_1" = "Viewer"
   }
 ```
-```json
+
+Example with more than one role:
+
+```hcl
   {
-    "elastic_user_2" = "Editor"
+    "elastic_user_2" = ["Editor", "Operator"]
   }
 ```
 
@@ -55,18 +60,19 @@ The default value for the `users` variable is an empty list (`[]`).
 The `users` variable is marked as sensitive due to the inclusion of passwords.
 
 **Sample Example:** The below example shows the list of two users where one of the users is not provided the optional `role` value.
-```json
+
+```hcl
 [
     {
       name     = "es_admin"
-      password = "securepassword123" # pragma: allowlist secret
-      type     = "admin"
-      role     = "admin"
+      password = "securepassword123"
+      type     = "Administrator"
+      role     = "Administrator"
     },
     {
       name     = "es_reader"
-      password = "readpassword123" # pragma: allowlist secret
-      type     = "reader"
+      password = "readpassword123"
+      type     = "Operator"
     }
 ]
 ```
@@ -117,29 +123,27 @@ The disk object within `auto_scaling` contains the following properties:
 
 **Sample Example:** Below example is to illustrate how to use both disk and memory configurations.
 
-```json
+```hcl
 {
-  "type": {
-    "disk": {
-      "capacity_enabled": true,
-      "free_space_less_than_percent": 15,
-      "io_above_percent": 85,
-      "io_enabled": true,
-      "io_over_period": "10m",
-      "rate_increase_percent": 20,
-      "rate_limit_mb_per_member": 5000000,
-      "rate_period_seconds": 600,
-      "rate_units": "mb"
-    },
-    "memory": {
-      "io_above_percent": 80,
-      "io_enabled": true,
-      "io_over_period": "10m",
-      "rate_increase_percent": 15,
-      "rate_limit_mb_per_member": 200000,
-      "rate_period_seconds": 600,
-      "rate_units": "mb"
-    }
+  disk {
+    capacity_enabled             = true
+    free_space_less_than_percent   = 15
+    io_above_percent             = 85
+    io_enabled                  = true
+    io_over_period               = "15m"
+    rate_increase_percent         = 15
+    rate_limit_mb_per_member     = 3670016
+    rate_period_seconds          = 900
+    rate_units                  = "mb"
+  }
+  memory {
+    io_above_percent         = 90
+    io_enabled               = true
+    io_over_period           = "15m"
+    rate_increase_percent    = 10
+    rate_limit_mb_per_member = 114688
+    rate_period_seconds      = 900
+    rate_units               = "mb"
   }
 }
 ```
