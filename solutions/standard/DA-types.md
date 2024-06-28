@@ -6,6 +6,7 @@ This document provides detailed information about the complex object types used 
 
 **Description:**
 This variable defines a map of service credential names and their corresponding roles for the Elasticsearch database. This allows for the creation of service credentials with specific roles, providing controlled access to the database.
+Reference provided for [Account Service Credentials](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui).
 
 **Type:**
 The `service_credential_names` variable is a map where the key is the name of the service credential and the value is the role assigned to that credential.
@@ -13,11 +14,22 @@ The `service_credential_names` variable is a map where the key is the name of th
 **Default Value:**
 The default value for the `service_credential_names` variable is an empty map (`{}`).
 
-### Detailed Structure:
-
 - `Key (name, required):` The name of the service credential.
 
 - `Value (role, required):` The role assigned to the service credential.
+
+**Sample Examples:**
+
+```json
+  {
+    "elastic_user_1" = "Viewer"
+  }
+```
+```json
+  {
+    "elastic_user_2" = "Editor"
+  }
+```
 
 ## 2. Users
 
@@ -31,8 +43,7 @@ The `users` variable is a list of objects, where each object represents a user w
 
  - `password (required):` The password for the user account. This password must be in the range of 10-32 characters. This field is sensitive and should be handled securely.
 
-- `type (required)`: This is to specify the type of user.
-   - The "type" field is required to generate the connection string for the outputs.
+ - `type (required)`: This is to specify the type of user. The "type" field is required to generate the connection string for the outputs.
 
  - `role (optional):` Defines the role assigned to the user, determining their access level and permissions.
 
@@ -43,6 +54,22 @@ The default value for the `users` variable is an empty list (`[]`).
 **Sensitive:**
 The `users` variable is marked as sensitive due to the inclusion of passwords.
 
+**Sample Example:** The below example shows the list of two users where one of the users is not provided the optional `role` value.
+```json
+[
+    {
+      name     = "es_admin"
+      password = "securepassword123" # pragma: allowlist secret
+      type     = "admin"
+      role     = "admin"
+    },
+    {
+      name     = "es_reader"
+      password = "readpassword123" # pragma: allowlist secret
+      type     = "reader"
+    }
+]
+```
 
 ## 3. Auto Scaling
 **Description:**
@@ -90,32 +117,29 @@ The disk object within `auto_scaling` contains the following properties:
 
 **Sample Example:** Below example is to illustrate how to use both disk and memory configurations.
 
-```hcl
-variable "auto_scaling" {
-  type = object({
-    disk = object({
-      capacity_enabled             = true
-      free_space_less_than_percent = 15
-      io_above_percent             = 85
-      io_enabled                   = true
-      io_over_period               = "10m"
-      rate_increase_percent        = 20
-      rate_limit_mb_per_member     = 5000000
-      rate_period_seconds          = 600
-      rate_units                   = "mb"
-    })
-    memory = object({
-      io_above_percent         = 80
-      io_enabled               = true
-      io_over_period           = "10m"
-      rate_increase_percent    = 15
-      rate_limit_mb_per_member = 200000
-      rate_period_seconds      = 600
-      rate_units               = "mb"
-    })
-  })
-  description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. See https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling&interface=cli#autoscaling-considerations in the IBM Cloud Docs."
-  default     = null
+```json
+{
+  "type": {
+    "disk": {
+      "capacity_enabled": true,
+      "free_space_less_than_percent": 15,
+      "io_above_percent": 85,
+      "io_enabled": true,
+      "io_over_period": "10m",
+      "rate_increase_percent": 20,
+      "rate_limit_mb_per_member": 5000000,
+      "rate_period_seconds": 600,
+      "rate_units": "mb"
+    },
+    "memory": {
+      "io_above_percent": 80,
+      "io_enabled": true,
+      "io_over_period": "10m",
+      "rate_increase_percent": 15,
+      "rate_limit_mb_per_member": 200000,
+      "rate_period_seconds": 600,
+      "rate_units": "mb"
+    }
+  }
 }
-
 ```

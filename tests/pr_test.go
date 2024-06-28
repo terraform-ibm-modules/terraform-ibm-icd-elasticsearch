@@ -101,7 +101,7 @@ func setupOptionsStandardSolution(t *testing.T, prefix string) *testhelper.TestO
 func TestRunStandardSolution(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptionsStandardSolution(t, "els-sr-da")
+	options := setupOptionsStandardSolution(t, "els-st-da")
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
@@ -111,7 +111,7 @@ func TestRunStandardSolution(t *testing.T) {
 func TestRunStandardUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptionsStandardSolution(t, "els-sr-da-upg")
+	options := setupOptionsStandardSolution(t, "els-st-da-upg")
 
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {

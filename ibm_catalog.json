@@ -174,16 +174,12 @@
                   "required": true,
                   "options": [
                     {
-                      "displayname": "v8.12",
+                      "displayname": "8.12",
                       "value": "8.12"
                     },
                     {
-                      "displayname": "v8.10",
+                      "displayname": "8.10",
                       "value": "8.10"
-                    },
-                    {
-                      "displayname": "v8.7",
-                      "value": "8.7"
                     }
                   ]
                 },
