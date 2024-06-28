@@ -41,6 +41,7 @@ variable "plan" {
 variable "elasticsearch_version" {
   description = "The version of the Elasticsearch instance. If no value is passed, the current preferred version of IBM Cloud Databases is used."
   type        = string
+  default     = null
 }
 
 variable "access_tags" {

@@ -172,10 +172,9 @@
                 {
                   "key": "elasticsearch_version",
                   "required": true,
-                  "default_value": "",
                   "options": [
                     {
-                      "displayname": "v8.12 (preferred)",
+                      "displayname": "v8.12",
                       "value": "8.12"
                     },
                     {
@@ -185,10 +184,6 @@
                     {
                       "displayname": "v8.7",
                       "value": "8.7"
-                    },
-                    {
-                      "displayname": "v7.17 (deprecated)",
-                      "value": "7.17"
                     }
                   ]
                 },
