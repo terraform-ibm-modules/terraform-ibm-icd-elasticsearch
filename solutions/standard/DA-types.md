@@ -28,7 +28,7 @@ This variable defines a list of users who have access to the Elasticsearch datab
 **Type:**
 The `users` variable is a list of objects, where each object represents a user with the following properties:
  - `name (required):` The username for the user account.
- 
+
  - `password (required):` The password for the user account. This password must be in the range of 10-32 characters. This field is sensitive and should be handled securely.
 
 - `type (required)`: This is to specify the type of user.
