@@ -10,7 +10,7 @@ Several optional input variables in the IBM Cloud [Databases for Elasticsearch d
 
 You can specify a set of IAM credentials to connect to the database with the `service_credential_names` input variable. Include a credential name and IAM service role for each key-value pair. Each role provides a specific level of access to the database. For more information, see [Adding and viewing credentials](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui).
 
-- Variable name: `service_credential_names`
+- Variable name: `service_credential_names`.
 - Type: A map. The key is the name of the service credential. The value is the role that is assigned to that credential.
 - Default value: An empty map (`{}`).
 
