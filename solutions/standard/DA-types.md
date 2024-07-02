@@ -1,24 +1,25 @@
-# IBM Cloud Elasticsearch Deployable Architecture Variables Documentation
-This document provides detailed information about the complex object types used in the IBM Cloud Elasticsearch DA (Deployable Architecture).
+# Configuring complex inputs in Databases for Elasticsearch
 
+Several optional input variables in the IBM Cloud [Databases for Elasticsearch deployable architecture](https://cloud.ibm.com/catalog#deployable_architecture) use complex object types. You specify these inputs when you configure you deployable architecture.
 
-## 1. Service Credential Names
+- [Service credentials](#svc-credential-name) (`service_credential_names`)
+- [Users](#users) (`users`)
+- [Autoscaling](#autoscaling) (`auto_scaling`)
 
-**Description:**
-This variable defines a map of service credential names and their corresponding roles for the Elasticsearch database. This allows for the creation of service credentials with specific roles, providing controlled access to the database.
-Refer [Account Service Credentials](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui).
+## Service credentials <a name="svc-credential-name"></a>
 
-**Type:**
-The `service_credential_names` variable is a map where the key is the name of the service credential and the value is the role assigned to that credential.
+You can specify a set of IAM credentials to connect to the database with the `service_credential_names` input variable. Include a credential name and IAM service role for each key-value pair. Each role provides a specific level of access to the database. For more information, see [Adding and viewing credentials](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui).
 
-**Default Value:**
-The default value for the `service_credential_names` variable is an empty map (`{}`).
+- Variable name: `service_credential_names`
+- Type: A map. The key is the name of the service credential. The value is the role that is assigned to that credential.
+- Default value: An empty map (`{}`).
 
-- `Key (name, required):` The name of the service credential.
+### Options for service_credential_names
 
-- `Value (role, required):` The role assigned to the service credential.
+- Key (required): The name of the service credential.
+- Value (required): The IAM service role that is assigned to the credential. For more information, see [IBM Cloud IAM roles](https://cloud.ibm.com/docs/account?topic=account-userroles).
 
-**Sample Examples:**
+### Example service credential
 
 Example with single role:
 
@@ -36,30 +37,26 @@ Example with more than one role:
   }
 ```
 
-## 2. Users
+## Users <a name="users"></a>
 
-**Description:**
+If you can't use the IAM-enabled `service_credential_names` input variable for access, you can create users and roles directly in the database. For more information, see [Managing users and roles](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui).
 
-This variable defines a list of users who have access to the Elasticsearch database. Each user in the list includes a name, password, type, and an optional role. This configuration creates native Elasticsearch database users.
+:exclamation: **Important:** The `users` input contains sensitive information (the user's password).
 
-**Type:**
-The `users` variable is a list of objects, where each object represents a user with the following properties:
- - `name (required):` The username for the user account.
+- Variable name: `users`.
+- Type: A list of objects that represent a user
+- Default value: An empty list (`[]`)
 
- - `password (required):` The password for the user account. This password must be in the range of 10-32 characters. This field is sensitive and should be handled securely.
+### Options for users
 
- - `type (required)`: This is to specify the type of user. The "type" field is required to generate the connection string for the outputs.
+ - `name` (required): The username for the user account.
+ - `password` (required): The password for the user account in the range of 10-32 characters.
+ - `type` (required): The user type. The "type" field is required to generate the connection string for the outputs.
+ - `role`: The user role. The role determines the user's access level and permissions.
 
- - `role (optional):` Defines the role assigned to the user, determining their access level and permissions.
+### Example users
 
-
-**Default Value:**
-The default value for the `users` variable is an empty list (`[]`).
-
-**Sensitive:**
-The `users` variable is marked as sensitive due to the inclusion of passwords.
-
-**Sample Example:** The below example shows the list of two users where one of the users is not provided the optional `role` value.
+The following example shows a list of two users. One user does not have an optional role.
 
 ```hcl
 [
@@ -77,51 +74,45 @@ The `users` variable is marked as sensitive due to the inclusion of passwords.
 ]
 ```
 
-## 3. Auto Scaling
-**Description:**
+## Autoscaling <a name="autoscaling"></a>
 
-This variable defines the auto-scaling configuration for the Elasticsearch deployment. Auto-scaling allows the database to automatically adjust resources in response to changes in usage, ensuring optimal performance and resource utilization. It includes settings for both disk, memory auto-scaling or both.
+The Autoscaling variable sets the rules for how database increase resources in response to usage. Make sure you understand the effects of autoscaling, especially for production environments. For more information, see [Autoscaling](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling&interface=cli#autoscaling-considerations).
 
-The auto_scaling variable is an object that contains nested objects for `disk` and `memory` configurations.
+- Variable name: `auto_scaling`
+- Type: An object with `disk` and `memory` configurations
 
-**Disk Auto-Scaling Configuration**
-The disk object within `auto_scaling` contains the following properties:
+### Disk options for auto_scaling
 
-- `capacity_enabled (optional, default=false):` Indicates whether disk capacity auto-scaling is enabled.
+Disk autoscaling specifies thresholds when scaling can occur based on disk usage, disk I/O utilization, or both.
 
-- `free_space_less_than_percent (optional, default=10):` Specifies the threshold percentage of free disk space below which auto-scaling is triggered.
+The disk object in the `auto_scaling` input contains the following options. All options are optional.
 
-- `io_above_percent (optional, default=90):` Sets the IO(Input/Output) usage percentage above which auto-scaling is triggered.
+- `capacity_enabled`: Whether disk capacity autoscaling is enabled (default: `false`).
+- `free_space_less_than_percent`: The percentage of free disk space that triggers autoscaling (default: `10`).
+- `io_above_percent`: The percentage of I/O (input/output) disk usage that triggers autoscaling (default: `90`).
+- `io_enabled`: Indicates whether IO-based autoscaling is enabled (default: `false`).
+- `io_over_period`: How long I/O usage is evaluated for autoscaling (default: `"15m"` (15 minutes)).
+- `rate_increase_percent`: The percentage increase in disk capacity when autoscaling is triggered (default: `10`).
+- `rate_limit_mb_per_member`: The limit in megabytes for the rate of disk increase per member (default: `3670016`).
+- `rate_period_seconds`: How long (in seconds) the rate limit is applied for disk (default: `900` (15 minutes)).
+- `rate_units`: The units to use for the rate increase (default: `"mb"` (megabytes)).
 
-- `io_enabled (optional, default=false):` Indicates whether IO-based auto-scaling is enabled.
 
-- `io_over_period (optional, default="15m"(15 minutes)):` Defines the period over which IO usage is evaluated for auto-scaling.
+### Memory options for auto_scaling
 
-- `rate_increase_percent (optional, default=10):` Specifies the percentage increase in disk capacity when auto-scaling is triggered.
+The memory object within auto_scaling contains the following options. All options are optional.
 
-- `rate_limit_mb_per_member (optional, default=3670016 MB):` Sets the limit on the rate of disk increase per member (in megabytes).
+- `io_above_percent`: The percentage of I/O memory usage that triggers autoscaling (default: `90`).
+- `io_enabled`: Whether IO-based autoscaling for memory is enabled (default: `false`).
+- `io_over_period`: How long I/O usage is evaluated for memory autoscaling (default: `"15m"` (15 minutes)).
+- `rate_increase_percent`: The percentage increase in memory capacity that triggers autoscaling (default: `10`).
+- `rate_limit_mb_per_member`: The limit in megabytes for the rate of memory increase per member (default: `114688`).
+- `rate_period_seconds`: How long (in seconds) the rate limit is applied for memory (default: `900` (15 minutes)).
+- `rate_units`: The memory size units to use for the rate increase (default: `"mb"` (megabytes)).
 
-- `rate_period_seconds (optional, default=900 seconds (15 minutes)):` Defines the period (in seconds) over which the rate limit is applied.
+### Example autoscaling
 
-- `rate_units (optional, default="mb" (megabytes)):` Specifies the units used for rate increase.
-
-<br>**Memory Auto-Scaling Configuration**: The memory object within auto_scaling contains the following properties:
-
-- `io_above_percent (optional, default= 90):` Sets the IO usage percentage above which memory auto-scaling is triggered.
-
-- `io_enabled (optional, default= false):` Indicates whether IO-based auto-scaling for memory is enabled.
-
-- `io_over_period (optional, default= "15m" (15 minutes)):` Defines the period over which IO usage is evaluated for memory auto-scaling.
-
-- `rate_increase_percent (optional, default= 10):` Specifies the percentage increase in memory capacity when auto-scaling is triggered.
-
-- `rate_limit_mb_per_member (optional, default= 114688 MB):` Sets the limit on the rate of memory increase per member (in megabytes).
-
-- `rate_period_seconds (optional, default= 900 seconds (15 minutes)):` Defines the period (in seconds) over which the rate limit is applied for memory.
-
-- `rate_units (optional, default= "mb" (megabytes)):` Specifies the units used for rate increase.
-
-**Sample Example:** Below example is to illustrate how to use both disk and memory configurations.
+The following example shows values for both disk and memory for the `auto_scaling` input.
 
 ```hcl
 {
