@@ -18,21 +18,14 @@ The default value for the `service_credential_names` variable is an empty map (`
 
 - `Value (role, required):` The role assigned to the service credential.
 
-**Sample Examples:**
-
-Example with single role:
+**Sample Example:**
 
 ```hcl
   {
-    "elastic_user_1" = "Viewer"
-  }
-```
-
-Example with more than one role:
-
-```hcl
-  {
-    "elastic_user_2" = ["Editor", "Operator"]
+      "es_admin" : "Administrator",
+      "es_reader" : "Operator",
+      "es_viewer" : "Viewer",
+      "es_editor" : "Editor"
   }
 ```
 
@@ -44,13 +37,14 @@ This variable defines a list of users who have access to the Elasticsearch datab
 
 **Type:**
 The `users` variable is a list of objects, where each object represents a user with the following properties:
- - `name (required):` The username for the user account.
 
- - `password (required):` The password for the user account. This password must be in the range of 10-32 characters. This field is sensitive and should be handled securely.
+- `name (required):` The username for the user account.
 
- - `type (required)`: This is to specify the type of user. The "type" field is required to generate the connection string for the outputs.
+- `password (required):` The password for the user account. This password must be in the range of 10-32 characters. This field is sensitive and should be handled securely.
 
- - `role (optional):` Defines the role assigned to the user, determining their access level and permissions.
+- `type (required)`: This is to specify the type of user. The "type" field is required to generate the connection string for the outputs.
+
+- `role (optional):` Defines the role assigned to the user, determining their access level and permissions.
 
 
 **Default Value:**
@@ -63,21 +57,22 @@ The `users` variable is marked as sensitive due to the inclusion of passwords.
 
 ```hcl
 [
-    {
-      name     = "es_admin"
-      password = "securepassword123"
-      type     = "Administrator"
-      role     = "Administrator"
-    },
-    {
-      name     = "es_reader"
-      password = "readpassword123"
-      type     = "Operator"
-    }
+  {
+    "name": "es_admin",
+    "password": "securepassword123",
+    "type": "Administrator",
+    "role": "Administrator"
+  },
+  {
+    "name": "es_reader",
+    "password": "readpassword123",
+    "type": "Operator"
+  }
 ]
 ```
 
 ## 3. Auto Scaling
+
 **Description:**
 
 This variable defines the auto-scaling configuration for the Elasticsearch deployment. Auto-scaling allows the database to automatically adjust resources in response to changes in usage, ensuring optimal performance and resource utilization. It includes settings for both disk, memory auto-scaling or both.
