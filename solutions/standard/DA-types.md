@@ -34,6 +34,10 @@ You can specify a set of IAM credentials to connect to the database with the `se
 
 If you can't use the IAM-enabled `service_credential_names` input variable for access, you can create users and roles directly in the database. For more information, see [Managing users and roles](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui).
 
+## Users <a name="users"></a>
+
+If you can't use the IAM-enabled `service_credential_names` input variable for access, you can create users and roles directly in the database. For more information, see [Managing users and roles](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui).
+
 :exclamation: **Important:** The `users` input contains sensitive information (the user's password).
 
 - Variable name: `users`.
@@ -44,12 +48,11 @@ If you can't use the IAM-enabled `service_credential_names` input variable for a
 
  - `name` (required): The username for the user account.
  - `password` (required): The password for the user account in the range of 10-32 characters.
- - `type` (required): The user type. The "type" field is required to generate the connection string for the outputs. For more information, see [user types](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.66.0/docs/resources/database#type)
- - `role`: The user role. The role determines the user's access level and permissions.For more information, see [user roles](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.66.0/docs/resources/database#role) a
+ - `type` (required): The user type. The "type" field is required to generate the connection string for the outputs.
+ - `role`: The user role. The role determines the user's access level and permissions.
 
 ### Example users
 
-The following example shows a list of two users. One user does not have an optional role.
 
 ```hcl
 [
