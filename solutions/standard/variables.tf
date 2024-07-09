@@ -35,7 +35,7 @@ variable "region" {
 variable "plan" {
   type        = string
   description = "The name of the service plan for your Databases for Elasticsearch instance. Possible values: `enterprise`, `platinum`."
-  default     = "enterprise"
+  default     = "platinum"
 }
 
 variable "elasticsearch_version" {
@@ -65,7 +65,7 @@ variable "member_memory_mb" {
 variable "member_cpu_count" {
   type        = number
   description = "The dedicated CPU per member that is allocated. For shared CPU, set to 0. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
-  default     = 0
+  default     = 3
 }
 
 variable "member_disk_mb" {
@@ -78,7 +78,7 @@ variable "member_disk_mb" {
 variable "member_host_flavor" {
   type        = string
   description = "The host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
-  default     = "multitenant"
+  default     = "b3c.4x16.encrypted"
   # Prevent null or "", require multitenant or a machine type
   validation {
     condition     = (length(var.member_host_flavor) > 0)
@@ -182,4 +182,10 @@ variable "auto_scaling" {
   })
   description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-types.md)."
   default     = null
+}
+
+variable "enable_elser_model" {
+  type        = bool
+  description = "Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
+  default     = true
 }
