@@ -30,9 +30,6 @@ You can specify a set of IAM credentials to connect to the database with the `se
   }
 ```
 
-## Users <a name="users"></a>
-
-If you can't use the IAM-enabled `service_credential_names` input variable for access, you can create users and roles directly in the database. For more information, see [Managing users and roles](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui).
 
 ## Users <a name="users"></a>
 
