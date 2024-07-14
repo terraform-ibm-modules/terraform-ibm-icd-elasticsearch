@@ -1,8 +1,6 @@
 #!/bin/bash
 
-export ES="http://admin:${PASSWORD}@${HOSTNAME}:${PORT}"
-
-#Function to put the vectorDB model
+#Function to install the vectorDB model
 Put_model() {
 
 response=$(curl -s -o /dev/null -w "%{http_code}" -kX PUT "$ES/_ml/trained_models/.elser_model_1?pretty" -H 'Content-Type: application/json' -d'
@@ -17,7 +15,7 @@ response=$(curl -s -o /dev/null -w "%{http_code}" -kX PUT "$ES/_ml/trained_model
 if [ "$response" -eq 200 ] || [ "$response" -eq 201 ]; then
   echo "Request sent successfully."
 else
-  echo "Failed to send request. HTTP status code: $response"
+  echo "Failed to install the vectorDB model. HTTP status code: $response"
 fi
 
 }

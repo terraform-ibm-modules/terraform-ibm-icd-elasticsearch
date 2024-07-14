@@ -9,7 +9,7 @@ locals {
   # tflint-ignore: terraform_unused_declarations
   validate_backup_key = var.backup_encryption_key_crn != null && var.use_default_backup_encryption_key == true ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to 'true'") : true
   # tflint-ignore: terraform_unused_declarations
-  validate_plan = var.enable_elser_model && var.plan == "enterprise" ? tobool("When enabling elser configuration , var.plan should be 'platinum'") : true
+  validate_plan = var.enable_elser_model && var.plan != "platinum" ? tobool("When var.enable_elser_model is set to true, a value for var.plan must be 'platinum' in order to enable ELSER model.") : true
 
   # If no value passed for 'backup_encryption_key_crn' use the value of 'kms_key_crn' and perform validation of 'kms_key_crn' to check if region is supported by backup encryption key.
 
@@ -271,9 +271,7 @@ resource "null_resource" "put_vectordb_model" {
     command     = "${path.module}/scripts/put_vectordb_model.sh"
     interpreter = ["/bin/bash", "-c"]
     environment = {
-      HOSTNAME = data.ibm_database_connection.database_connection.https[0].hosts[0].hostname
-      PORT     = data.ibm_database_connection.database_connection.https[0].hosts[0].port
-      PASSWORD = ibm_database.elasticsearch.adminpassword
+      ES = "http://admin:${ibm_database.elasticsearch.adminpassword}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}"
     }
   }
 }
@@ -290,9 +288,7 @@ resource "null_resource" "start_vectordb_model" {
     command     = "${path.module}/scripts/start_vectordb_model.sh"
     interpreter = ["/bin/bash", "-c"]
     environment = {
-      HOSTNAME = data.ibm_database_connection.database_connection.https[0].hosts[0].hostname
-      PORT     = data.ibm_database_connection.database_connection.https[0].hosts[0].port
-      PASSWORD = ibm_database.elasticsearch.adminpassword
+      ES = "http://admin:${ibm_database.elasticsearch.adminpassword}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}"
     }
   }
 }
