@@ -9,7 +9,7 @@ response=$(curl -s -o /dev/null -w "%{http_code}" -kX POST "$ES/_ml/trained_mode
 if [ "$response" -eq 200 ] || [ "$response" -eq 201 ]; then
   echo "Request sent successfully."
 else
-  echo "Failed to send the start request. HTTP status code: $response"
+  echo "Failed to start the vectorDB model. HTTP status code: $response"
 fi
 
 }
