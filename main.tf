@@ -10,6 +10,8 @@ locals {
   validate_backup_key = var.backup_encryption_key_crn != null && var.use_default_backup_encryption_key == true ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to 'true'") : true
   # tflint-ignore: terraform_unused_declarations
   validate_plan = var.enable_elser_model && var.plan != "platinum" ? tobool("When var.enable_elser_model is set to true, a value for var.plan must be 'platinum' in order to enable ELSER model.") : true
+  # tflint-ignore: terraform_unused_declarations
+  validate_es_user = var.enable_elser_model && (var.service_credential_names == null || length(var.service_credential_names) == 0) || var.admin_pass == null ? tobool("When var.enable_elser_model is set to true, a value must be passed for var.service_credential_names or var.admin_pass.") : true
 
   # If no value passed for 'backup_encryption_key_crn' use the value of 'kms_key_crn' and perform validation of 'kms_key_crn' to check if region is supported by backup encryption key.
 
@@ -265,13 +267,24 @@ data "ibm_database_connection" "database_connection" {
   user_type     = "database"
 }
 
+##############################################################################
+# ELSER support
+##############################################################################
+
+locals {
+  es_user     = var.enable_elser_model && var.service_credential_names != null && length(var.service_credential_names) > 0 ? keys(var.service_credential_names)[0] : null
+  es_username = local.es_user != null ? local.service_credentials_object["credentials"][local.es_user]["username"] : var.admin_pass != null ? "admin" : null
+  es_password = local.es_user != null ? local.service_credentials_object["credentials"][local.es_user]["password"] : var.admin_pass != null ? ibm_database.elasticsearch.adminpassword : null
+  es_url      = local.es_username != null && local.es_password != null ? "https://${local.es_username}:${local.es_password}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}" : null
+}
+
 resource "null_resource" "put_vectordb_model" {
   count = var.enable_elser_model ? 1 : 0
   provisioner "local-exec" {
     command     = "${path.module}/scripts/put_vectordb_model.sh"
     interpreter = ["/bin/bash", "-c"]
     environment = {
-      ES = "http://admin:${ibm_database.elasticsearch.adminpassword}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}"
+      ES = local.es_url
     }
   }
 }
@@ -288,7 +301,7 @@ resource "null_resource" "start_vectordb_model" {
     command     = "${path.module}/scripts/start_vectordb_model.sh"
     interpreter = ["/bin/bash", "-c"]
     environment = {
-      ES = "http://admin:${ibm_database.elasticsearch.adminpassword}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}"
+      ES = local.es_url
     }
   }
 }

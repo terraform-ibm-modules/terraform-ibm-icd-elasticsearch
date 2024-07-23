@@ -2,8 +2,6 @@
 package test
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"io/fs"
 	"log"
@@ -130,14 +128,6 @@ func walk(r *tarIncludePatterns, s string, d fs.DirEntry, err error) error {
 func TestRunStandardSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
-	// Generate a 15 char long random string for the admin_pass
-	randomBytes := make([]byte, 13)
-	_, err := rand.Read(randomBytes)
-	if err != nil {
-		log.Fatal(err)
-	}
-	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
-
 	excludeDirs := []string{
 		".terraform",
 		".docs",
@@ -173,16 +163,22 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		WaitJobCompleteMinutes: 60,
 	})
 
+	service_credential_names := map[string]string{
+		"admin_test":  "Administrator",
+		"editor_test": "Editor",
+	}
+
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "public", DataType: "string"},
 		{Name: "resource_group_name", Value: options.Prefix, DataType: "string"},
-		{Name: "admin_pass", Value: randomPass, DataType: "string"},
+		{Name: "plan", Value: "platinum", DataType: "string"},
+		{Name: "enable_elser_model", Value: true, DataType: "string"},
+		{Name: "service_credential_names", Value: service_credential_names, DataType: "map(string)"},
 	}
-
-	err = options.RunSchematicTest()
+	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
 }
 
