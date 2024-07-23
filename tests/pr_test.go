@@ -163,11 +163,6 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		WaitJobCompleteMinutes: 60,
 	})
 
-	service_credential_names := map[string]string{
-		"admin_test":  "Administrator",
-		"editor_test": "Editor",
-	}
-
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
@@ -176,7 +171,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "resource_group_name", Value: options.Prefix, DataType: "string"},
 		{Name: "plan", Value: "platinum", DataType: "string"},
 		{Name: "enable_elser_model", Value: true, DataType: "string"},
-		{Name: "service_credential_names", Value: service_credential_names, DataType: "map(string)"},
+		{Name: "service_credential_names", Value: "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}", DataType: "map(string)"},
 	}
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
@@ -184,7 +179,6 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 
 func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
-
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
 		TerraformDir:       "examples/basic",

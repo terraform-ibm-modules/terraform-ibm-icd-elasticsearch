@@ -11,7 +11,7 @@ locals {
   # tflint-ignore: terraform_unused_declarations
   validate_plan = var.enable_elser_model && var.plan != "platinum" ? tobool("When var.enable_elser_model is set to true, a value for var.plan must be 'platinum' in order to enable ELSER model.") : true
   # tflint-ignore: terraform_unused_declarations
-  validate_es_user = var.enable_elser_model && (var.service_credential_names == null || length(var.service_credential_names) == 0) || var.admin_pass == null ? tobool("When var.enable_elser_model is set to true, a value must be passed for var.service_credential_names or var.admin_pass.") : true
+  validate_es_user = var.enable_elser_model && length(var.service_credential_names) > 0 || (var.admin_pass != null) ? true : tobool("When var.enable_elser_model is set to true, a value must be passed for var.service_credential_names or var.admin_pass.")
 
   # If no value passed for 'backup_encryption_key_crn' use the value of 'kms_key_crn' and perform validation of 'kms_key_crn' to check if region is supported by backup encryption key.
 
