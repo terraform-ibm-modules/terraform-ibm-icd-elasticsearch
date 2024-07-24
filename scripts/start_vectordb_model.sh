@@ -4,7 +4,7 @@ set -e
 #Function to start the vectorDB model
 Start_model() {
 
-response=$(curl -m 300 -s -w "%{http_code}" -kX POST "$ES/_ml/trained_models/.elser_model_1/deployment/_start?deployment_id=for_search&pretty")
+response=$(curl --connect-timeout 300 -s -w "%{http_code}" -kX POST "$ES/_ml/trained_models/.elser_model_1/deployment/_start?deployment_id=for_search&pretty")
 
 http_code=$(tail -n1 <<< "$response")
 content=$(sed '$ d' <<< "$response")
