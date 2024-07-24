@@ -291,7 +291,7 @@ resource "null_resource" "put_vectordb_model" {
 }
 
 resource "time_sleep" "wait_for_put_trained_model" {
-  count = var.enable_elser_model ? 1 : 0
+  count           = var.enable_elser_model ? 1 : 0
   depends_on      = [null_resource.put_vectordb_model]
   create_duration = "600s"
 }
