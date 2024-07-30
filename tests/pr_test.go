@@ -170,7 +170,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "kms_endpoint_type", Value: "public", DataType: "string"},
 		{Name: "resource_group_name", Value: options.Prefix, DataType: "string"},
 		{Name: "plan", Value: "platinum", DataType: "string"},
-		{Name: "enable_elser_model", Value: true, DataType: "string"},
+		{Name: "enable_elser_model", Value: true, DataType: "bool"},
 		{Name: "service_credential_names", Value: "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}", DataType: "map(string)"},
 	}
 	err := options.RunSchematicTest()

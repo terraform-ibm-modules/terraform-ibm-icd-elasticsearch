@@ -271,6 +271,14 @@ data "ibm_database_connection" "database_connection" {
 # ELSER support
 ##############################################################################
 
+# Enable Elastic's Natural Language Processing model (ELSER) support by calling ES REST API directly using shell script. Learn more https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch
+# Firstly, ELSER model is installed using 'put_vectordb_model' null_resource. Secondly, ELSER model is started with `start_vectordb_model` null_resource.
+#
+# To authenticate ES rest API, the credentials are extracted from 'service_credential_names' or ES 'adminpassword' using the following logic:
+# if elser_model is enabled, then
+#   if service_credential_names are used, then get the key name of a credential where role is 'Administrator'
+#       use the key name to obtain username and password from service_credentials_object
+#   else if admin_pass is used, then use 'admin' for username and password from ES password
 locals {
   es_admin_users = var.enable_elser_model && var.service_credential_names != null && length(var.service_credential_names) > 0 ? [for k, v in var.service_credential_names : k if v == "Administrator"] : []
   es_admin_user  = length(local.es_admin_users) > 0 ? local.es_admin_users[0] : null
@@ -290,14 +298,8 @@ resource "null_resource" "put_vectordb_model" {
   }
 }
 
-resource "time_sleep" "wait_for_put_trained_model" {
-  count           = var.enable_elser_model ? 1 : 0
-  depends_on      = [null_resource.put_vectordb_model]
-  create_duration = "600s"
-}
-
 resource "null_resource" "start_vectordb_model" {
-  depends_on = [time_sleep.wait_for_put_trained_model]
+  depends_on = [null_resource.put_vectordb_model]
   count      = var.enable_elser_model ? 1 : 0
   provisioner "local-exec" {
     command     = "${path.module}/scripts/start_vectordb_model.sh"

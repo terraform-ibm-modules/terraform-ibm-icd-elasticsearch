@@ -4,7 +4,10 @@ set -e
 #Function to start the vectorDB model
 Start_model() {
 
-response=$(curl --connect-timeout 300 -s -w "%{http_code}" -kX POST "$ES/_ml/trained_models/.elser_model_1/deployment/_start?deployment_id=for_search&pretty")
+# It takes few minute for the model to finish installing before we can start trained model deployment, therefore we sleep for 180 seconds (3m).
+sleep 180
+# Learn more https://www.elastic.co/guide/en/elasticsearch/reference/current/start-trained-model-deployment.html
+response=$(curl -s -w "%{http_code}" -kX POST "$ES/_ml/trained_models/.elser_model_1/deployment/_start?wait_for=started&timeout=3m&deployment_id=for_search&pretty")
 
 http_code=$(tail -n1 <<< "$response")
 content=$(sed '$ d' <<< "$response")
