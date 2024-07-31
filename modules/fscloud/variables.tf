@@ -190,3 +190,9 @@ variable "cbr_rules" {
   default     = []
   # Validation happens in the rule module
 }
+
+variable "enable_elser_model" {
+  type        = bool
+  description = "Set it to true to install and start the Elastic's Natural Language Processing model.[Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
+  default     = false
+}

@@ -8,6 +8,10 @@ locals {
   validate_auth_policy = var.kms_encryption_enabled && var.skip_iam_authorization_policy == false && var.existing_kms_instance_guid == null ? tobool("When var.skip_iam_authorization_policy is set to false, and var.kms_encryption_enabled to true, a value must be passed for var.existing_kms_instance_guid in order to create the auth policy.") : true
   # tflint-ignore: terraform_unused_declarations
   validate_backup_key = var.backup_encryption_key_crn != null && var.use_default_backup_encryption_key == true ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to 'true'") : true
+  # tflint-ignore: terraform_unused_declarations
+  validate_plan = var.enable_elser_model && var.plan != "platinum" ? tobool("When var.enable_elser_model is set to true, a value for var.plan must be 'platinum' in order to enable ELSER model.") : true
+  # tflint-ignore: terraform_unused_declarations
+  validate_es_user = var.enable_elser_model && !((length(var.service_credential_names) > 0 && length([for k, v in var.service_credential_names : k if v == "Administrator"]) > 0) || var.admin_pass != null) ? tobool("When var.enable_elser_model is set to true, a value must be passed for var.service_credential_names or var.admin_pass. var.service_credential_names must contain at least one credential name with Administrator role.") : true
 
   # If no value passed for 'backup_encryption_key_crn' use the value of 'kms_key_crn' and perform validation of 'kms_key_crn' to check if region is supported by backup encryption key.
 
@@ -261,4 +265,47 @@ data "ibm_database_connection" "database_connection" {
   deployment_id = ibm_database.elasticsearch.id
   user_id       = ibm_database.elasticsearch.adminuser
   user_type     = "database"
+}
+
+##############################################################################
+# ELSER support
+##############################################################################
+
+# Enable Elastic's Natural Language Processing model (ELSER) support by calling ES REST API directly using shell script. Learn more https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch
+# Firstly, ELSER model is installed using 'put_vectordb_model' null_resource. Secondly, ELSER model is started with `start_vectordb_model` null_resource.
+#
+# To authenticate ES rest API, the credentials are extracted from 'service_credential_names' or ES 'adminpassword' using the following logic:
+# if elser_model is enabled, then
+#   if service_credential_names are used, then get the key name of a credential where role is 'Administrator'
+#       use the key name to obtain username and password from service_credentials_object
+#   else if admin_pass is used, then use 'admin' for username and password from ES password
+locals {
+  es_admin_users = var.enable_elser_model && var.service_credential_names != null && length(var.service_credential_names) > 0 ? [for k, v in var.service_credential_names : k if v == "Administrator"] : []
+  es_admin_user  = length(local.es_admin_users) > 0 ? local.es_admin_users[0] : null
+  es_username    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["username"] : var.admin_pass != null ? "admin" : null
+  es_password    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["password"] : var.admin_pass != null ? ibm_database.elasticsearch.adminpassword : null
+  es_url         = local.es_username != null && local.es_password != null ? "https://${local.es_username}:${local.es_password}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}" : null
+}
+
+resource "null_resource" "put_vectordb_model" {
+  count = var.enable_elser_model ? 1 : 0
+  provisioner "local-exec" {
+    command     = "${path.module}/scripts/put_vectordb_model.sh"
+    interpreter = ["/bin/bash", "-c"]
+    environment = {
+      ES = local.es_url
+    }
+  }
+}
+
+resource "null_resource" "start_vectordb_model" {
+  depends_on = [null_resource.put_vectordb_model]
+  count      = var.enable_elser_model ? 1 : 0
+  provisioner "local-exec" {
+    command     = "${path.module}/scripts/start_vectordb_model.sh"
+    interpreter = ["/bin/bash", "-c"]
+    environment = {
+      ES = local.es_url
+    }
+  }
 }
