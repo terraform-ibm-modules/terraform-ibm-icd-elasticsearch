@@ -43,15 +43,16 @@ variable "service_endpoints" {
 
 variable "elasticsearch_version" {
   type        = string
-  description = "The version of Databases for Elasticsearch to deploy. Possible values: `8.10`, `8.12`, which requires an Enterprise Platinum pricing plan. If no value is specified, the current preferred version for IBM Cloud Databases is used."
+  description = "The version of Databases for Elasticsearch to deploy. Possible values: `8.7`, `8.10`, `8.12`, which requires an Enterprise Platinum pricing plan. If no value is specified, the current preferred version for IBM Cloud Databases is used."
   default     = null
   validation {
     condition = anytrue([
       var.elasticsearch_version == null,
+      var.elasticsearch_version == "8.7",
       var.elasticsearch_version == "8.10",
       var.elasticsearch_version == "8.12",
     ])
-    error_message = "Version must be 8.10 or 8.12 (Enterprise or Platinum plan if 8.10 or later)."
+    error_message = "Version must be 8.7, 8.10 or 8.12 (Enterprise or Platinum plan if 8.10 or later)."
   }
 }
 
@@ -248,4 +249,10 @@ variable "backup_crn" {
     ])
     error_message = "backup_crn must be null OR start with 'crn:' and contain ':backup:'"
   }
+}
+
+variable "enable_elser_model" {
+  type        = bool
+  description = "Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
+  default     = false
 }
