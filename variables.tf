@@ -114,8 +114,8 @@ variable "admin_pass" {
 variable "users" {
   type = list(object({
     name     = string
-    password = string           # pragma: allowlist secret
-    type     = optional(string) 
+    password = string # pragma: allowlist secret
+    type     = optional(string)
     role     = optional(string)
   }))
   default     = []
