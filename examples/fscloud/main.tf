@@ -68,6 +68,7 @@ module "elasticsearch" {
   member_host_flavor         = "b3c.4x16.encrypted"
   backup_encryption_key_crn  = var.backup_encryption_key_crn
   backup_crn                 = var.backup_crn
+  enable_elser_model         = var.enable_elser_model
   cbr_rules = [
     {
       description      = "${var.prefix}-elasticsearch access only from vpc"
