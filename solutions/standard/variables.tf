@@ -44,6 +44,12 @@ variable "existing_elasticsearch_name" {
   description = "The name of an existing Elasticsearch instance. If not specified, a new instance is created."
 }
 
+variable "existing_elasticsearch_rg_id" {
+  type        = string
+  default     = null
+  description = "The name of an existing Elasticsearch instance. If not specified, a new instance is created."
+}
+
 variable "elasticsearch_version" {
   description = "The version of the Databases for Elasticsearch instance. If no value is specified, the current preferred version of Databases for Elasticsearch is used."
   type        = string

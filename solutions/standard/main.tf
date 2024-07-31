@@ -90,10 +90,11 @@ module "elasticsearch" {
 }
 
 data "ibm_database" "existing_elasticsearch" {
-  count    = local.use_existing_elasticsearch ? 1 : 0
-  name     = var.existing_elasticsearch_name
-  location = var.region
-  service  = "databases-for-elasticsearch"
+  count             = local.use_existing_elasticsearch ? 1 : 0
+  name              = var.existing_elasticsearch_name
+  resource_group_id = var.existing_elasticsearch_rg_id
+  location          = var.region
+  service           = "databases-for-elasticsearch"
 }
 
 data "ibm_database_connection" "existing_connection" {
