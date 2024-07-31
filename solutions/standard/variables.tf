@@ -47,7 +47,7 @@ variable "existing_elasticsearch_name" {
 variable "existing_elasticsearch_rg_id" {
   type        = string
   default     = null
-  description = "The name of an existing Elasticsearch instance. If not specified, a new instance is created."
+  description = "The resource group ID of the existing Elasticsearch instance. Needed if the resource group is not `Default`."
 }
 
 variable "elasticsearch_version" {

@@ -48,8 +48,3 @@ output "port" {
   description = "Elasticsearch instance port"
   value       = local.use_existing_elasticsearch ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].port
 }
-
-output "resource_group_id" {
-  description = "TODO update this"
-  value       = module.resource_group.resource_group_id
-}
