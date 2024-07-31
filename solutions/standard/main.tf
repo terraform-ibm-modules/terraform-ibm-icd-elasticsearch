@@ -11,6 +11,8 @@ locals {
   elasticsearch_key_ring_name = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 
   kms_key_crn = var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn
+
+  use_existing_elasticsearch = var.existing_elasticsearch_name != null
 }
 
 #######################################################################################################################
@@ -63,6 +65,7 @@ module "kms" {
 #######################################################################################################################
 
 module "elasticsearch" {
+  count                         = local.use_existing_elasticsearch ? 0 : 1
   source                        = "../../modules/fscloud"
   resource_group_id             = module.resource_group.resource_group_id
   name                          = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
@@ -84,4 +87,19 @@ module "elasticsearch" {
   auto_scaling                  = var.auto_scaling
   service_credential_names      = var.service_credential_names
   enable_elser_model            = var.enable_elser_model
+}
+
+data "ibm_database" "existing_elasticsearch" {
+  count    = local.use_existing_elasticsearch ? 1 : 0
+  name     = var.existing_elasticsearch_name
+  location = var.region
+  service  = "databases-for-elasticsearch"
+}
+
+data "ibm_database_connection" "existing_connection" {
+  count         = local.use_existing_elasticsearch ? 1 : 0
+  endpoint_type = "private"
+  deployment_id = data.ibm_database.existing_elasticsearch[0].id
+  user_id       = data.ibm_database.existing_elasticsearch[0].adminuser
+  user_type     = "database"
 }
