@@ -52,10 +52,10 @@ func TestMain(m *testing.M) {
 func TestRunFSCloudExample(t *testing.T) {
 	t.Parallel()
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       fscloudExampleTerraformDir,
-		Prefix:             "es-fs-test",
-		BestRegionYAMLPath: regionSelectionPath,
+		Testing:      t,
+		TerraformDir: fscloudExampleTerraformDir,
+		Prefix:       "es-fs-test",
+		Region:       "us-south",
 		/*
 		 Comment out the 'ResourceGroup' input to force this test to create a unique resource group to ensure tests do
 		 not clash. This is due to the fact that an auth policy may already exist in this resource group since we are
