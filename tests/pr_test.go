@@ -52,10 +52,10 @@ func TestMain(m *testing.M) {
 func TestRunFSCloudExample(t *testing.T) {
 	t.Parallel()
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:      t,
-		TerraformDir: fscloudExampleTerraformDir,
-		Prefix:       "es-fs-test",
-		Region:       "us-south", // For FSCloud locking into us-south since that is where the HPCS permanent instance is
+		Testing:            t,
+		TerraformDir:       fscloudExampleTerraformDir,
+		Prefix:             "es-fs-test",
+		BestRegionYAMLPath: regionSelectionPath,
 		/*
 		 Comment out the 'ResourceGroup' input to force this test to create a unique resource group to ensure tests do
 		 not clash. This is due to the fact that an auth policy may already exist in this resource group since we are
@@ -156,7 +156,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		Testing:                t,
 		TarIncludePatterns:     tarIncludePatterns,
 		TemplateFolder:         standardSolutionTerraformDir,
-		Region:                 "us-south",
+		BestRegionYAMLPath:     regionSelectionPath,
 		Prefix:                 "els-sr-da",
 		ResourceGroup:          resourceGroup,
 		DeleteWorkspaceOnFail:  false,
@@ -181,11 +181,11 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:       t,
-		TerraformDir:  standardSolutionTerraformDir,
-		Region:        "us-south",
-		Prefix:        "els-st-da-upg",
-		ResourceGroup: resourceGroup,
+		Testing:            t,
+		TerraformDir:       standardSolutionTerraformDir,
+		BestRegionYAMLPath: regionSelectionPath,
+		Prefix:             "els-st-da-upg",
+		ResourceGroup:      resourceGroup,
 	})
 
 	options.TerraformVars = map[string]interface{}{
