@@ -12,7 +12,8 @@ locals {
 
   kms_key_crn = var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn
 
-  use_existing_elasticsearch = var.existing_elasticsearch_name != null
+  existing_db_instance_guid = var.existing_db_instance_crn != null ? element(split(":", var.existing_db_instance_crn), length(split(":", var.existing_db_instance_crn)) - 3) : null
+  use_existing_db_instance  = var.existing_db_instance_crn != null
 }
 
 #######################################################################################################################
@@ -65,7 +66,7 @@ module "kms" {
 #######################################################################################################################
 
 module "elasticsearch" {
-  count                         = local.use_existing_elasticsearch ? 0 : 1
+  count                         = local.use_existing_db_instance ? 0 : 1
   source                        = "../../modules/fscloud"
   resource_group_id             = module.resource_group.resource_group_id
   name                          = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
@@ -89,16 +90,23 @@ module "elasticsearch" {
   enable_elser_model            = var.enable_elser_model
 }
 
+# this extra block is needed when passing in an existing ES instance - the database data block
+# requires a name and resource_id to retrieve the data
+data "ibm_resource_instance" "existing_instance_resource" {
+  count      = local.use_existing_db_instance ? 1 : 0
+  identifier = local.existing_db_instance_guid
+}
+
 data "ibm_database" "existing_elasticsearch" {
-  count             = local.use_existing_elasticsearch ? 1 : 0
-  name              = var.existing_elasticsearch_name
-  resource_group_id = var.existing_elasticsearch_rg_id
+  count             = local.use_existing_db_instance ? 1 : 0
+  name              = data.ibm_resource_instance.existing_instance_resource[0].name
+  resource_group_id = data.ibm_resource_instance.existing_instance_resource[0].resource_group_id
   location          = var.region
   service           = "databases-for-elasticsearch"
 }
 
 data "ibm_database_connection" "existing_connection" {
-  count         = local.use_existing_elasticsearch ? 1 : 0
+  count         = local.use_existing_db_instance ? 1 : 0
   endpoint_type = "private"
   deployment_id = data.ibm_database.existing_elasticsearch[0].id
   user_id       = data.ibm_database.existing_elasticsearch[0].adminuser
