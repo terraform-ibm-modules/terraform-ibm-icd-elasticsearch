@@ -4,17 +4,17 @@
 
 output "id" {
   description = "Elasticsearch instance id"
-  value       = local.use_existing_db_instance ? data.ibm_database.existing_elasticsearch[0].id : module.elasticsearch[0].id
+  value       = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].id : module.elasticsearch[0].id
 }
 
 output "guid" {
   description = "Elasticsearch instance guid"
-  value       = local.use_existing_db_instance ? data.ibm_database.existing_elasticsearch[0].guid : module.elasticsearch[0].guid
+  value       = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].guid : module.elasticsearch[0].guid
 }
 
 output "version" {
   description = "Elasticsearch instance version"
-  value       = local.use_existing_db_instance ? data.ibm_database.existing_elasticsearch[0].version : module.elasticsearch[0].version
+  value       = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].version : module.elasticsearch[0].version
 }
 
 output "crn" {
@@ -47,9 +47,4 @@ output "hostname" {
 output "port" {
   description = "Elasticsearch instance port"
   value       = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].port
-}
-
-output "existing_resource" {
-  description = "value"
-  value       = local.use_existing_db_instance ? data.ibm_resource_instance.existing_instance_resource : null
 }

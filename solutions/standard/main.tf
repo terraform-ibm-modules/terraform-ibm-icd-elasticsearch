@@ -97,7 +97,7 @@ data "ibm_resource_instance" "existing_instance_resource" {
   identifier = local.existing_db_instance_guid
 }
 
-data "ibm_database" "existing_elasticsearch" {
+data "ibm_database" "existing_db_instance" {
   count             = local.use_existing_db_instance ? 1 : 0
   name              = data.ibm_resource_instance.existing_instance_resource[0].name
   resource_group_id = data.ibm_resource_instance.existing_instance_resource[0].resource_group_id
@@ -108,7 +108,7 @@ data "ibm_database" "existing_elasticsearch" {
 data "ibm_database_connection" "existing_connection" {
   count         = local.use_existing_db_instance ? 1 : 0
   endpoint_type = "private"
-  deployment_id = data.ibm_database.existing_elasticsearch[0].id
-  user_id       = data.ibm_database.existing_elasticsearch[0].adminuser
+  deployment_id = data.ibm_database.existing_db_instance[0].id
+  user_id       = data.ibm_database.existing_db_instance[0].adminuser
   user_type     = "database"
 }
