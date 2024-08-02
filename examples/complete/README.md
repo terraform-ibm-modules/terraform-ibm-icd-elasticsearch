@@ -1,4 +1,4 @@
-# Complete example with autoscaling, BYOK encryption, service credentials creation, index creation and updates to cluster-wide settings
+# Complete example with autoscaling, BYOK encryption and service credentials creation
 
 An end-to-end example that provisions the following infrastructure:
 
@@ -8,5 +8,3 @@ An end-to-end example that provisions the following infrastructure:
 - A Secrets Manager instance if one is not passed in.
 - Service credentials for the database instance.
 - A Secrets Manager secret containing the service credentials.
-- An Elasticsearch index
-- Updates to the cluster-wide settings
