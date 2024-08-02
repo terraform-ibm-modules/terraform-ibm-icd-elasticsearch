@@ -66,18 +66,6 @@ variable "existing_db_instance_crn" {
   description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
 }
 
-variable "elasticsearch_version" {
-  description = "The version of the Databases for Elasticsearch instance. If no value is specified, the current preferred version of Databases for Elasticsearch is used."
-  type        = string
-  default     = null
-}
-
-variable "access_tags" {
-  type        = list(string)
-  description = "A list of access tags to apply to the Databases for Elasticsearch instance created by the solution. [Learn more](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
-  default     = []
-}
-
 ##############################################################################
 # ICD hosting model properties
 ##############################################################################
