@@ -100,7 +100,7 @@ variable "users" {
   type = list(object({
     name     = string
     password = string # pragma: allowlist secret
-    type     = string # "type" is required to generate the connection string for the outputs.
+    type     = optional(string)
     role     = optional(string)
   }))
   default     = []
@@ -189,4 +189,10 @@ variable "cbr_rules" {
   description = "(Optional, list) List of CBR rules to create"
   default     = []
   # Validation happens in the rule module
+}
+
+variable "enable_elser_model" {
+  type        = bool
+  description = "Set it to true to install and start the Elastic's Natural Language Processing model.[Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
+  default     = false
 }
