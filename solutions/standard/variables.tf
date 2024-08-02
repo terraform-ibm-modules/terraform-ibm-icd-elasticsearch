@@ -41,7 +41,7 @@ variable "plan" {
 variable "existing_db_instance_crn" {
   type        = string
   default     = null
-  description = "The CRN of an existing Elasticsearch instance. If not specified, a new instance is created."
+  description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
 }
 
 variable "elasticsearch_version" {
