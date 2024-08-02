@@ -123,6 +123,13 @@ variable "tags" {
   default     = []
 }
 
+variable "ibmcloud_kms_api_key" {
+  type        = string
+  description = "The IBM Cloud API key that can create a root key and key ring in the key management service (KMS) instance. If not specified, the 'ibmcloud_api_key' variable is used. Specify this key if the instance in `existing_kms_instance_crn` is in an account that's different from the Elastic Search instance. Leave this input empty if the same account owns both instances."
+  sensitive   = true
+  default     = null
+}
+
 variable "kms_endpoint_type" {
   type        = string
   description = "The type of endpoint to use to communicate with the KMS instance. Possible values: `public`, `private`."
@@ -140,14 +147,14 @@ variable "existing_kms_key_crn" {
 }
 
 variable "existing_kms_instance_crn" {
-  description = "The CRN of a Hyper Protect Crypto Services or Key Protect instance in the same account as the Databases for Elasticsearch instance. This value is used to create an authorization policy if `skip_iam_authorization_policy` is false. If not specified, a root key is created."
+  description = "The CRN of the KMS instance (Hyper Protect Crypto Services or Key Protect). Required only if `existing_kms_key_crn` is not specified. If the KMS instance is in different account you must also provide a value for `ibmcloud_kms_api_key`."
   type        = string
   default     = null
 }
 
 variable "skip_iam_authorization_policy" {
   type        = bool
-  description = "Whether to create an IAM authorization policy that permits all Databases for Elasticsearch instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance specified in the `existing_kms_instance_crn` variable."
+  description = "Set to true to skip the creation of an IAM authorization policy that permits all Elastic Search instances in the resource group to read the encryption key from the KMS instance. If set to false, pass in a value for the KMS instance in the `existing_kms_instance_crn` variable. If a value is specified for `ibmcloud_kms_api_key`, the policy is created in the KMS account."
   default     = false
 }
 
