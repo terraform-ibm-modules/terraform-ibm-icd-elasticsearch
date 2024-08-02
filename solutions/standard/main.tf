@@ -120,6 +120,11 @@ module "elasticsearch" {
   enable_elser_model            = var.enable_elser_model
 }
 
+moved {
+  from = module.elasticsearch.module.elasticsearch
+  to   = module.elasticsearch.module.elasticsearch[0]
+}
+
 # this extra block is needed when passing in an existing ES instance - the database data block
 # requires a name and resource_id to retrieve the data
 data "ibm_resource_instance" "existing_instance_resource" {
