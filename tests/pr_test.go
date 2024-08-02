@@ -172,6 +172,8 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "plan", Value: "platinum", DataType: "string"},
 		{Name: "enable_elser_model", Value: true, DataType: "bool"},
 		{Name: "service_credential_names", Value: "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}", DataType: "map(string)"},
+		{Name: "existing_sm_instance_guid", Value: permanentResources["secretsManagerGuid"], DataType: "string"},
+		{Name: "existing_secret_group_id", Value: "e1a66320-63ec-a0df-abac-f82898be57b0", DataType: "string"},
 	}
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")

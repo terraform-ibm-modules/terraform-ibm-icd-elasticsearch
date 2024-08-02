@@ -189,3 +189,19 @@ variable "enable_elser_model" {
   description = "Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
   default     = false
 }
+
+##############################################################################
+## Secrets Manager
+##############################################################################
+
+variable "existing_sm_instance_guid" {
+  type        = string
+  description = "Existing Secrets Manager GUID"
+  default     = null
+}
+
+variable "existing_secret_group_id" {
+  type        = string
+  description = "Existing Secrets Group ID"
+  default     = null
+}

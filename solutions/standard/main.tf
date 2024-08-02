@@ -85,3 +85,29 @@ module "elasticsearch" {
   service_credential_names      = var.service_credential_names
   enable_elser_model            = var.enable_elser_model
 }
+
+#create a service authorization between Secrets Manager and the target service (Elastic Search)
+resource "ibm_iam_authorization_policy" "policy" {
+  depends_on                  = [module.elasticsearch]
+  source_service_name         = "secrets-manager"
+  source_resource_instance_id = var.existing_sm_instance_guid
+  target_service_name         = "databases-for-elasticsearch"
+  target_resource_instance_id = module.elasticsearch.id
+  roles                       = ["Key Manager"]
+}
+
+# create service credentials secret
+module "secret_manager_service_credential" {
+  depends_on                              = [ibm_iam_authorization_policy.policy]
+  source                                  = "terraform-ibm-modules/secrets-manager-secret/ibm"
+  version                                 = "1.3.2"
+  for_each                                = var.service_credential_names
+  region                                  = var.region
+  secrets_manager_guid                    = var.existing_sm_instance_guid
+  secret_group_id                         = var.existing_secret_group_id
+  secret_name                             = "${each.key}-es-cert"
+  secret_description                      = "Elasticsearch Service Credential Certificate for ${each.key}"
+  secret_type                             = "service_credentials" #checkov:skip=CKV_SECRET_6
+  service_credentials_source_service_crn  = module.elasticsearch.id
+  service_credentials_source_service_role = each.value
+}
