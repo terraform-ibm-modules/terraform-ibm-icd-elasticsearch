@@ -8,25 +8,19 @@ variable "resource_group_id" {
 }
 
 variable "name" {
-  description = "Name of the Elasticsearch instance"
   type        = string
+  description = "Name given to the Elasticsearch instance"
 }
 
 variable "elasticsearch_version" {
-  description = "Version of the Elasticsearch instance. If no value is passed, the current preferred version of IBM Cloud Databases is used."
   type        = string
+  description = "Version of the Elasticsearch instance. If no value is passed, the current preferred version of IBM Cloud Databases is used."
   default     = null
 }
 
-variable "access_tags" {
-  type        = list(string)
-  description = "A list of access tags to apply to the Elasticsearch instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
-  default     = []
-}
-
 variable "region" {
-  description = "The region where you want to deploy your instance. Must be the same region as the Hyper Protect Crypto Services instance."
   type        = string
+  description = "The region where you want to deploy your instance. Must be the same region as the Hyper Protect Crypto Services instance."
   default     = "us-south"
 }
 
@@ -34,42 +28,28 @@ variable "plan" {
   type        = string
   description = "The name of the service plan that you choose for your Elasticsearch instance"
   default     = "enterprise"
-  validation {
-    condition = anytrue([
-      var.plan == "enterprise",
-      var.plan == "platinum",
-    ])
-    error_message = "Only supported plan is enterprise, or platinum if var.elasticsearch_version is set to 8.10 or above"
-  }
 }
+
+##############################################################################
+# ICD hosting model properties
+##############################################################################
 
 variable "members" {
   type        = number
-  description = "Allocated number of members. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
+  description = "Allocated number of members. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
   default     = 3
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
-}
-
-variable "member_memory_mb" {
-  type        = number
-  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
-  default     = 4096
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
 
 variable "member_cpu_count" {
   type        = number
-  description = "Allocated dedicated CPU per member. For shared CPU, set to 0. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
+  description = "Allocated dedicated CPU per member. For shared CPU, set to 0. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
   default     = 0
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
 
-# Note: Disk can be scaled up but not down
 variable "member_disk_mb" {
   type        = number
-  description = "Allocated disk per-member. For more information, see https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling"
+  description = "Allocated disk per-member. [Learn more}(https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
   default     = 5120
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
 
 variable "member_host_flavor" {
@@ -78,15 +58,10 @@ variable "member_host_flavor" {
   default     = null
 }
 
-variable "service_credential_names" {
-  description = "Map of name, role for service credentials that you want to create for the database"
-  type        = map(string)
-  default     = {}
-
-  validation {
-    condition     = alltrue([for name, role in var.service_credential_names : contains(["Administrator", "Operator", "Viewer", "Editor"], role)])
-    error_message = "Valid values for service credential roles are 'Administrator', 'Operator', 'Viewer', and `Editor`"
-  }
+variable "member_memory_mb" {
+  type        = number
+  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
+  default     = 4096
 }
 
 variable "admin_pass" {
@@ -103,9 +78,15 @@ variable "users" {
     type     = optional(string)
     role     = optional(string)
   }))
+  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the Elasticsearch instance. This blocks creates native Elasticsearch database users, more info on that can be found here https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui"
   default     = []
   sensitive   = true
-  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be in the range of 10-32 characters. Be warned that in most case using IAM service credentials (via the var.service_credential_names) is sufficient to control access to the Elasticsearch instance. This blocks creates native Elasticsearch database users, more info on that can be found here https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui"
+}
+
+variable "service_credential_names" {
+  type        = map(string)
+  description = "Map of name, role for service credentials that you want to create for the database"
+  default     = {}
 }
 
 variable "tags" {
@@ -114,28 +95,15 @@ variable "tags" {
   default     = []
 }
 
-variable "kms_key_crn" {
-  type        = string
-  description = "The root key CRN of the Hyper Protect Crypto Service (HPCS) to use for disk encryption."
+variable "access_tags" {
+  type        = list(string)
+  description = "A list of access tags to apply to the Elasticsearch instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
+  default     = []
 }
 
-variable "existing_kms_instance_guid" {
-  description = "The GUID of the Hyper Protect Crypto Services instance. It is only required while creating authorization policy."
-  type        = string
-  default     = null
-}
-
-variable "skip_iam_authorization_policy" {
-  type        = bool
-  description = "Set to true to skip the creation of an IAM authorization policy that permits all Elasticsearch database instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
-  default     = false
-}
-
-variable "backup_crn" {
-  type        = string
-  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
-  default     = null
-}
+##############################################################
+# Auto Scaling
+##############################################################
 
 variable "auto_scaling" {
   type = object({
@@ -164,11 +132,31 @@ variable "auto_scaling" {
   default     = null
 }
 
+##############################################################
+# Encryption
+##############################################################
+
+variable "kms_key_crn" {
+  type        = string
+  description = "The root key CRN of the Hyper Protect Crypto Services (HPCS) to use for disk encryption."
+}
+
 variable "backup_encryption_key_crn" {
   type        = string
-  description = "The CRN of a Hyper Protect Crypto Service use for encrypting the disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
+  description = "The CRN of a Hyper Protect Crypto Services use for encrypting the disk that holds deployment backups. Only used if var.kms_encryption_enabled is set to true. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
   default     = null
-  # Validation happens in the root module
+}
+
+variable "skip_iam_authorization_policy" {
+  type        = bool
+  description = "Set to true to skip the creation of an IAM authorization policy that permits all Elasticsearch database instances in the resource group to read the encryption key from the Hyper Protect Crypto Services instance. The HPCS instance is passed in through the var.existing_kms_instance_guid variable."
+  default     = false
+}
+
+variable "existing_kms_instance_guid" {
+  type        = string
+  description = "The GUID of the Hyper Protect Crypto Services instance. It is only required while creating authorization policy."
+  default     = null
 }
 
 ##############################################################
@@ -191,8 +179,18 @@ variable "cbr_rules" {
   # Validation happens in the rule module
 }
 
+##############################################################
+# Backup
+##############################################################
+
+variable "backup_crn" {
+  type        = string
+  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
+  default     = null
+}
+
 variable "enable_elser_model" {
   type        = bool
-  description = "Set it to true to install and start the Elastic's Natural Language Processing model.[Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
+  description = "Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
   default     = false
 }
