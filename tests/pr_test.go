@@ -55,7 +55,7 @@ func TestRunFSCloudExample(t *testing.T) {
 		Testing:      t,
 		TerraformDir: fscloudExampleTerraformDir,
 		Prefix:       "es-fs-test",
-		Region:       "us-south", // For FSCloud locking into us-south since that is where the HPCS permanent instance is
+		Region:       "us-south",
 		/*
 		 Comment out the 'ResourceGroup' input to force this test to create a unique resource group to ensure tests do
 		 not clash. This is due to the fact that an auth policy may already exist in this resource group since we are
@@ -156,7 +156,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		Testing:                t,
 		TarIncludePatterns:     tarIncludePatterns,
 		TemplateFolder:         standardSolutionTerraformDir,
-		Region:                 "us-south",
+		BestRegionYAMLPath:     regionSelectionPath,
 		Prefix:                 "els-sr-da",
 		ResourceGroup:          resourceGroup,
 		DeleteWorkspaceOnFail:  false,
@@ -175,6 +175,31 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 	}
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
+}
+
+func TestRunStandardUpgradeSolution(t *testing.T) {
+	t.Parallel()
+
+	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
+		Testing:            t,
+		TerraformDir:       standardSolutionTerraformDir,
+		BestRegionYAMLPath: regionSelectionPath,
+		Prefix:             "els-st-da-upg",
+		ResourceGroup:      resourceGroup,
+	})
+
+	options.TerraformVars = map[string]interface{}{
+		"access_tags":               permanentResources["accessTags"],
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"kms_endpoint_type":         "public",
+		"resource_group_name":       options.Prefix,
+	}
+
+	output, err := options.RunTestUpgrade()
+	if !options.UpgradeTestSkipped {
+		assert.Nil(t, err, "This should not have errored")
+		assert.NotNil(t, output, "Expected some output")
+	}
 }
 
 func TestRunBasicExample(t *testing.T) {
