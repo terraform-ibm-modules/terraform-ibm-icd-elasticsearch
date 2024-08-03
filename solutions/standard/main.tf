@@ -122,7 +122,7 @@ module "elasticsearch" {
 
 moved {
   from = module.elasticsearch.module.elasticsearch
-  to   = module.elasticsearch.module.elasticsearch[0]
+  to   = module.elasticsearch[0].module.elasticsearch
 }
 
 # this extra block is needed when passing in an existing ES instance - the database data block
