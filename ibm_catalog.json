@@ -187,7 +187,7 @@
                   "key": "access_tags"
                 },
                 {
-                  "key": "tags"
+                  "key": "resource_tags"
                 },
                 {
                   "key": "users"

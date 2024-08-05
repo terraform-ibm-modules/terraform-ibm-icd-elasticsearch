@@ -128,7 +128,7 @@ variable "service_endpoints" {
   }
 }
 
-variable "tags" {
+variable "resource_tags" {
   type        = list(string)
   description = "The list of tags to be added to the Databases for Elasticsearch instance."
   default     = []
@@ -138,6 +138,13 @@ variable "access_tags" {
   type        = list(string)
   description = "A list of access tags to apply to the Databases for Elasticsearch instance created by the module. [Learn more](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
   default     = []
+
+  validation {
+    condition = alltrue([
+      for tag in var.access_tags : can(regex("[\\w\\-_\\.]+:[\\w\\-_\\.]+", tag)) && length(tag) <= 128
+    ])
+    error_message = "Tags must match the regular expression \"[\\w\\-_\\.]+:[\\w\\-_\\.]+\", see https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#limits for more details"
+  }
 }
 
 ##############################################################

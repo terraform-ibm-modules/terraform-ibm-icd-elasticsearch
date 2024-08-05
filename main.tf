@@ -60,7 +60,7 @@ resource "ibm_database" "elasticsearch" {
   version                   = var.elasticsearch_version
   resource_group_id         = var.resource_group_id
   service_endpoints         = var.service_endpoints
-  tags                      = var.tags
+  tags                      = var.resource_tags
   adminpassword             = var.admin_pass
   key_protect_key           = var.kms_key_crn
   backup_encryption_key_crn = local.backup_encryption_key_crn

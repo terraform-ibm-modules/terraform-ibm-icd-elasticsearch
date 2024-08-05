@@ -19,7 +19,7 @@ module "icd_elasticsearch" {
   name                     = "${var.prefix}-elasticsearch"
   region                   = var.region
   elasticsearch_version    = var.elasticsearch_version
-  tags                     = var.resource_tags
+  resource_tags            = var.resource_tags
   access_tags              = var.access_tags
   service_credential_names = var.service_credential_names
 }

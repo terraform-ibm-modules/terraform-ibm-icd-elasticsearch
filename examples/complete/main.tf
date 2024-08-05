@@ -59,7 +59,7 @@ module "icd_elasticsearch" {
   service_credential_names   = var.service_credential_names
   elasticsearch_version      = var.elasticsearch_version
   kms_key_crn                = module.key_protect_all_inclusive.keys["icd.${var.prefix}-elasticsearch"].crn
-  tags                       = var.resource_tags
+  resource_tags              = var.resource_tags
   auto_scaling               = var.auto_scaling
   member_host_flavor         = "multitenant"
   member_memory_mb           = 4096

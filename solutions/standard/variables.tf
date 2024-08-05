@@ -125,7 +125,7 @@ variable "service_credential_names" {
   default     = {}
 }
 
-variable "tags" {
+variable "resource_tags" {
   type        = list(any)
   description = "The list of tags to be added to the Databases for Elasticsearch instance."
   default     = []

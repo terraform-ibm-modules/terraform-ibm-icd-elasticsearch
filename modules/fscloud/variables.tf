@@ -89,7 +89,7 @@ variable "service_credential_names" {
   default     = {}
 }
 
-variable "tags" {
+variable "resource_tags" {
   type        = list(any)
   description = "Optional list of tags to be added to the Elasticsearch instance."
   default     = []
