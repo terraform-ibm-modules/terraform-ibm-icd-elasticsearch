@@ -124,9 +124,15 @@ resource "ibm_iam_authorization_policy" "policy" {
   roles                       = ["Key Manager"]
 }
 
+# workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
+resource "time_sleep" "wait_for_es_authorization_policy" {
+  depends_on      = [ibm_iam_authorization_policy.policy]
+  create_duration = "30s"
+}
+
 # create service credentials secret
 module "secret_manager_service_credential" {
-  depends_on                              = [ibm_iam_authorization_policy.policy]
+  depends_on                              = [time_sleep.wait_for_es_authorization_policy]
   source                                  = "terraform-ibm-modules/secrets-manager-secret/ibm"
   version                                 = "1.3.2"
   for_each                                = var.service_credential_names
@@ -138,4 +144,5 @@ module "secret_manager_service_credential" {
   secret_type                             = "service_credentials" #checkov:skip=CKV_SECRET_6
   service_credentials_source_service_crn  = module.elasticsearch.id
   service_credentials_source_service_role = each.value
+  endpoint_type                           = "private"
 }
