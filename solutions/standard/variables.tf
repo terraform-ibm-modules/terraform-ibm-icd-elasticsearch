@@ -172,7 +172,6 @@ variable "auto_scaling" {
 # Encryption
 ##############################################################
 
-
 variable "existing_kms_key_crn" {
   type        = string
   description = "The CRN of a Hyper Protect Crypto Services or Key Protect root key to use for disk encryption. If not specified, a root key is created in the KMS instance."
@@ -232,17 +231,60 @@ variable "enable_elser_model" {
 }
 
 ##############################################################################
-## Secrets Manager
+## Secrets Manager Service Credentials
 ##############################################################################
 
-variable "existing_sm_instance_guid" {
+variable "existing_secrets_manager_instance_crn" {
   type        = string
-  description = "Existing Secrets Manager GUID"
   default     = null
+  description = "The CRN of existing secrets manager to use to create service credential secrets for Databases for Elasticsearch instance."
 }
 
-variable "existing_secret_group_id" {
+variable "existing_secrets_manager_endpoint_type" {
   type        = string
-  description = "Existing Secrets Group ID"
-  default     = null
+  description = "The endpoint type to use if `existing_secrets_manager_instance_crn` is specified. Possible values: public, private."
+  default     = "private"
+  validation {
+    condition     = contains(["public", "private"], var.existing_secrets_manager_endpoint_type)
+    error_message = "Only \"public\" and \"private\" are allowed values for 'existing_secrets_endpoint_type'."
+  }
+}
+
+variable "service_credential_secrets" {
+  type = list(object({
+    secret_group_name        = string
+    secret_group_description = optional(string)
+    existing_secret_group    = optional(bool)
+    service_credentials = list(object({
+      secret_name                             = string
+      service_credentials_source_service_role = string
+      secret_labels                           = optional(list(string))
+      secret_auto_rotation                    = optional(bool)
+      secret_auto_rotation_unit               = optional(string)
+      secret_auto_rotation_interval           = optional(number)
+      service_credentials_ttl                 = optional(string)
+      service_credential_secret_description   = optional(string)
+
+    }))
+  }))
+  default     = []
+  description = "Service credential secrets configuration for Databases for Elasticsearch. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-elasticsearch/tree/main/solutions/instance/DA-types.md#service-credential-secrets)."
+
+  validation {
+    condition = alltrue([
+      for group in var.service_credential_secrets : alltrue([
+        for credential in group.service_credentials : contains(
+          ["Writer", "Reader", "Manager", "None"], credential.service_credentials_source_service_role
+        )
+      ])
+    ])
+    error_message = "service_credentials_source_service_role role must be one of 'Writer', 'Reader', 'Manager', and 'None'."
+
+  }
+}
+
+variable "skip_es_kms_auth_policy" {
+  type        = bool
+  default     = false
+  description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for Elasticsearch. Set to `true` to use an existing policy."
 }

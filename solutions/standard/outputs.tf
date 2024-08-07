@@ -48,3 +48,13 @@ output "port" {
   description = "Elasticsearch instance port"
   value       = module.elasticsearch.port
 }
+
+output "service_credential_secrets" {
+  description = "Service credential secrets"
+  value       = module.secrets_manager_service_credentials.secrets
+}
+
+output "service_credential_secret_groups" {
+  description = "Service credential secret groups"
+  value       = module.secrets_manager_service_credentials.secret_groups
+}

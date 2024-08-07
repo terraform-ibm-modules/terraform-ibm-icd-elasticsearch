@@ -54,7 +54,6 @@ resource "time_sleep" "wait_for_authorization_policy" {
   create_duration = "30s"
 }
 
-
 module "kms" {
   providers = {
     ibm = ibm.kms
@@ -116,11 +115,12 @@ module "elasticsearch" {
 
 #create a service authorization between Secrets Manager and the target service (Elastic Search)
 resource "ibm_iam_authorization_policy" "policy" {
+  count                       = var.skip_es_kms_auth_policy ? 0 : 1
   depends_on                  = [module.elasticsearch]
   source_service_name         = "secrets-manager"
-  source_resource_instance_id = var.existing_sm_instance_guid
+  source_resource_instance_id = local.existing_secrets_manager_instance_guid
   target_service_name         = "databases-for-elasticsearch"
-  target_resource_instance_id = module.elasticsearch.id
+  target_resource_instance_id = module.elasticsearch.guid
   roles                       = ["Key Manager"]
 }
 
@@ -130,19 +130,40 @@ resource "time_sleep" "wait_for_es_authorization_policy" {
   create_duration = "30s"
 }
 
-# create service credentials secret
-module "secret_manager_service_credential" {
-  depends_on                              = [time_sleep.wait_for_es_authorization_policy]
-  source                                  = "terraform-ibm-modules/secrets-manager-secret/ibm"
-  version                                 = "1.3.2"
-  for_each                                = var.service_credential_names
-  region                                  = var.region
-  secrets_manager_guid                    = var.existing_sm_instance_guid
-  secret_group_id                         = var.existing_secret_group_id
-  secret_name                             = "${each.key}-es-cert"
-  secret_description                      = "Elasticsearch Service Credential Certificate for ${each.key}"
-  secret_type                             = "service_credentials" #checkov:skip=CKV_SECRET_6
-  service_credentials_source_service_crn  = module.elasticsearch.id
-  service_credentials_source_service_role = each.value
-  endpoint_type                           = "private"
+locals {
+  service_credential_secrets = [
+    for service_credentials in var.service_credential_secrets : {
+      secret_group_name        = service_credentials.secret_group_name
+      secret_group_description = service_credentials.secret_group_description
+      existing_secret_group    = service_credentials.existing_secret_group
+      secrets = [
+        for secret in service_credentials.service_credentials : {
+          secret_name                             = secret.secret_name
+          secret_labels                           = secret.secret_labels
+          secret_auto_rotation                    = secret.secret_auto_rotation
+          secret_auto_rotation_unit               = secret.secret_auto_rotation_unit
+          secret_auto_rotation_interval           = secret.secret_auto_rotation_interval
+          service_credentials_ttl                 = secret.service_credentials_ttl
+          service_credential_secret_description   = secret.service_credential_secret_description
+          service_credentials_source_service_role = secret.service_credentials_source_service_role
+          service_credentials_source_service_crn  = module.elasticsearch.crn
+          secret_type                             = "service_credentials" #checkov:skip=CKV_SECRET_6
+        }
+      ]
+    }
+  ]
+
+  existing_secrets_manager_instance_crn_split = var.existing_secrets_manager_instance_crn != null ? split(":", var.existing_secrets_manager_instance_crn) : null
+  existing_secrets_manager_instance_guid      = var.existing_secrets_manager_instance_crn != null ? element(local.existing_secrets_manager_instance_crn_split, length(local.existing_secrets_manager_instance_crn_split) - 3) : null
+  existing_secrets_manager_instance_region    = var.existing_secrets_manager_instance_crn != null ? element(local.existing_secrets_manager_instance_crn_split, length(local.existing_secrets_manager_instance_crn_split) - 5) : null
+}
+
+module "secrets_manager_service_credentials" {
+  depends_on                  = [time_sleep.wait_for_es_authorization_policy]
+  source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
+  version                     = "1.16.1"
+  existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
+  existing_sm_instance_region = local.existing_secrets_manager_instance_region
+  endpoint_type               = var.existing_secrets_manager_endpoint_type
+  secrets                     = local.service_credential_secrets
 }
