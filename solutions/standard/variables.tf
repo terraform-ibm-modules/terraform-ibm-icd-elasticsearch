@@ -60,9 +60,16 @@ variable "plan" {
   default     = "platinum"
 }
 
+variable "existing_db_instance_crn" {
+  type        = string
+  default     = null
+  description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
+}
+
 ##############################################################################
 # ICD hosting model properties
 ##############################################################################
+
 
 variable "members" {
   type        = number

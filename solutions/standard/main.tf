@@ -10,7 +10,12 @@ locals {
   elasticsearch_key_name      = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_name}" : var.elasticsearch_key_name
   elasticsearch_key_ring_name = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 
-  kms_key_crn                      = var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn
+
+  kms_key_crn = var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn
+
+  existing_db_instance_guid = var.existing_db_instance_crn != null ? element(split(":", var.existing_db_instance_crn), length(split(":", var.existing_db_instance_crn)) - 3) : null
+  use_existing_db_instance  = var.existing_db_instance_crn != null
+
   create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null
   kms_service_name = local.kms_key_crn != null ? (
     can(regex(".*kms.*", local.kms_key_crn)) ? "kms" : can(regex(".*hs-crypto.*", local.kms_key_crn)) ? "hs-crypto" : null
@@ -89,6 +94,7 @@ module "kms" {
 #######################################################################################################################
 
 module "elasticsearch" {
+  count                         = local.use_existing_db_instance ? 0 : 1
   source                        = "../../modules/fscloud"
   depends_on                    = [time_sleep.wait_for_authorization_policy]
   resource_group_id             = module.resource_group.resource_group_id
@@ -166,4 +172,26 @@ module "secrets_manager_service_credentials" {
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
   secrets                     = local.service_credential_secrets
+
+# this extra block is needed when passing in an existing ES instance - the database data block
+# requires a name and resource_id to retrieve the data
+data "ibm_resource_instance" "existing_instance_resource" {
+  count      = local.use_existing_db_instance ? 1 : 0
+  identifier = local.existing_db_instance_guid
+}
+
+data "ibm_database" "existing_db_instance" {
+  count             = local.use_existing_db_instance ? 1 : 0
+  name              = data.ibm_resource_instance.existing_instance_resource[0].name
+  resource_group_id = data.ibm_resource_instance.existing_instance_resource[0].resource_group_id
+  location          = var.region
+  service           = "databases-for-elasticsearch"
+}
+
+data "ibm_database_connection" "existing_connection" {
+  count         = local.use_existing_db_instance ? 1 : 0
+  endpoint_type = "private"
+  deployment_id = data.ibm_database.existing_db_instance[0].id
+  user_id       = data.ibm_database.existing_db_instance[0].adminuser
+  user_type     = "database"
 }
