@@ -172,6 +172,7 @@ module "secrets_manager_service_credentials" {
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
   secrets                     = local.service_credential_secrets
+}
 
 # this extra block is needed when passing in an existing ES instance - the database data block
 # requires a name and resource_id to retrieve the data
