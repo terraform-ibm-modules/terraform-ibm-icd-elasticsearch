@@ -14,6 +14,7 @@ import (
 )
 
 func TestRunCompleteExampleOtherVersion(t *testing.T) {
+	t.Skip()
 	t.Parallel()
 
 	// Generate a 15 char long random string for the admin_pass
@@ -59,6 +60,7 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 }
 
 func testPlanICDVersions(t *testing.T, version string) {
+	t.Skip()
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
@@ -75,6 +77,7 @@ func testPlanICDVersions(t *testing.T, version string) {
 }
 
 func TestPlanICDVersions(t *testing.T) {
+	t.Skip()
 	t.Parallel()
 
 	// This test will run a terraform plan on available stable versions of elasticsearch

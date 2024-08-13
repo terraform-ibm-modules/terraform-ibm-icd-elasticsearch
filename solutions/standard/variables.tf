@@ -109,7 +109,7 @@ variable "member_memory_mb" {
 
 variable "admin_pass" {
   type        = string
-  description = "The password for the database administrator. If the admin password is null, the admin user ID cannot be accessed. You can specify more users in a user block."
+  description = "The password for the database administrator. If the admin password is null, then password is automatically generated. You can specify more users in a user block."
   default     = null
   sensitive   = true
 }
@@ -234,6 +234,38 @@ variable "elasticsearch_key_name" {
 
 variable "enable_elser_model" {
   type        = bool
-  description = "Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
+  description = "Set it to true to install and start the Elastic's Natural Language Processing model. If elasticsearch `plan` is set to platinum, then value of `enable_elser_model` is `true`. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
+  default     = false
+}
+
+##############################################################
+# Secrets manager
+##############################################################
+
+variable "existing_sm_instance_crn" {
+  type        = string
+  description = "An existing Secrets Manager instance CRN. It is used for storing the elasticsearch administrator password."
+  default     = null
+}
+
+variable "sm_endpoint_type" {
+  type        = string
+  description = "The service endpoint type to communicate with the provided secrets manager instance. Possible values are `public` or `private`"
+  default     = "public"
+  validation {
+    condition     = can(regex("public|private", var.sm_endpoint_type))
+    error_message = "The sm_endpoint_type value must be 'public' or 'private'."
+  }
+}
+
+variable "sm_secret_group_name" {
+  type        = string
+  description = "The name of a new or an secrets manager secret group. To use existing secret group then `use_existing_sm_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = null
+}
+
+variable "use_existing_sm_secret_group" {
+  type        = bool
+  description = "Whether to use an existing secrets manager secret group."
   default     = false
 }

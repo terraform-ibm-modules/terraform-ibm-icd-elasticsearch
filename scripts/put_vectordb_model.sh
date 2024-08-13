@@ -10,7 +10,7 @@ for i in $(seq 1 4); do
 
   sleep $sleep
   # learn more https://www.elastic.co/docs/api/doc/elasticsearch-serverless/operation/operation-ml-put-trained-model#operation-ml-put-trained-model-wait_for_completion
-  response=$(curl -s -w "%{http_code}" -kX PUT "$ES/_ml/trained_models/.elser_model_1?wait_for_completion=true&pretty" -H 'Content-Type: application/json' -d'
+  response=$(curl -s -w "%{http_code}" -kX PUT "$ES/_ml/trained_models/.elser_model_2_linux-x86_64?wait_for_completion=true&pretty" -H 'Content-Type: application/json' -d'
   {
     "input": {
     "field_names": ["text_field"]
