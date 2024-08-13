@@ -94,11 +94,6 @@ module "kms" {
 # Elasticsearch
 #######################################################################################################################
 
-locals {
-  enable_elser_model = var.plan == "platinum" ? true : var.enable_elser_model
-}
-
-
 module "elasticsearch" {
   count                         = local.use_existing_db_instance ? 0 : 1
   source                        = "../../modules/fscloud"
@@ -122,7 +117,7 @@ module "elasticsearch" {
   member_cpu_count              = var.member_cpu_count
   auto_scaling                  = var.auto_scaling
   service_credential_names      = var.service_credential_names
-  enable_elser_model            = local.enable_elser_model
+  enable_elser_model            = var.enable_elser_model
 }
 
 # this extra block is needed when passing in an existing ES instance - the database data block
