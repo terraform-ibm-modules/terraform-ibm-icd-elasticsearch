@@ -152,7 +152,7 @@ locals {
           service_credentials_ttl                 = secret.service_credentials_ttl
           service_credential_secret_description   = secret.service_credential_secret_description
           service_credentials_source_service_role = secret.service_credentials_source_service_role
-          service_credentials_source_service_crn  = module.elasticsearch.crn
+          service_credentials_source_service_crn  = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].id : module.elasticsearch[0].crn
           secret_type                             = "service_credentials" #checkov:skip=CKV_SECRET_6
         }
       ]
