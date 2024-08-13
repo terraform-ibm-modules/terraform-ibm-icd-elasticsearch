@@ -126,7 +126,7 @@ resource "ibm_iam_authorization_policy" "policy" {
   source_service_name         = "secrets-manager"
   source_resource_instance_id = local.existing_secrets_manager_instance_guid
   target_service_name         = "databases-for-elasticsearch"
-  target_resource_instance_id = module.elasticsearch.guid
+  target_resource_instance_id = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].guid : module.elasticsearch[0].guid
   roles                       = ["Key Manager"]
 }
 
@@ -162,9 +162,13 @@ locals {
   existing_secrets_manager_instance_crn_split = var.existing_secrets_manager_instance_crn != null ? split(":", var.existing_secrets_manager_instance_crn) : null
   existing_secrets_manager_instance_guid      = var.existing_secrets_manager_instance_crn != null ? element(local.existing_secrets_manager_instance_crn_split, length(local.existing_secrets_manager_instance_crn_split) - 3) : null
   existing_secrets_manager_instance_region    = var.existing_secrets_manager_instance_crn != null ? element(local.existing_secrets_manager_instance_crn_split, length(local.existing_secrets_manager_instance_crn_split) - 5) : null
+
+  # tflint-ignore: terraform_unused_declarations
+  validate_sm_crn = length(local.service_credential_secrets) > 0 && var.existing_secrets_manager_instance_crn == null ? tobool("`var.existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret.") : false
 }
 
 module "secrets_manager_service_credentials" {
+  count                       = length(local.service_credential_secrets) > 0 ? 1 : 0
   depends_on                  = [time_sleep.wait_for_es_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
   version                     = "1.16.1"
