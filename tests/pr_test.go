@@ -50,7 +50,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestRunFSCloudExample(t *testing.T) {
-	t.Skip()
 	t.Parallel()
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:      t,
@@ -179,7 +178,6 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 }
 
 func TestRunStandardUpgradeSolution(t *testing.T) {
-	t.Skip()
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
@@ -205,7 +203,6 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 }
 
 func TestRunBasicExample(t *testing.T) {
-	t.Skip()
 	t.Parallel()
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
