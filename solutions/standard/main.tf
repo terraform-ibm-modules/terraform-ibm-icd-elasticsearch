@@ -108,7 +108,7 @@ module "elasticsearch" {
   kms_key_crn                   = local.kms_key_crn
   access_tags                   = var.access_tags
   tags                          = var.tags
-  admin_pass                    = local.admin_pass
+  admin_pass                    = var.admin_pass
   users                         = var.users
   members                       = var.members
   member_host_flavor            = var.member_host_flavor
@@ -118,6 +118,7 @@ module "elasticsearch" {
   auto_scaling                  = var.auto_scaling
   service_credential_names      = var.service_credential_names
   enable_elser_model            = var.enable_elser_model
+  elser_model_type              = var.elser_model_type
 }
 
 # this extra block is needed when passing in an existing ES instance - the database data block
@@ -141,43 +142,4 @@ data "ibm_database_connection" "existing_connection" {
   deployment_id = data.ibm_database.existing_db_instance[0].id
   user_id       = data.ibm_database.existing_db_instance[0].adminuser
   user_type     = "database"
-}
-
-#######################################################################################################################
-# Secrets Manager
-#######################################################################################################################
-
-resource "random_password" "admin_password" {
-  count            = var.admin_pass == null ? 1 : 0
-  length           = 32
-  special          = true
-  override_special = "-_"
-}
-
-locals {
-  parsed_existing_sm_instance_crn = var.existing_sm_instance_crn != null ? split(":", var.existing_sm_instance_crn) : []
-  existing_sm_region              = length(local.parsed_existing_sm_instance_crn) > 0 ? local.parsed_existing_sm_instance_crn[5] : null
-  existing_sm_guid                = length(local.parsed_existing_sm_instance_crn) > 0 ? local.parsed_existing_sm_instance_crn[7] : null
-  admin_pass                      = var.admin_pass == null ? random_password.admin_password[0].result : var.admin_pass
-  sm_secret_group_name            = var.prefix != null && var.sm_secret_group_name != null ? "${var.prefix}-${var.sm_secret_group_name}" : var.sm_secret_group_name
-}
-
-module "secrets_manager" {
-  count                       = var.existing_sm_instance_crn != null ? 1 : 0
-  source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version                     = "v1.17.2"
-  existing_sm_instance_guid   = local.existing_sm_guid
-  existing_sm_instance_region = local.existing_sm_region
-  endpoint_type               = var.sm_endpoint_type
-  secrets = [{
-    secret_group_name     = local.sm_secret_group_name
-    existing_secret_group = var.use_existing_sm_secret_group
-    secrets = [{
-      secret_name             = "elasticsearch-administrator-secret"
-      secret_type             = "arbitrary"
-      secret_payload_password = local.admin_pass
-      }
-    ]
-    }
-  ]
 }

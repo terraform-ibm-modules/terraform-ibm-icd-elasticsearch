@@ -109,7 +109,7 @@ variable "member_memory_mb" {
 
 variable "admin_pass" {
   type        = string
-  description = "The password for the database administrator. If the admin password is null, then password is automatically generated. You can specify more users in a user block."
+  description = "The password for the database administrator. If the admin password is null, the admin user ID cannot be accessed. You can specify more users in a user block."
   default     = null
   sensitive   = true
 }
@@ -238,34 +238,8 @@ variable "enable_elser_model" {
   default     = false
 }
 
-##############################################################
-# Secrets manager
-##############################################################
-
-variable "existing_sm_instance_crn" {
+variable "elser_model_type" {
   type        = string
-  description = "An existing Secrets Manager instance CRN. It is used for storing the elasticsearch administrator password. If no value is passed, the administrator password is not stored in any secrets manager instance."
-  default     = null
-}
-
-variable "sm_endpoint_type" {
-  type        = string
-  description = "The service endpoint type to communicate with the provided secrets manager instance. Possible values are `public` or `private`"
-  default     = "private"
-  validation {
-    condition     = can(regex("public|private", var.sm_endpoint_type))
-    error_message = "The sm_endpoint_type value must be 'public' or 'private'."
-  }
-}
-
-variable "sm_secret_group_name" {
-  type        = string
-  description = "The name of a new or existing secrets manager secret group. To use existing secret group then `use_existing_sm_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-  default     = null
-}
-
-variable "use_existing_sm_secret_group" {
-  type        = bool
-  description = "Whether to use an existing secrets manager secret group."
-  default     = false
+  description = "Trained ELSER model to be used for Elastic's Natural Language Processing. [Learn more](https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-elser.html)"
+  default     = "elser_model_2_linux-x86_64"
 }

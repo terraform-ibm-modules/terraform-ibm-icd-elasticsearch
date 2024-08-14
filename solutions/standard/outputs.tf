@@ -22,12 +22,6 @@ output "crn" {
   value       = local.use_existing_db_instance ? var.existing_db_instance_crn : module.elasticsearch[0].crn
 }
 
-output "admin_pass" {
-  description = "Elasticsearch administrator password"
-  value       = local.admin_pass
-  sensitive   = true
-}
-
 output "cbr_rule_ids" {
   description = "CBR rule ids created to restrict Elasticsearch"
   value       = local.use_existing_db_instance ? null : module.elasticsearch[0].cbr_rule_ids
