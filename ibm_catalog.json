@@ -246,6 +246,9 @@
                   "key": "auto_scaling"
                 },
                 {
+                  "key": "enable_elser_model"
+                },
+                {
                   "key": "elser_model_type",
                   "options": [
                     {
