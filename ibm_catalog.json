@@ -244,6 +244,26 @@
                 },
                 {
                   "key": "auto_scaling"
+                },
+                {
+                  "key": "enable_elser_model"
+                },
+                {
+                  "key": "elser_model_type",
+                  "options": [
+                    {
+                      "displayname": ".elser_model_1",
+                      "value": ".elser_model_1"
+                    },
+                    {
+                      "displayname": ".elser_model_2",
+                      "value": ".elser_model_2"
+                    },
+                    {
+                      "displayname": ".elser_model_2_linux-x86_64",
+                      "value": ".elser_model_2_linux-x86_64"
+                    }
+                  ]
                 }
               ]
           }

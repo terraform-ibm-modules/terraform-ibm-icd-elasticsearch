@@ -289,11 +289,15 @@ locals {
 
 resource "null_resource" "put_vectordb_model" {
   count = var.enable_elser_model ? 1 : 0
+  triggers = {
+    file_changed = md5(var.elser_model_type)
+  }
   provisioner "local-exec" {
     command     = "${path.module}/scripts/put_vectordb_model.sh"
     interpreter = ["/bin/bash", "-c"]
     environment = {
-      ES = local.es_url
+      ES               = local.es_url
+      ELSER_MODEL_TYPE = var.elser_model_type
     }
   }
 }
@@ -301,11 +305,15 @@ resource "null_resource" "put_vectordb_model" {
 resource "null_resource" "start_vectordb_model" {
   depends_on = [null_resource.put_vectordb_model]
   count      = var.enable_elser_model ? 1 : 0
+  triggers = {
+    file_changed = md5(var.elser_model_type)
+  }
   provisioner "local-exec" {
     command     = "${path.module}/scripts/start_vectordb_model.sh"
     interpreter = ["/bin/bash", "-c"]
     environment = {
-      ES = local.es_url
+      ES               = local.es_url
+      ELSER_MODEL_TYPE = var.elser_model_type
     }
   }
 }
