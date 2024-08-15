@@ -4,18 +4,27 @@ set -e
 INSTALL_NEW_MODEL=true
 
 # get trained models from elasticsearch
-result=$(curl -s -w "%{http_code}" -kX GET "$ES/_ml/trained_models?pretty")
+sleep=2
+for i in $(seq 1 4); do
+    sleep=$((sleep*2))
 
-http_code=$(tail -n1 <<< "$result")
-content=$(sed '$ d' <<< "$result")
-# Check the result
-if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 201 ]; then
-    echo "Trained models successfully pulled from elasticsearch."
-else
-    echo "Failed to get the trained models from elasticsearch. HTTP status code: $http_code"
-    echo "Reponse: $content"
-    exit 1
-fi
+    sleep $sleep
+    result=$(curl -s -w "%{http_code}" -kX GET "$ES/_ml/trained_models?pretty")
+
+    http_code=$(tail -n1 <<< "$result")
+    content=$(sed '$ d' <<< "$result")
+    # Check the result
+    if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 201 ]; then
+        echo "Trained models successfully pulled from elasticsearch."
+        break
+    else
+        echo "Failed to get the trained models from elasticsearch. HTTP status code: $http_code"
+        echo "Reponse: $content"
+        if [ "$i" -eq 4 ]; then
+          exit 1
+        fi
+    fi
+done
 
 # fetch all model_ids created by customer (api_user) from the result
 model_ids=$(echo "$content" | jq ".trained_model_configs[] | select(.model_id and .created_by == \"api_user\") | .model_id")
@@ -30,17 +39,26 @@ do
     if [ "$ELSER_MODEL_TYPE" != "$model" ]; then
         # deleting trained model
         echo "Delete: $model from elasticsearch"
-        result=$(curl -s -w "%{http_code}" -kX DELETE "$ES/_ml/trained_models/$model?pretty")
-        http_code=$(tail -n1 <<< "$result")
-        content=$(sed '$ d' <<< "$result")
-        # Check the result
-        if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 201 ]; then
-            echo "Trained model '$model' successfully deleted from elasticsearch."
-        else
-            echo "Failed to delete the trained model '$model' from elasticsearch. HTTP status code: $http_code"
-            echo "Reponse: $content"
-            exit 1
-        fi
+        sleep=2
+        for i in $(seq 1 4); do
+          sleep=$((sleep*2))
+
+          sleep $sleep
+          result=$(curl -s -w "%{http_code}" -kX DELETE "$ES/_ml/trained_models/$model?pretty")
+          http_code=$(tail -n1 <<< "$result")
+          content=$(sed '$ d' <<< "$result")
+          # Check the result
+          if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 201 ]; then
+              echo "Trained model '$model' successfully deleted from elasticsearch."
+              break
+          else
+              echo "Failed to delete the trained model '$model' from elasticsearch. HTTP status code: $http_code"
+              echo "Reponse: $content"
+              if [ "$i" -eq 4 ]; then
+                exit 1
+              fi
+          fi
+        done
     else
         INSTALL_NEW_MODEL=false
         echo "Do not delete model '$model' from elasticsearch."

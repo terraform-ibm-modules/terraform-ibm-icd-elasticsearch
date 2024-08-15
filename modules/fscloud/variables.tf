@@ -198,5 +198,5 @@ variable "enable_elser_model" {
 variable "elser_model_type" {
   type        = string
   description = "Trained ELSER model to be used for Elastic's Natural Language Processing. [Learn more](https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-elser.html)"
-  default     = "elser_model_2_linux-x86_64"
+  default     = ".elser_model_2_linux-x86_64"
 }
