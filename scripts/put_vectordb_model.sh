@@ -4,8 +4,10 @@ set -e
 INSTALL_NEW_MODEL=true
 
 # get trained models from elasticsearch
+echo "Pulling trained models from elasticsearch."
 sleep=2
 for i in $(seq 1 4); do
+
     sleep=$((sleep*2))
 
     sleep $sleep
@@ -29,8 +31,13 @@ done
 # fetch all model_ids created by customer (api_user) from the result
 model_ids=$(echo "$content" | jq ".trained_model_configs[] | select(.model_id and .created_by == \"api_user\") | .model_id")
 
-# loop through result and delete unwanted models
+if [[ -z "$model_ids" ]]; then
+   echo "User has not installed any trained model yet."
+else
+   echo "User's installed trained models: '$model_ids'."
+fi
 
+# loop through result and delete unwanted models
 for model_id in $model_ids
 do
     # need to remove double quotes
@@ -38,7 +45,7 @@ do
     echo "Check if model '$model' should be deleted from elasticsearch."
     if [ "$ELSER_MODEL_TYPE" != "$model" ]; then
         # deleting trained model
-        echo "Delete: $model from elasticsearch"
+        echo "Deleting trained model '$model' from elasticsearch"
         sleep=2
         for i in $(seq 1 4); do
           sleep=$((sleep*2))
@@ -68,6 +75,7 @@ done
 # deploy a new trained model using retry
 if [ "$INSTALL_NEW_MODEL" = true ] ; then
     sleep=2
+    echo "Deploying the new trained model '$ELSER_MODEL_TYPE' to elasticsearch ..."
     for i in $(seq 1 4); do
         sleep=$((sleep*2))
 
