@@ -124,7 +124,7 @@ module "elasticsearch" {
 
 # create a service authorization between Secrets Manager and the target service (Elastic Search)
 resource "ibm_iam_authorization_policy" "secrets_manager_key_manager" {
-  count                       = var.skip_es_sm_auth_policy ? 0 : 1
+  count                       = var.skip_es_sm_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
   depends_on                  = [module.elasticsearch]
   source_service_name         = "secrets-manager"
   source_resource_instance_id = local.existing_secrets_manager_instance_guid
