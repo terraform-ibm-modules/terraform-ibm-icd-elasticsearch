@@ -9,7 +9,7 @@ output "id" {
 
 output "guid" {
   description = "Elasticsearch instance guid"
-  value       = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].guid : module.elasticsearch[0].guid
+  value       = local.elasticsearch_guid
 }
 
 output "version" {

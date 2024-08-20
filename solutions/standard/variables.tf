@@ -290,7 +290,7 @@ variable "service_credential_secrets" {
   }
 }
 
-variable "skip_es_kms_auth_policy" {
+variable "skip_es_sm_auth_policy" {
   type        = bool
   default     = false
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for Elasticsearch. Set to `true` to use an existing policy."

@@ -20,6 +20,8 @@ locals {
   kms_service_name = local.kms_key_crn != null ? (
     can(regex(".*kms.*", local.kms_key_crn)) ? "kms" : can(regex(".*hs-crypto.*", local.kms_key_crn)) ? "hs-crypto" : null
   ) : null
+
+  elasticsearch_guid = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].guid : module.elasticsearch[0].guid
 }
 
 #######################################################################################################################
@@ -120,20 +122,21 @@ module "elasticsearch" {
   elser_model_type              = var.elser_model_type
 }
 
-#create a service authorization between Secrets Manager and the target service (Elastic Search)
-resource "ibm_iam_authorization_policy" "policy" {
-  count                       = var.skip_es_kms_auth_policy ? 0 : 1
+# create a service authorization between Secrets Manager and the target service (Elastic Search)
+resource "ibm_iam_authorization_policy" "secrets_manager_key_manager" {
+  count                       = var.skip_es_sm_auth_policy ? 0 : 1
   depends_on                  = [module.elasticsearch]
   source_service_name         = "secrets-manager"
   source_resource_instance_id = local.existing_secrets_manager_instance_guid
   target_service_name         = "databases-for-elasticsearch"
-  target_resource_instance_id = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].guid : module.elasticsearch[0].guid
+  target_resource_instance_id = local.elasticsearch_guid
   roles                       = ["Key Manager"]
+  description                 = "Allow Secrets Manager with instance id ${local.existing_secrets_manager_instance_guid} to manage key for the databases-for-elasticsearch instance"
 }
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_es_authorization_policy" {
-  depends_on      = [ibm_iam_authorization_policy.policy]
+  depends_on      = [ibm_iam_authorization_policy.secrets_manager_key_manager]
   create_duration = "30s"
 }
 
@@ -172,7 +175,7 @@ module "secrets_manager_service_credentials" {
   count                       = length(local.service_credential_secrets) > 0 ? 1 : 0
   depends_on                  = [time_sleep.wait_for_es_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version                     = "1.16.1"
+  version                     = "1.17.4"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
