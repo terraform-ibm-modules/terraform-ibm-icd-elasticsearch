@@ -211,6 +211,10 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
 		"kms_endpoint_type":         "public",
 		"resource_group_name":       options.Prefix,
+		// Currently, we can not have upgrade test for elser model, because test provision private endpoint for ES (fscloud profile), and script can not connect to private ES API without schematics
+		// "plan":                      "platinum",
+		// "enable_elser_model":        true,
+		// "service_credential_names":  "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}",
 	}
 
 	output, err := options.RunTestUpgrade()

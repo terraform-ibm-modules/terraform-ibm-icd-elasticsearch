@@ -172,7 +172,6 @@ resource "ibm_database" "elasticsearch" {
       version,
       key_protect_key,
       backup_encryption_key_crn,
-      connectionstrings # https://github.com/IBM-Cloud/terraform-provider-ibm/issues/5546
     ]
   }
 
@@ -196,7 +195,7 @@ resource "ibm_resource_tag" "elasticsearch_tag" {
 module "cbr_rule" {
   count            = length(var.cbr_rules) > 0 ? length(var.cbr_rules) : 0
   source           = "terraform-ibm-modules/cbr/ibm//modules/cbr-rule-module"
-  version          = "1.23.5"
+  version          = "1.24.0"
   rule_description = var.cbr_rules[count.index].description
   enforcement_mode = var.cbr_rules[count.index].enforcement_mode
   rule_contexts    = var.cbr_rules[count.index].rule_contexts
@@ -290,11 +289,15 @@ locals {
 
 resource "null_resource" "put_vectordb_model" {
   count = var.enable_elser_model ? 1 : 0
+  triggers = {
+    file_changed = md5(var.elser_model_type)
+  }
   provisioner "local-exec" {
     command     = "${path.module}/scripts/put_vectordb_model.sh"
     interpreter = ["/bin/bash", "-c"]
     environment = {
-      ES = local.es_url
+      ES               = local.es_url
+      ELSER_MODEL_TYPE = var.elser_model_type
     }
   }
 }
@@ -302,11 +305,15 @@ resource "null_resource" "put_vectordb_model" {
 resource "null_resource" "start_vectordb_model" {
   depends_on = [null_resource.put_vectordb_model]
   count      = var.enable_elser_model ? 1 : 0
+  triggers = {
+    file_changed = md5(var.elser_model_type)
+  }
   provisioner "local-exec" {
     command     = "${path.module}/scripts/start_vectordb_model.sh"
     interpreter = ["/bin/bash", "-c"]
     environment = {
-      ES = local.es_url
+      ES               = local.es_url
+      ELSER_MODEL_TYPE = var.elser_model_type
     }
   }
 }

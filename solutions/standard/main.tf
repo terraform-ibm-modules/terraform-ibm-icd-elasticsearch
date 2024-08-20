@@ -65,7 +65,7 @@ module "kms" {
   }
   count                       = var.existing_kms_key_crn != null ? 0 : 1 # no need to create any KMS resources if passing an existing key
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version                     = "4.15.6"
+  version                     = "4.15.8"
   create_key_protect_instance = false
   region                      = local.existing_kms_instance_region
   existing_kms_instance_crn   = var.existing_kms_instance_crn
@@ -117,6 +117,7 @@ module "elasticsearch" {
   auto_scaling                  = var.auto_scaling
   service_credential_names      = var.service_credential_names
   enable_elser_model            = var.enable_elser_model
+  elser_model_type              = var.elser_model_type
 }
 
 #create a service authorization between Secrets Manager and the target service (Elastic Search)
