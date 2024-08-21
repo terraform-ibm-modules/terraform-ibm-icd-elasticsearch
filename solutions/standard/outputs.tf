@@ -9,7 +9,7 @@ output "id" {
 
 output "guid" {
   description = "Elasticsearch instance guid"
-  value       = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].guid : module.elasticsearch[0].guid
+  value       = local.elasticsearch_guid
 }
 
 output "version" {
@@ -47,4 +47,14 @@ output "hostname" {
 output "port" {
   description = "Elasticsearch instance port"
   value       = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
+}
+
+output "service_credential_secrets" {
+  description = "Service credential secrets"
+  value       = length(local.service_credential_secrets) > 0 ? module.secrets_manager_service_credentials[0].secrets : null
+}
+
+output "service_credential_secret_groups" {
+  description = "Service credential secret groups"
+  value       = length(local.service_credential_secrets) > 0 ? module.secrets_manager_service_credentials[0].secret_groups : null
 }
