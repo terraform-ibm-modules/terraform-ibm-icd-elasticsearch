@@ -214,6 +214,15 @@
                   "key": "admin_pass"
                 },
                 {
+                  "key": "admin_pass_sm_secret_group"
+                },
+                {
+                  "key": "use_existing_admin_pass_sm_secret_group"
+                },
+                {
+                  "key": "admin_pass_sm_secret_name"
+                },
+                {
                   "key": "skip_iam_authorization_policy"
                 },
                 {

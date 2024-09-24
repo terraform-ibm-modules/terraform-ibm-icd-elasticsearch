@@ -175,7 +175,7 @@ locals {
     secret_group_name     = var.prefix != null ? "${var.prefix}-${var.admin_pass_sm_secret_group}" : var.admin_pass_sm_secret_group
     existing_secret_group = var.use_existing_admin_pass_sm_secret_group
     secrets = [{
-      secret_name             = "elasticsearch-administrator-secret"
+      secret_name             = var.prefix != null ? "${var.prefix}-${var.admin_pass_sm_secret_name}" : var.admin_pass_sm_secret_name
       secret_type             = "arbitrary"
       secret_payload_password = local.admin_pass
       }
@@ -191,6 +191,8 @@ locals {
   validate_sm_crn = length(local.service_credential_secrets) > 0 && var.existing_secrets_manager_instance_crn == null ? tobool("`existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret.") : false
   # tflint-ignore: terraform_unused_declarations
   validate_sm_sg = var.existing_secrets_manager_instance_crn != null && var.admin_pass_sm_secret_group == null ? tobool("`admin_pass_sm_secret_group` is required when `existing_secrets_manager_instance_crn` is set.") : false
+  # tflint-ignore: terraform_unused_declarations
+  validate_sm_sn = var.existing_secrets_manager_instance_crn != null && var.admin_pass_sm_secret_name == null ? tobool("`admin_pass_sm_secret_name` is required when `existing_secrets_manager_instance_crn` is set.") : false
 }
 
 module "secrets_manager_service_credentials" {
