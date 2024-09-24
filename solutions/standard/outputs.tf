@@ -58,3 +58,9 @@ output "service_credential_secret_groups" {
   description = "Service credential secret groups"
   value       = length(local.service_credential_secrets) > 0 ? module.secrets_manager_service_credentials[0].secret_groups : null
 }
+
+output "admin_pass" {
+  description = "Elasticsearch administrator password"
+  value       = local.admin_pass
+  sensitive   = true
+}
