@@ -66,6 +66,22 @@ variable "existing_db_instance_crn" {
   description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
 }
 
+variable "enable_elser_model" {
+  type        = bool
+  description = "Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
+  default     = false
+}
+
+variable "elser_model_type" {
+  type        = string
+  description = "Trained ELSER model to be used for Elastic's Natural Language Processing. Possible values: `.elser_model_1`, `.elser_model_2` and `.elser_model_2_linux-x86_64`. [Learn more](https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-elser.html)"
+  default     = ".elser_model_2_linux-x86_64"
+  validation {
+    condition     = contains([".elser_model_1", ".elser_model_2", ".elser_model_2_linux-x86_64"], var.elser_model_type)
+    error_message = "The specified elser_model_type is not a valid selection!"
+  }
+}
+
 ##############################################################################
 # ICD hosting model properties
 ##############################################################################
@@ -109,7 +125,7 @@ variable "member_memory_mb" {
 
 variable "admin_pass" {
   type        = string
-  description = "The password for the database administrator. If the admin password is null, the admin user ID cannot be accessed. You can specify more users in a user block."
+  description = "The password for the database administrator. If the admin password is null, then it is created automatically. You must set 'existing_secrets_manager_instance_crn' to store admin pass into secrets manager. You can specify more users in a user block."
   default     = null
   sensitive   = true
 }
@@ -223,20 +239,6 @@ variable "elasticsearch_key_name" {
   description = "The name for the key created for the Databases for Elasticsearch key. Applies only if not specifying an existing key. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
 }
 
-##############################################################
-# Context-based restriction (CBR)
-##############################################################
-
-##############################################################
-# Backup
-##############################################################
-
-variable "enable_elser_model" {
-  type        = bool
-  description = "Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
-  default     = false
-}
-
 ##############################################################################
 ## Secrets Manager Service Credentials
 ##############################################################################
@@ -296,12 +298,20 @@ variable "skip_es_sm_auth_policy" {
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for Elasticsearch. Set to `true` to use an existing policy."
 }
 
-variable "elser_model_type" {
+variable "admin_pass_sm_secret_group" {
   type        = string
-  description = "Trained ELSER model to be used for Elastic's Natural Language Processing. Possible values: `.elser_model_1`, `.elser_model_2` and `.elser_model_2_linux-x86_64`. [Learn more](https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-elser.html)"
-  default     = ".elser_model_2_linux-x86_64"
-  validation {
-    condition     = contains([".elser_model_1", ".elser_model_2", ".elser_model_2_linux-x86_64"], var.elser_model_type)
-    error_message = "The specified elser_model_type is not a valid selection!"
-  }
+  description = "The name of a new or existing secrets manager secret group for admin password. To use existing secret group, `use_existing_admin_pass_sm_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = null
+}
+
+variable "use_existing_admin_pass_sm_secret_group" {
+  type        = bool
+  description = "Whether to use an existing secrets manager secret group for admin password."
+  default     = false
+}
+
+variable "admin_pass_sm_secret_name" {
+  type        = string
+  description = "The name of a new elasticsearch administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = null
 }
