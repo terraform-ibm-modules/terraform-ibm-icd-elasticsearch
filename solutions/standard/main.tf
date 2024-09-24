@@ -109,7 +109,7 @@ module "elasticsearch" {
   kms_key_crn                   = local.kms_key_crn
   access_tags                   = var.access_tags
   tags                          = var.tags
-  admin_pass                    = var.admin_pass
+  admin_pass                    = local.admin_pass
   users                         = var.users
   members                       = var.members
   member_host_flavor            = var.member_host_flavor
@@ -120,6 +120,13 @@ module "elasticsearch" {
   service_credential_names      = var.service_credential_names
   enable_elser_model            = var.enable_elser_model
   elser_model_type              = var.elser_model_type
+}
+
+resource "random_password" "admin_password" {
+  count            = var.admin_pass == null ? 1 : 0
+  length           = 32
+  special          = true
+  override_special = "-_"
 }
 
 # create a service authorization between Secrets Manager and the target service (Elastic Search)
@@ -163,23 +170,38 @@ locals {
     }
   ]
 
+  admin_pass = var.admin_pass == null ? random_password.admin_password[0].result : var.admin_pass
+  admin_pass_secret = [{
+    secret_group_name     = var.prefix != null ? "${var.prefix}-${var.admin_pass_sm_secret_group}" : var.admin_pass_sm_secret_group
+    existing_secret_group = var.use_existing_admin_pass_sm_secret_group
+    secrets = [{
+      secret_name             = "elasticsearch-administrator-secret"
+      secret_type             = "arbitrary"
+      secret_payload_password = local.admin_pass
+      }
+    ]
+  }]
+  secrets = concat(local.service_credential_secrets, local.admin_pass_secret)
+
   existing_secrets_manager_instance_crn_split = var.existing_secrets_manager_instance_crn != null ? split(":", var.existing_secrets_manager_instance_crn) : null
   existing_secrets_manager_instance_guid      = var.existing_secrets_manager_instance_crn != null ? element(local.existing_secrets_manager_instance_crn_split, length(local.existing_secrets_manager_instance_crn_split) - 3) : null
   existing_secrets_manager_instance_region    = var.existing_secrets_manager_instance_crn != null ? element(local.existing_secrets_manager_instance_crn_split, length(local.existing_secrets_manager_instance_crn_split) - 5) : null
 
   # tflint-ignore: terraform_unused_declarations
   validate_sm_crn = length(local.service_credential_secrets) > 0 && var.existing_secrets_manager_instance_crn == null ? tobool("`existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret.") : false
+  # tflint-ignore: terraform_unused_declarations
+  validate_sm_sg = var.existing_secrets_manager_instance_crn != null && var.admin_pass_sm_secret_group == null ? tobool("`admin_pass_sm_secret_group` is required when `existing_secrets_manager_instance_crn` is set.") : false
 }
 
 module "secrets_manager_service_credentials" {
-  count                       = length(local.service_credential_secrets) > 0 ? 1 : 0
+  count                       = var.existing_secrets_manager_instance_crn == null ? 0 : 1
   depends_on                  = [time_sleep.wait_for_es_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
   version                     = "1.18.6"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
-  secrets                     = local.service_credential_secrets
+  secrets                     = local.secrets
 }
 
 # this extra block is needed when passing in an existing ES instance - the database data block

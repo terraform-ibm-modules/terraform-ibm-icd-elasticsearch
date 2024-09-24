@@ -109,7 +109,7 @@ variable "member_memory_mb" {
 
 variable "admin_pass" {
   type        = string
-  description = "The password for the database administrator. If the admin password is null, the admin user ID cannot be accessed. You can specify more users in a user block."
+  description = "The password for the database administrator. If the admin password is null, then it is created automatically. You must set 'existing_secrets_manager_instance_crn' to store admin pass into secrets manager. You can specify more users in a user block."
   default     = null
   sensitive   = true
 }
@@ -304,4 +304,16 @@ variable "elser_model_type" {
     condition     = contains([".elser_model_1", ".elser_model_2", ".elser_model_2_linux-x86_64"], var.elser_model_type)
     error_message = "The specified elser_model_type is not a valid selection!"
   }
+}
+
+variable "admin_pass_sm_secret_group" {
+  type        = string
+  description = "The name of a new or existing secrets manager secret group for admin password. To use existing secret group, `use_existing_admin_pass_sm_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = null
+}
+
+variable "use_existing_admin_pass_sm_secret_group" {
+  type        = bool
+  description = "Whether to use an existing secrets manager secret group for admin password."
+  default     = false
 }
