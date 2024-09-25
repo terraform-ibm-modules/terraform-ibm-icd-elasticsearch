@@ -45,6 +45,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_authorization_policy" {
+  count      = var.kms_encryption_enabled == false || var.skip_iam_authorization_policy ? 0 : 1
   depends_on = [ibm_iam_authorization_policy.policy]
 
   create_duration = "30s"
