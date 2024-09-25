@@ -172,10 +172,10 @@ locals {
 
   admin_pass = var.admin_pass == null ? random_password.admin_password[0].result : var.admin_pass
   admin_pass_secret = [{
-    secret_group_name     = var.prefix != null ? "${var.prefix}-${var.admin_pass_sm_secret_group}" : var.admin_pass_sm_secret_group
+    secret_group_name     = var.prefix != null && var.admin_pass_sm_secret_group != null ? "${var.prefix}-${var.admin_pass_sm_secret_group}" : var.admin_pass_sm_secret_group
     existing_secret_group = var.use_existing_admin_pass_sm_secret_group
     secrets = [{
-      secret_name             = var.prefix != null ? "${var.prefix}-${var.admin_pass_sm_secret_name}" : var.admin_pass_sm_secret_name
+      secret_name             = var.prefix != null && var.admin_pass_sm_secret_name != null ? "${var.prefix}-${var.admin_pass_sm_secret_name}" : var.admin_pass_sm_secret_name
       secret_type             = "arbitrary"
       secret_payload_password = local.admin_pass
       }
