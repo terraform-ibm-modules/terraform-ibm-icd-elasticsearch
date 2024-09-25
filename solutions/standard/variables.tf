@@ -301,7 +301,7 @@ variable "skip_es_sm_auth_policy" {
 variable "admin_pass_sm_secret_group" {
   type        = string
   description = "The name of a new or existing secrets manager secret group for admin password. To use existing secret group, `use_existing_admin_pass_sm_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-  default     = null
+  default     = "elasticsearch-secrets"
 }
 
 variable "use_existing_admin_pass_sm_secret_group" {
@@ -313,5 +313,5 @@ variable "use_existing_admin_pass_sm_secret_group" {
 variable "admin_pass_sm_secret_name" {
   type        = string
   description = "The name of a new elasticsearch administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-  default     = null
+  default     = "elasticsearch-admin-password"
 }
