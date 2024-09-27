@@ -129,6 +129,7 @@ resource "random_password" "admin_password" {
   length           = 32
   special          = true
   override_special = "-_"
+  min_numeric      = 1
 }
 
 # create a service authorization between Secrets Manager and the target service (Elastic Search)
