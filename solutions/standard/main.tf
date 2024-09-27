@@ -17,6 +17,7 @@ locals {
   use_existing_db_instance  = var.existing_db_instance_crn != null
 
   create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null
+  create_sm_auth_policy            = var.skip_es_sm_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
   kms_service_name = local.kms_key_crn != null ? (
     can(regex(".*kms.*", local.kms_key_crn)) ? "kms" : can(regex(".*hs-crypto.*", local.kms_key_crn)) ? "hs-crypto" : null
   ) : null
@@ -57,6 +58,7 @@ resource "ibm_iam_authorization_policy" "kms_policy" {
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_authorization_policy" {
+  count           = local.create_cross_account_auth_policy ? 1 : 0
   depends_on      = [ibm_iam_authorization_policy.kms_policy]
   create_duration = "30s"
 }
@@ -131,7 +133,7 @@ resource "random_password" "admin_password" {
 
 # create a service authorization between Secrets Manager and the target service (Elastic Search)
 resource "ibm_iam_authorization_policy" "secrets_manager_key_manager" {
-  count                       = var.skip_es_sm_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
+  count                       = local.create_sm_auth_policy
   depends_on                  = [module.elasticsearch]
   source_service_name         = "secrets-manager"
   source_resource_instance_id = local.existing_secrets_manager_instance_guid
@@ -143,6 +145,7 @@ resource "ibm_iam_authorization_policy" "secrets_manager_key_manager" {
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_es_authorization_policy" {
+  count           = local.create_sm_auth_policy
   depends_on      = [ibm_iam_authorization_policy.secrets_manager_key_manager]
   create_duration = "30s"
 }

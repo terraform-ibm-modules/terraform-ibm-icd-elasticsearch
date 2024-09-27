@@ -31,11 +31,13 @@ locals {
       can(regex(".*hs-crypto.*", var.kms_key_crn)) ? "hs-crypto" : "unrecognized key type"
     )
   ) : "no key crn"
+
+  create_kp_auth_policy = var.kms_encryption_enabled == false || var.skip_iam_authorization_policy ? 0 : 1
 }
 
 # Create IAM Access Policy to allow Key protect to access Elasticsearch instance
 resource "ibm_iam_authorization_policy" "policy" {
-  count                       = var.kms_encryption_enabled == false || var.skip_iam_authorization_policy ? 0 : 1
+  count                       = local.create_kp_auth_policy
   source_service_name         = "databases-for-elasticsearch"
   source_resource_group_id    = var.resource_group_id
   target_service_name         = local.kms_service
@@ -45,6 +47,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_authorization_policy" {
+  count      = local.create_kp_auth_policy
   depends_on = [ibm_iam_authorization_policy.policy]
 
   create_duration = "30s"
