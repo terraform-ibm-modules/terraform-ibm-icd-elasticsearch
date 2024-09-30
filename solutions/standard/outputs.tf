@@ -19,7 +19,7 @@ output "version" {
 
 output "crn" {
   description = "Elasticsearch instance crn"
-  value       = local.use_existing_db_instance ? var.existing_db_instance_crn : module.elasticsearch[0].crn
+  value       = local.use_existing_db_instance ? var.existing_elastic_search_instance_crn : module.elasticsearch[0].crn
 }
 
 output "cbr_rule_ids" {

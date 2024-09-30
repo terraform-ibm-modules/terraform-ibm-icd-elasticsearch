@@ -11,18 +11,16 @@ locals {
   elasticsearch_key_ring_name = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 
 
-  existing_db_instance_guid = var.existing_db_instance_crn != null ? element(split(":", var.existing_db_instance_crn), length(split(":", var.existing_db_instance_crn)) - 3) : null
-  use_existing_db_instance  = var.existing_db_instance_crn != null
+  kms_key_crn = var.existing_elastic_search_instance_crn != null ? null : (var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn)
 
-  create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key
-  create_sm_auth_policy            = var.skip_es_sm_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
+  existing_db_instance_guid = var.existing_elastic_search_instance_crn != null ? element(split(":", var.existing_elastic_search_instance_crn), length(split(":", var.existing_elastic_search_instance_crn)) - 3) : null
+  use_existing_db_instance  = var.existing_elastic_search_instance_crn != null
 
-  kms_key_crn        = var.existing_db_instance_crn != null ? null : !var.use_ibm_owned_encryption_key ? var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn : null
-  parsed_kms_key_crn = local.kms_key_crn != null ? split(":", local.kms_key_crn) : []
-  kms_service        = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[4] : null
-  kms_scope          = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[6] : null
-  kms_account_id     = length(local.parsed_kms_key_crn) > 0 ? split("/", local.kms_scope)[1] : null
-  kms_key_id         = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[9] : null
+  create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null
+  create_sm_auth_policy            = var.skip_elastic_search_to_secret_manager_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
+  kms_service_name = local.kms_key_crn != null ? (
+    can(regex(".*kms.*", local.kms_key_crn)) ? "kms" : can(regex(".*hs-crypto.*", local.kms_key_crn)) ? "hs-crypto" : null
+  ) : null
 
   elasticsearch_guid = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].guid : module.elasticsearch[0].guid
 }
@@ -287,10 +285,10 @@ locals {
 
   admin_pass = var.admin_pass == null ? local.admin_password : var.admin_pass
   admin_pass_secret = [{
-    secret_group_name     = var.prefix != null && var.admin_pass_sm_secret_group != null ? "${var.prefix}-${var.admin_pass_sm_secret_group}" : var.admin_pass_sm_secret_group
-    existing_secret_group = var.use_existing_admin_pass_sm_secret_group
+    secret_group_name     = var.prefix != null && var.admin_pass_secrets_manager_secret_group != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_group}" : var.admin_pass_secrets_manager_secret_group
+    existing_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
     secrets = [{
-      secret_name             = var.prefix != null && var.admin_pass_sm_secret_name != null ? "${var.prefix}-${var.admin_pass_sm_secret_name}" : var.admin_pass_sm_secret_name
+      secret_name             = var.prefix != null && var.admin_pass_secrets_manager_secret_name != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_name}" : var.admin_pass_secrets_manager_secret_name
       secret_type             = "arbitrary"
       secret_payload_password = local.admin_pass
       }
@@ -305,9 +303,9 @@ locals {
   # tflint-ignore: terraform_unused_declarations
   validate_sm_crn = length(local.service_credential_secrets) > 0 && var.existing_secrets_manager_instance_crn == null ? tobool("`existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret.") : false
   # tflint-ignore: terraform_unused_declarations
-  validate_sm_sg = var.existing_secrets_manager_instance_crn != null && var.admin_pass_sm_secret_group == null ? tobool("`admin_pass_sm_secret_group` is required when `existing_secrets_manager_instance_crn` is set.") : false
+  validate_sm_sg = var.existing_secrets_manager_instance_crn != null && var.admin_pass_secrets_manager_secret_group == null ? tobool("`admin_pass_secrets_manager_secret_group` is required when `existing_secrets_manager_instance_crn` is set.") : false
   # tflint-ignore: terraform_unused_declarations
-  validate_sm_sn = var.existing_secrets_manager_instance_crn != null && var.admin_pass_sm_secret_name == null ? tobool("`admin_pass_sm_secret_name` is required when `existing_secrets_manager_instance_crn` is set.") : false
+  validate_sm_sn = var.existing_secrets_manager_instance_crn != null && var.admin_pass_secrets_manager_secret_name == null ? tobool("`admin_pass_secrets_manager_secret_name` is required when `existing_secrets_manager_instance_crn` is set.") : false
 }
 
 module "secrets_manager_service_credentials" {

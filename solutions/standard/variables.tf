@@ -77,7 +77,7 @@ variable "plan" {
   default     = "platinum"
 }
 
-variable "existing_db_instance_crn" {
+variable "existing_elastic_search_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
@@ -91,7 +91,7 @@ variable "enable_elser_model" {
 
 variable "elser_model_type" {
   type        = string
-  description = "Trained ELSER model to be used for Elastic's Natural Language Processing. Possible values: `.elser_model_1`, `.elser_model_2` and `.elser_model_2_linux-x86_64`. [Learn more](https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-elser.html)"
+  description = "Trained ELSER model to be used for Elastic's Natural Language Processing. Possible values: `.elser_model_1`, `.elser_model_2` and `.elser_model_2_linux-x86_64`. Applies only if 'plan' is set to 'platinum' and 'enable_elser_model' is enabled. [Learn more](https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-elser.html)"
   default     = ".elser_model_2_linux-x86_64"
   validation {
     condition     = contains([".elser_model_1", ".elser_model_2", ".elser_model_2_linux-x86_64"], var.elser_model_type)
@@ -315,25 +315,25 @@ variable "service_credential_secrets" {
   }
 }
 
-variable "skip_es_sm_auth_policy" {
+variable "skip_elastic_search_to_secret_manager_auth_policy" {
   type        = bool
   default     = false
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for Elasticsearch. Set to `true` to use an existing policy."
 }
 
-variable "admin_pass_sm_secret_group" {
+variable "admin_pass_secrets_manager_secret_group" {
   type        = string
   description = "The name of a new or existing secrets manager secret group for admin password. To use existing secret group, `use_existing_admin_pass_sm_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch-secrets"
 }
 
-variable "use_existing_admin_pass_sm_secret_group" {
+variable "use_existing_admin_pass_secrets_manager_secret_group" {
   type        = bool
   description = "Whether to use an existing secrets manager secret group for admin password."
   default     = false
 }
 
-variable "admin_pass_sm_secret_name" {
+variable "admin_pass_secrets_manager_secret_name" {
   type        = string
   description = "The name of a new elasticsearch administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch-admin-password"
