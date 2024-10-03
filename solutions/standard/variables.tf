@@ -77,7 +77,7 @@ variable "plan" {
   default     = "platinum"
 }
 
-variable "existing_elastic_search_instance_crn" {
+variable "existing_elasticsearch_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
@@ -315,7 +315,7 @@ variable "service_credential_secrets" {
   }
 }
 
-variable "skip_elastic_search_to_secret_manager_auth_policy" {
+variable "skip_elasticsearch_to_secret_manager_auth_policy" {
   type        = bool
   default     = false
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for Elasticsearch. Set to `true` to use an existing policy."

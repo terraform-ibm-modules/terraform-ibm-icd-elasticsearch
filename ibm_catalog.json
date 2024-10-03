@@ -178,7 +178,7 @@
                   "key": "name"
                 },
                 {
-                  "key": "existing_elastic_search_instance_crn"
+                  "key": "existing_elasticsearch_instance_crn"
                 },
                 {
                   "key": "plan",
@@ -280,7 +280,7 @@
                   "key": "existing_secrets_manager_endpoint_type"
                 },
                 {
-                  "key": "skip_elastic_search_to_secret_manager_auth_policy"
+                  "key": "skip_elasticsearch_to_secret_manager_auth_policy"
                 },
                 {
                   "key": "service_credential_secrets"
