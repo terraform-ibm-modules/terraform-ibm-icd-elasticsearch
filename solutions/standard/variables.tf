@@ -220,7 +220,7 @@ variable "kms_endpoint_type" {
 variable "existing_kms_instance_crn" {
   type        = string
   description = "The CRN of a Hyper Protect Crypto Services or Key Protect instance in the same account as the Databases for Elasticsearch instance. This value is used to create an authorization policy if `skip_iam_authorization_policy` is false. If not specified, a root key is created."
-  default     = null
+  default     = "crn:v1:bluemix:public:kms:us-south:a/52a1d940412a4e67b109175bd1fb6513:bcbdad6c-0e71-4c2c-97d1-0f4af89a0bae::"
 }
 
 ##############################################################

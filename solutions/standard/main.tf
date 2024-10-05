@@ -232,3 +232,68 @@ data "ibm_database_connection" "existing_connection" {
   user_id       = data.ibm_database.existing_db_instance[0].adminuser
   user_type     = "database"
 }
+
+########################################################################################################################
+# Code Engine Kibana Dashboard instance
+########################################################################################################################
+
+data "http" "es_metadata" {
+  url      = "https://${local.es_username}:${local.es_password}@${local.es_host}:${local.es_port}"
+  insecure = true
+}
+
+locals {
+  es_host         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].hostname
+  es_port         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
+  es_username     = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].adminuser : "admin"
+  es_password     = local.admin_pass
+  es_data         = jsondecode(data.http.es_metadata.response_body)
+  es_full_version = local.es_data.version.number
+  # es_full_version = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].version : module.elasticsearch[0].version
+}
+
+module "code_engine_kibana" {
+  source            = "terraform-ibm-modules/code-engine/ibm"
+  version           = "2.0.2"
+  resource_group_id = module.resource_group.resource_group_id
+  project_name      = "${var.prefix}-code-engine-kibana-project"
+  apps = {
+    "${var.prefix}-kibana-app" = {
+      image_reference = "docker.elastic.co/kibana/kibana:${local.es_full_version}"
+      image_port      = 5601
+      run_env_variables = [{
+        type  = "literal"
+        name  = "ELASTICSEARCH_HOSTS"
+        value = "[\"https://${local.es_host}:${local.es_port}\"]"
+        },
+        {
+          type  = "literal"
+          name  = "ELASTICSEARCH_USERNAME"
+          value = local.es_username
+        },
+        {
+          type  = "literal"
+          name  = "ELASTICSEARCH_PASSWORD"
+          value = local.es_password
+        },
+        {
+          type  = "literal"
+          name  = "ELASTICSEARCH_SSL_ENABLED"
+          value = "true"
+        },
+        {
+          type  = "literal"
+          name  = "SERVER_HOST"
+          value = "0.0.0.0"
+        },
+        {
+          type  = "literal"
+          name  = "ELASTICSEARCH_SSL_VERIFICATIONMODE"
+          value = "none"
+        }
+      ]
+      scale_min_instances = 1
+      scale_max_instances = 5
+    }
+  }
+}
