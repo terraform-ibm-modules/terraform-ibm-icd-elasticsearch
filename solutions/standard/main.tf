@@ -252,13 +252,18 @@ locals {
   # es_full_version = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].version : module.elasticsearch[0].version
 }
 
+locals {
+  code_engine_project_name = "${var.prefix}-code-engine-kibana-project"
+  code_engine_app_name     = "${var.prefix}-kibana-app"
+}
+
 module "code_engine_kibana" {
   source            = "terraform-ibm-modules/code-engine/ibm"
   version           = "2.0.2"
   resource_group_id = module.resource_group.resource_group_id
-  project_name      = "${var.prefix}-code-engine-kibana-project"
+  project_name      = local.code_engine_project_name
   apps = {
-    "${var.prefix}-kibana-app" = {
+    (local.code_engine_app_name) = {
       image_reference = "docker.elastic.co/kibana/kibana:${local.es_full_version}"
       image_port      = 5601
       run_env_variables = [{
