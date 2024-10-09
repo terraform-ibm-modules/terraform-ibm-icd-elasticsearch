@@ -59,3 +59,8 @@ output "admin_pass" {
   value       = local.admin_pass
   sensitive   = true
 }
+
+output "kibana_app_endpoint" {
+  description = "Code Engine Kibana endpoint URL"
+  value       = module.code_engine_kibana.app[local.code_engine_app_name].endpoint
+}
