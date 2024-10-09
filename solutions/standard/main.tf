@@ -249,7 +249,6 @@ locals {
   es_password     = local.admin_pass
   es_data         = jsondecode(data.http.es_metadata.response_body)
   es_full_version = local.es_data.version.number
-  # es_full_version = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].version : module.elasticsearch[0].version
 }
 
 locals {
@@ -262,10 +261,20 @@ module "code_engine_kibana" {
   version           = "2.0.2"
   resource_group_id = module.resource_group.resource_group_id
   project_name      = local.code_engine_project_name
+  secrets = {
+    "${var.prefix}-secret" = {
+      format = "generic"
+      data = {
+        "ELASTICSEARCH_PASSWORD" = local.es_password
+      }
+    }
+  }
   apps = {
     (local.code_engine_app_name) = {
-      image_reference = "docker.elastic.co/kibana/kibana:${local.es_full_version}"
-      image_port      = 5601
+      image_reference     = "docker.elastic.co/kibana/kibana:${local.es_full_version}"
+      image_port          = 5601
+      scale_min_instances = 1
+      scale_max_instances = 5
       run_env_variables = [{
         type  = "literal"
         name  = "ELASTICSEARCH_HOSTS"
@@ -277,9 +286,10 @@ module "code_engine_kibana" {
           value = local.es_username
         },
         {
-          type  = "literal"
-          name  = "ELASTICSEARCH_PASSWORD"
-          value = local.es_password
+          type      = "secret_key_reference"
+          name      = "ELASTICSEARCH_PASSWORD"
+          key       = "ELASTICSEARCH_PASSWORD"
+          reference = "${var.prefix}-secret"
         },
         {
           type  = "literal"
@@ -297,8 +307,6 @@ module "code_engine_kibana" {
           value = "none"
         }
       ]
-      scale_min_instances = 1
-      scale_max_instances = 5
     }
   }
 }
