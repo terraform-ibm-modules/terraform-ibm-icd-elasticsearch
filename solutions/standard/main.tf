@@ -244,7 +244,8 @@ data "http" "es_metadata" {
 
 locals {
 
-  code_engine_project_name = var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
+  # code_engine_project_name = var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
+  code_engine_project_name = var.code_engine_existing_project_name != null ? var.code_engine_existing_project_name : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
   code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
 
   es_host         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].hostname
