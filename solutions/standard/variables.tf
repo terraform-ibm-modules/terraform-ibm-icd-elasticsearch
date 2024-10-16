@@ -321,19 +321,19 @@ variable "admin_pass_sm_secret_name" {
 ##############################################################
 
 variable "code_engine_project_name" {
-  description = "Name of the code engine project to deploy the Kibana app. If no value is passed, a new code engine project will be created."
+  description = "Name of the code engine project to deploy Kibana. If no value is passed, a new code engine project will be created."
   type        = string
   default     = null
 }
 
 variable "enable_kibana_dashboard" {
   type        = bool
-  description = "Set it true to deploy Kibana dashboard for Elasticsearch instance. NOTE: Kibana image is coming direcly from the official registry (https://www.docker.elastic.co/) and not certified by the IBM."
+  description = "Set it true to deploy Kibana in code engine. NOTE: Kibana image is coming direcly from the official registry (https://www.docker.elastic.co/) and not certified by the IBM."
   default     = false
 }
 
 variable "es_full_version" {
-  description = "Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard."
+  description = "(Optional) Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. If no value is passed, data lookup will fetch the full version using the Elasticsearch API.  "
   type        = string
   default     = null
 }
