@@ -320,8 +320,8 @@ variable "admin_pass_sm_secret_name" {
 # Kibana Configuration
 ##############################################################
 
-variable "code_engine_existing_project_name" {
-  description = "Name of the existing code engine project to deploy the Kibana app. If no value is passed, a new code engine project will be created."
+variable "code_engine_project_name" {
+  description = "Name of the code engine project to deploy the Kibana app. If no value is passed, a new code engine project will be created."
   type        = string
   default     = null
 }

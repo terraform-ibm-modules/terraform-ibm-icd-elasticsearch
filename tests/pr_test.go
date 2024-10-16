@@ -193,6 +193,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "admin_pass_sm_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_sm_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
+		{Name: "code_engine_project_name", Value: options.Prefix, DataType: "string"},
 	}
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
