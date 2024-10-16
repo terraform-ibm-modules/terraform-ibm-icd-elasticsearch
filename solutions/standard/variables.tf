@@ -315,3 +315,19 @@ variable "admin_pass_sm_secret_name" {
   description = "The name of a new elasticsearch administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch-admin-password"
 }
+
+##############################################################
+# Kibana Configuration
+##############################################################
+
+variable "enable_kibana_dashboard" {
+  type        = bool
+  description = "Set it true to deploy Kibana dashboard for Elasticsearch instance. NOTE: Kibana image is coming direcly from the official registry and not certified by the IBM."
+  default     = false
+}
+
+variable "es_full_version" {
+  description = "Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard."
+  type        = string
+  default     = null
+}
