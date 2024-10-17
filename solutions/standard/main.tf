@@ -238,13 +238,13 @@ data "ibm_database_connection" "existing_connection" {
 ########################################################################################################################
 
 data "http" "es_metadata" {
+  count    = var.enable_kibana_dashboard ? 1 : 0
   url      = "https://${local.es_username}:${local.es_password}@${local.es_host}:${local.es_port}"
   insecure = true
 }
 
 locals {
 
-  # code_engine_project_name = var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
   code_engine_project_name = var.code_engine_project_name != null ? var.code_engine_project_name : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
   code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
 
@@ -252,7 +252,7 @@ locals {
   es_port         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
   es_username     = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].adminuser : "admin"
   es_password     = local.admin_pass
-  es_data         = jsondecode(data.http.es_metadata.response_body)
+  es_data         = jsondecode(data.http.es_metadata[0].response_body)
   es_full_version = var.es_full_version != null ? var.es_full_version : local.es_data.version.number
 }
 
