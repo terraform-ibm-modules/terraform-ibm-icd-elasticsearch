@@ -231,12 +231,12 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       "examples/basic",
-		Prefix:             "es-test",
-		ResourceGroup:      resourceGroup,
-		BestRegionYAMLPath: regionSelectionPath,
-		CloudInfoService:   sharedInfoSvc,
+		Testing:          t,
+		TerraformDir:     "examples/basic",
+		Prefix:           "es-test",
+		ResourceGroup:    resourceGroup,
+		Region:           "us-south",
+		CloudInfoService: sharedInfoSvc,
 
 		TerraformVars: map[string]interface{}{
 			"elasticsearch_version": "8.12", // Always lock this test into the latest supported elasticsearch version
