@@ -192,6 +192,8 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "admin_pass_sm_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_sm_secret_name", Value: options.Prefix, DataType: "string"},
+		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
+		{Name: "code_engine_project_name", Value: options.Prefix, DataType: "string"},
 	}
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
@@ -229,12 +231,12 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 func TestRunBasicExample(t *testing.T) {
 	t.Parallel()
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       "examples/basic",
-		Prefix:             "es-test",
-		ResourceGroup:      resourceGroup,
-		BestRegionYAMLPath: regionSelectionPath,
-		CloudInfoService:   sharedInfoSvc,
+		Testing:          t,
+		TerraformDir:     "examples/basic",
+		Prefix:           "es-test",
+		ResourceGroup:    resourceGroup,
+		Region:           "us-south",
+		CloudInfoService: sharedInfoSvc,
 
 		TerraformVars: map[string]interface{}{
 			"elasticsearch_version": "8.12", // Always lock this test into the latest supported elasticsearch version
