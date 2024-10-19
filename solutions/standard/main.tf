@@ -252,8 +252,8 @@ locals {
   es_port         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
   es_username     = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].adminuser : "admin"
   es_password     = local.admin_pass
-  es_data         = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body) : null
-  es_full_version = var.es_full_version != null ? var.es_full_version : var.enable_kibana_dashboard ? local.es_data.version.number : null
+  es_data         = jsondecode(data.http.es_metadata[0].response_body)
+  es_full_version = var.es_full_version != null ? var.es_full_version : local.es_data.version.number
 }
 
 module "code_engine_kibana" {
