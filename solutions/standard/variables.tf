@@ -320,7 +320,7 @@ variable "admin_pass_sm_secret_name" {
 # Kibana Configuration
 ##############################################################
 
-variable "code_engine_project_name" {
+variable "existing_code_engine_project_name" {
   description = "Name of the code engine project to deploy Kibana. If no value is passed, a new code engine project will be created."
   type        = string
   default     = null
@@ -333,7 +333,7 @@ variable "enable_kibana_dashboard" {
 }
 
 variable "es_full_version" {
-  description = "(Optional) Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. If no value is passed, data lookup will fetch the full version using the Elasticsearch API.  "
+  description = "(Optional) Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. If no value is passed, data lookup will fetch the full version using the Elasticsearch API, see https://github.com/elastic/kibana?tab=readme-ov-file#version-compatibility-with-elasticsearch"
   type        = string
   default     = null
 }

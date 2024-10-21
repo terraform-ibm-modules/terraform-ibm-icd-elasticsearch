@@ -245,7 +245,12 @@ data "http" "es_metadata" {
 
 locals {
 
-  code_engine_project_name = var.code_engine_project_name != null ? var.code_engine_project_name : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
+  # tflint-ignore: terraform_unused_declarations
+  validate_kibana_values = !var.enable_kibana_dashboard && (var.existing_db_instance_crn != null || var.admin_pass != null) ? tobool("When passing values for var.existing_db_instance_crn or/and var.admin_pass, you must set var.enable_kibana_dashboard to true.") : true
+  # tflint-ignore: terraform_unused_declarations
+  validate_kibana_vars = var.enable_kibana_dashboard && (var.existing_db_instance_crn == null || var.admin_pass == null) ? tobool("When setting var.enable_kibana_dashboard to true, a value must be passed for var.existing_db_instance_crn and var.admin_pass") : true
+
+  code_engine_project_name = var.existing_code_engine_project_name != null ? var.existing_code_engine_project_name : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
   code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
 
   es_host         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].hostname
