@@ -69,7 +69,7 @@ module "kms" {
   }
   count                       = var.existing_kms_key_crn != null || local.use_existing_db_instance ? 0 : 1 # no need to create any KMS resources if passing an existing key
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version                     = "4.15.13"
+  version                     = "4.16.4"
   create_key_protect_instance = false
   region                      = local.existing_kms_instance_region
   existing_kms_instance_crn   = var.existing_kms_instance_crn
@@ -77,9 +77,8 @@ module "kms" {
   key_endpoint_type           = var.kms_endpoint_type
   keys = [
     {
-      key_ring_name         = local.elasticsearch_key_ring_name
-      existing_key_ring     = false
-      force_delete_key_ring = true
+      key_ring_name     = local.elasticsearch_key_ring_name
+      existing_key_ring = false
       keys = [
         {
           key_name                 = local.elasticsearch_key_name
