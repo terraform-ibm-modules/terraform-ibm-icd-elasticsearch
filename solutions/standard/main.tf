@@ -245,11 +245,6 @@ data "http" "es_metadata" {
 
 locals {
 
-  # tflint-ignore: terraform_unused_declarations
-  validate_kibana_values = !var.enable_kibana_dashboard && (var.existing_db_instance_crn != null || var.admin_pass != null) ? tobool("When passing values for var.existing_db_instance_crn or/and var.admin_pass, you must set var.enable_kibana_dashboard to true.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_kibana_vars = var.enable_kibana_dashboard && (var.existing_db_instance_crn == null || var.admin_pass == null) ? tobool("When setting var.enable_kibana_dashboard to true, a value must be passed for var.existing_db_instance_crn and var.admin_pass") : true
-
   code_engine_project_name = var.existing_code_engine_project_name != null ? var.existing_code_engine_project_name : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
   code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
 
@@ -257,8 +252,8 @@ locals {
   es_port         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
   es_username     = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].adminuser : "admin"
   es_password     = local.admin_pass
-  es_data         = jsondecode(data.http.es_metadata[0].response_body)
-  es_full_version = var.es_full_version != null ? var.es_full_version : local.es_data.version.number
+  es_data         = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body) : null
+  es_full_version = var.es_full_version != null ? var.es_full_version : var.enable_kibana_dashboard ? local.es_data.version.number : null
 }
 
 module "code_engine_kibana" {
