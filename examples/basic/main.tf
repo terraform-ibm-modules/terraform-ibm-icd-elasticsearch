@@ -31,16 +31,18 @@ resource "time_sleep" "wait" {
   create_duration = "15s"
 }
 
-resource "elasticsearch_index" "test" {
-  depends_on         = [time_sleep.wait]
-  name               = "terraform-test"
-  number_of_shards   = 1
-  number_of_replicas = 1
-  force_destroy      = true
-}
+# Commenting below code to this issue https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/issues/317
 
-resource "elasticsearch_cluster_settings" "global" {
-  depends_on                  = [time_sleep.wait]
-  cluster_max_shards_per_node = 10
-  action_auto_create_index    = "my-index-000001,index10,-index1*,+ind*"
-}
+# resource "elasticsearch_index" "test" {
+#   depends_on         = [time_sleep.wait]
+#   name               = "terraform-test"
+#   number_of_shards   = 1
+#   number_of_replicas = 1
+#   force_destroy      = true
+# }
+
+# resource "elasticsearch_cluster_settings" "global" {
+#   depends_on                  = [time_sleep.wait]
+#   cluster_max_shards_per_node = 10
+#   action_auto_create_index    = "my-index-000001,index10,-index1*,+ind*"
+# }
