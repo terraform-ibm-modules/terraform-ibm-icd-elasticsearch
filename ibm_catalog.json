@@ -2,7 +2,7 @@
     "products": [
       {
         "name": "deploy-arch-ibm-icd-elasticsearch",
-        "label": "Databases for Elasticsearch",
+        "label": "Cloud automation for Databases for Elasticsearch",
         "product_kind": "solution",
         "tags": [
           "ibm_created",
