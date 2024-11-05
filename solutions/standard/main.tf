@@ -237,19 +237,15 @@ data "ibm_database_connection" "existing_connection" {
 # Code Engine Kibana Dashboard instance
 ########################################################################################################################
 
-data "http" "es_metadata" {
-  count    = var.enable_kibana_dashboard ? 1 : 0
-  url      = "https://${local.es_username}:${local.es_password}@${local.es_host}:${local.es_port}"
-  insecure = true
-}
-
 locals {
 
-  code_engine_project_name = var.existing_code_engine_project_name != null ? var.existing_code_engine_project_name : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
+  code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
+  code_engine_project_name = local.code_engine_project_id != null ? null : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
   code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
 
   es_host         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].hostname
   es_port         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
+  es_cert         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].certificate[0].certificate_base64 : module.elasticsearch[0].certificate_base64
   es_username     = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].adminuser : "admin"
   es_password     = local.admin_pass
   es_data         = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body) : null
@@ -257,12 +253,19 @@ locals {
 
 }
 
+data "http" "es_metadata" {
+  count       = var.enable_kibana_dashboard ? 1 : 0
+  url         = "https://${local.es_username}:${local.es_password}@${local.es_host}:${local.es_port}"
+  ca_cert_pem = base64decode(local.es_cert)
+}
+
 module "code_engine_kibana" {
-  count             = var.enable_kibana_dashboard ? 1 : 0
-  source            = "terraform-ibm-modules/code-engine/ibm"
-  version           = "2.0.4"
-  resource_group_id = module.resource_group.resource_group_id
-  project_name      = local.code_engine_project_name
+  count               = var.enable_kibana_dashboard ? 1 : 0
+  source              = "terraform-ibm-modules/code-engine/ibm"
+  version             = "2.0.4"
+  resource_group_id   = module.resource_group.resource_group_id
+  project_name        = local.code_engine_project_name
+  existing_project_id = local.code_engine_project_id
   secrets = {
     "es-secret" = {
       format = "generic"
