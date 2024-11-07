@@ -315,3 +315,25 @@ variable "admin_pass_sm_secret_name" {
   description = "The name of a new elasticsearch administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch-admin-password"
 }
+
+##############################################################
+# Kibana Configuration
+##############################################################
+
+variable "existing_code_engine_project_id" {
+  description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."
+  type        = string
+  default     = null
+}
+
+variable "enable_kibana_dashboard" {
+  type        = bool
+  description = "Set it true to deploy Kibana in code engine. NOTE: Kibana image is coming direcly from the official registry (https://www.docker.elastic.co/) and not certified by the IBM."
+  default     = false
+}
+
+variable "elasticsearch_full_version" {
+  description = "(Optional) Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. If no value is passed, data lookup will fetch the full version using the Elasticsearch API, see https://github.com/elastic/kibana?tab=readme-ov-file#version-compatibility-with-elasticsearch"
+  type        = string
+  default     = null
+}
