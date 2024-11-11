@@ -193,6 +193,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "admin_pass_sm_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_sm_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
+		{Name: "provider_visibility", Value: "public", DataType: "string"},
 	}
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
@@ -214,6 +215,7 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
 		"kms_endpoint_type":         "public",
 		"resource_group_name":       options.Prefix,
+		"provider_visibility":       "public",
 		// Currently, we can not have upgrade test for elser model, because test provision private endpoint for ES (fscloud profile), and script can not connect to private ES API without schematics
 		// "plan":                      "platinum",
 		// "enable_elser_model":        true,

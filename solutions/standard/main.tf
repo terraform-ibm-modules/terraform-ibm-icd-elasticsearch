@@ -11,12 +11,12 @@ locals {
   elasticsearch_key_ring_name = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 
 
-  kms_key_crn = var.existing_db_instance_crn != null ? null : (var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn)
+  kms_key_crn = var.existing_db_instance_crn != null ? null : !var.use_ibm_owned_encryption_key ? var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn : null
 
   existing_db_instance_guid = var.existing_db_instance_crn != null ? element(split(":", var.existing_db_instance_crn), length(split(":", var.existing_db_instance_crn)) - 3) : null
   use_existing_db_instance  = var.existing_db_instance_crn != null
 
-  create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null
+  create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key
   create_sm_auth_policy            = var.skip_es_sm_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
   kms_service_name = local.kms_key_crn != null ? (
     can(regex(".*kms.*", local.kms_key_crn)) ? "kms" : can(regex(".*hs-crypto.*", local.kms_key_crn)) ? "hs-crypto" : null
@@ -67,7 +67,7 @@ module "kms" {
   providers = {
     ibm = ibm.kms
   }
-  count                       = var.existing_kms_key_crn != null || local.use_existing_db_instance ? 0 : 1 # no need to create any KMS resources if passing an existing key
+  count                       = var.existing_kms_key_crn != null || local.use_existing_db_instance ? 0 : 1 # no need to create any KMS resources if passing an existing key or using IBM owned keys
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
   version                     = "4.16.4"
   create_key_protect_instance = false
@@ -107,6 +107,7 @@ module "elasticsearch" {
   skip_iam_authorization_policy = var.skip_iam_authorization_policy || local.create_cross_account_auth_policy
   elasticsearch_version         = var.elasticsearch_version
   existing_kms_instance_guid    = local.existing_kms_instance_guid
+  use_ibm_owned_encryption_key  = var.use_ibm_owned_encryption_key
   kms_key_crn                   = local.kms_key_crn
   access_tags                   = var.access_tags
   tags                          = var.tags
