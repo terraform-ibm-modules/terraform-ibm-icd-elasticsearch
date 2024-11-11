@@ -85,7 +85,7 @@ resource "ibm_database" "elasticsearch" {
   dynamic "group" {
     for_each = local.host_flavor_set && var.member_host_flavor != "multitenant" ? [1] : []
     content {
-      group_id = "member" # Only member type is allowed for elasticsearch
+      group_id = "member" # Only member type is allowed for elasticsearch.
       host_flavor {
         id = var.member_host_flavor
       }
