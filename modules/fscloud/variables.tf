@@ -156,7 +156,7 @@ variable "backup_encryption_key_crn" {
 
 variable "skip_iam_authorization_policy" {
   type        = bool
-  description = "Set to true to skip the creation of an IAM authorization policy that permits all PostgreSQL database instances in the resource group to read the encryption key from the Hyper Protect Crypto Services or Key Protect instance. The instance is passed in through the var.existing_kms_instance_guid variable."
+  description = "Set to true to skip the creation of an IAM authorization policy that permits all ElasticSearch database instances in the resource group to read the encryption key from the Hyper Protect Crypto Services or Key Protect instance. The instance is passed in through the var.existing_kms_instance_guid variable."
   default     = false
 }
 
