@@ -6,6 +6,7 @@ This architecture creates an instance of IBM Cloud Databases for Elasticsearch a
 - A KMS root key, if one is not passed in.
 - An IBM Cloud Databases for Elasticsearch instance with KMS encryption.
 - Autoscaling rules for the database instance, if provided.
+- Kibana dashboard for Elasticsearch.
 
 ![fscloud-elastic-search](../../reference-architecture/deployable-architecture-elasticsearch.svg)
 
