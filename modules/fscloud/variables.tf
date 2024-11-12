@@ -137,7 +137,7 @@ variable "auto_scaling" {
 ##############################################################
 
 variable "use_ibm_owned_encryption_key" {
-  type        = string
+  type        = bool
   description = "Set to true to use the default IBM Cloud® Databases randomly generated keys for disk and backups encryption. To control the encryption keys, use the `kms_key_crn` and `backup_encryption_key_crn` inputs."
   default     = false
 }

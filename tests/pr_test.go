@@ -165,14 +165,14 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 
 	serviceCredentialSecrets := []map[string]interface{}{
 		{
-			"secret_group_name": fmt.Sprintf("%s-secret-group", prefix),
+			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
 			"service_credentials": []map[string]string{
 				{
-					"secret_name": fmt.Sprintf("%s-cred-reader", prefix),
+					"secret_name": fmt.Sprintf("%s-cred-reader", options.Prefix),
 					"service_credentials_source_service_role": "Reader",
 				},
 				{
-					"secret_name": fmt.Sprintf("%s-cred-writer", prefix),
+					"secret_name": fmt.Sprintf("%s-cred-writer", options.Prefix),
 					"service_credentials_source_service_role": "Writer",
 				},
 			},
@@ -243,6 +243,30 @@ func TestRunBasicExample(t *testing.T) {
 			"elasticsearch_version": "8.12", // Always lock this test into the latest supported elasticsearch version
 		},
 	})
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
+}
+
+// Test the DA when using IBM owned encryption keys
+func TestRunStandardSolutionIBMKeys(t *testing.T) {
+	t.Parallel()
+
+	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
+		Testing:       t,
+		TerraformDir:  standardSolutionTerraformDir,
+		Region:        "us-south",
+		Prefix:        "es-icd-key",
+		ResourceGroup: resourceGroup,
+	})
+
+	options.TerraformVars = map[string]interface{}{
+		"elasticsearch_version":        "8.12",
+		"provider_visibility":          "public",
+		"resource_group_name":          options.Prefix,
+		"use_ibm_owned_encryption_key": true,
+	}
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
