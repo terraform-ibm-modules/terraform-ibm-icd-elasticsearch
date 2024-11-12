@@ -69,7 +69,7 @@ module "kms" {
   }
   count                       = var.existing_kms_key_crn != null || local.use_existing_elasticsearch_instance ? 0 : 1 # no need to create any KMS resources if passing an existing key
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version                     = "4.15.13"
+  version                     = "4.16.4"
   create_key_protect_instance = false
   region                      = local.existing_kms_instance_region
   existing_kms_instance_crn   = var.existing_kms_instance_crn
@@ -77,9 +77,8 @@ module "kms" {
   key_endpoint_type           = var.kms_endpoint_type
   keys = [
     {
-      key_ring_name         = local.elasticsearch_key_ring_name
-      existing_key_ring     = false
-      force_delete_key_ring = true
+      key_ring_name     = local.elasticsearch_key_ring_name
+      existing_key_ring = false
       keys = [
         {
           key_name                 = local.elasticsearch_key_name
@@ -231,4 +230,88 @@ data "ibm_database_connection" "existing_connection" {
   deployment_id = data.ibm_database.existing_db_instance[0].id
   user_id       = data.ibm_database.existing_db_instance[0].adminuser
   user_type     = "database"
+}
+
+########################################################################################################################
+# Code Engine Kibana Dashboard instance
+########################################################################################################################
+
+locals {
+
+  code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
+  code_engine_project_name = local.code_engine_project_id != null ? null : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
+  code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
+
+  es_host         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].hostname
+  es_port         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
+  es_cert         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].certificate[0].certificate_base64 : module.elasticsearch[0].certificate_base64
+  es_username     = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].adminuser : "admin"
+  es_password     = local.admin_pass
+  es_data         = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body) : null
+  es_full_version = var.enable_kibana_dashboard ? (var.elasticsearch_full_version != null ? var.elasticsearch_full_version : local.es_data.version.number) : null
+
+}
+
+data "http" "es_metadata" {
+  count       = var.enable_kibana_dashboard ? 1 : 0
+  url         = "https://${local.es_username}:${local.es_password}@${local.es_host}:${local.es_port}"
+  ca_cert_pem = base64decode(local.es_cert)
+}
+
+module "code_engine_kibana" {
+  count               = var.enable_kibana_dashboard ? 1 : 0
+  source              = "terraform-ibm-modules/code-engine/ibm"
+  version             = "2.0.4"
+  resource_group_id   = module.resource_group.resource_group_id
+  project_name        = local.code_engine_project_name
+  existing_project_id = local.code_engine_project_id
+  secrets = {
+    "es-secret" = {
+      format = "generic"
+      data = {
+        "ELASTICSEARCH_PASSWORD" = local.es_password
+      }
+    }
+  }
+
+  apps = {
+    (local.code_engine_app_name) = {
+      image_reference = "docker.elastic.co/kibana/kibana:${local.es_full_version}"
+      image_port      = 5601
+      run_env_variables = [{
+        type  = "literal"
+        name  = "ELASTICSEARCH_HOSTS"
+        value = "[\"https://${local.es_host}:${local.es_port}\"]"
+        },
+        {
+          type  = "literal"
+          name  = "ELASTICSEARCH_USERNAME"
+          value = local.es_username
+        },
+        {
+          type      = "secret_key_reference"
+          name      = "ELASTICSEARCH_PASSWORD"
+          key       = "ELASTICSEARCH_PASSWORD"
+          reference = "es-secret"
+        },
+        {
+          type  = "literal"
+          name  = "ELASTICSEARCH_SSL_ENABLED"
+          value = "true"
+        },
+        {
+          type  = "literal"
+          name  = "SERVER_HOST"
+          value = "0.0.0.0"
+        },
+        {
+          type  = "literal"
+          name  = "ELASTICSEARCH_SSL_VERIFICATIONMODE"
+          value = "none"
+        }
+      ]
+      scale_min_instances = 1
+      scale_max_instances = 3
+    }
+  }
 }
