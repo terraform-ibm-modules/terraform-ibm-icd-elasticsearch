@@ -136,7 +136,7 @@ locals {
   # if - replace first char with J
   # elseif _ replace first char with K
   # else use asis
-  admin_password = startswith(random_password.admin_password[0].result, "-") ? "J$(substr(random_password.admin_password[0].result, 1, -1))" : startswith(random_password.admin_password[0].result, "_") ? "K$(substr(random_password.admin_password[0].result, 1, -1))" : random_password.admin_password[0].result
+  admin_password = startswith(random_password.admin_password[0].result, "-") ? "J${substr(random_password.admin_password[0].result, 1, -1)}" : startswith(random_password.admin_password[0].result, "_") ? "K${substr(random_password.admin_password[0].result, 1, -1)}" : random_password.admin_password[0].result
 }
 
 # create a service authorization between Secrets Manager and the target service (Elastic Search)
