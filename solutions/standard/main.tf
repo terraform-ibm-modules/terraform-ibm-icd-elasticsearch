@@ -17,11 +17,12 @@ locals {
   create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key
   create_sm_auth_policy            = var.skip_es_sm_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
 
-  kms_key_crn    = var.existing_db_instance_crn != null ? null : !var.use_ibm_owned_encryption_key ? var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn : null
-  kms_service    = length(local.kms_key_crn) > 0 ? local.kms_key_crn[4] : null
-  kms_scope      = length(local.kms_key_crn) > 0 ? local.kms_key_crn[6] : null
-  kms_account_id = length(local.kms_key_crn) > 0 ? split("/", local.kms_scope)[1] : null
-  kms_key_id     = length(local.kms_key_crn) > 0 ? local.kms_key_crn[9] : null
+  kms_key_crn        = var.existing_db_instance_crn != null ? null : !var.use_ibm_owned_encryption_key ? var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn : null
+  parsed_kms_key_crn = local.kms_key_crn != null ? split(":", local.kms_key_crn) : []
+  kms_service        = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[4] : null
+  kms_scope          = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[6] : null
+  kms_account_id     = length(local.parsed_kms_key_crn) > 0 ? split("/", local.kms_scope)[1] : null
+  kms_key_id         = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[9] : null
 
   elasticsearch_guid = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].guid : module.elasticsearch[0].guid
 }
