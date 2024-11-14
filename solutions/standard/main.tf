@@ -123,7 +123,7 @@ module "kms" {
 }
 
 #######################################################################################################################
-# KMS backup encryption key for ElasticSearch
+# KMS backup encryption key for Elasticsearch
 #######################################################################################################################
 
 locals {
@@ -153,7 +153,7 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy" {
   target_service_name         = local.backup_kms_service_name
   target_resource_instance_id = local.existing_backup_kms_instance_guid
   roles                       = ["Reader"]
-  description                 = "Allow all ElasticSearch instances in the resource group ${module.resource_group.resource_group_id} to read from the ${local.backup_kms_service_name} instance GUID ${local.existing_backup_kms_instance_guid}"
+  description                 = "Allow all Elasticsearch instances in the resource group ${module.resource_group.resource_group_id} to read from the ${local.backup_kms_service_name} instance GUID ${local.existing_backup_kms_instance_guid}"
 }
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
