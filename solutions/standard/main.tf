@@ -123,7 +123,7 @@ module "kms" {
 }
 
 #######################################################################################################################
-# KMS backup encryption key for Postgresql
+# KMS backup encryption key for ElasticSearch
 #######################################################################################################################
 
 locals {
@@ -148,12 +148,12 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy" {
   count                       = local.existing_backup_kms_instance_guid == local.existing_kms_instance_guid ? 0 : var.existing_backup_kms_key_crn != null ? 0 : var.existing_backup_kms_instance_crn != null ? !var.skip_iam_authorization_policy ? 1 : 0 : 0
   provider                    = ibm.kms
   source_service_account      = local.create_cross_account_auth_policy ? data.ibm_iam_account_settings.iam_account_settings[0].account_id : null
-  source_service_name         = "databases-for-postgresql"
+  source_service_name         = "databases-for-elasticsearch"
   source_resource_group_id    = module.resource_group.resource_group_id
   target_service_name         = local.backup_kms_service_name
   target_resource_instance_id = local.existing_backup_kms_instance_guid
   roles                       = ["Reader"]
-  description                 = "Allow all Postgresql instances in the resource group ${module.resource_group.resource_group_id} to read from the ${local.backup_kms_service_name} instance GUID ${local.existing_backup_kms_instance_guid}"
+  description                 = "Allow all ElasticSearch instances in the resource group ${module.resource_group.resource_group_id} to read from the ${local.backup_kms_service_name} instance GUID ${local.existing_backup_kms_instance_guid}"
 }
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
