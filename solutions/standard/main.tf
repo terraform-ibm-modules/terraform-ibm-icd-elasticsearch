@@ -11,16 +11,18 @@ locals {
   elasticsearch_key_ring_name = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 
 
-  kms_key_crn = var.existing_db_instance_crn != null ? null : (var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn)
-
   existing_db_instance_guid = var.existing_db_instance_crn != null ? element(split(":", var.existing_db_instance_crn), length(split(":", var.existing_db_instance_crn)) - 3) : null
   use_existing_db_instance  = var.existing_db_instance_crn != null
 
-  create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null
+  create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key
   create_sm_auth_policy            = var.skip_es_sm_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
-  kms_service_name = local.kms_key_crn != null ? (
-    can(regex(".*kms.*", local.kms_key_crn)) ? "kms" : can(regex(".*hs-crypto.*", local.kms_key_crn)) ? "hs-crypto" : null
-  ) : null
+
+  kms_key_crn        = var.existing_db_instance_crn != null ? null : !var.use_ibm_owned_encryption_key ? var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn : null
+  parsed_kms_key_crn = local.kms_key_crn != null ? split(":", local.kms_key_crn) : []
+  kms_service        = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[4] : null
+  kms_scope          = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[6] : null
+  kms_account_id     = length(local.parsed_kms_key_crn) > 0 ? split("/", local.kms_scope)[1] : null
+  kms_key_id         = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[9] : null
 
   elasticsearch_guid = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].guid : module.elasticsearch[0].guid
 }
@@ -45,15 +47,43 @@ data "ibm_iam_account_settings" "iam_account_settings" {
 }
 
 resource "ibm_iam_authorization_policy" "kms_policy" {
-  count                       = local.create_cross_account_auth_policy ? 1 : 0
-  provider                    = ibm.kms
-  source_service_account      = data.ibm_iam_account_settings.iam_account_settings[0].account_id
-  source_service_name         = "databases-for-elasticsearch"
-  source_resource_group_id    = module.resource_group.resource_group_id
-  target_service_name         = local.kms_service_name
-  target_resource_instance_id = local.existing_kms_instance_guid
-  roles                       = ["Reader"]
-  description                 = "Allow all Elastic Search instances in the resource group ${module.resource_group.resource_group_id} in the account ${data.ibm_iam_account_settings.iam_account_settings[0].account_id} to read from the ${local.kms_service_name} instance GUID ${local.existing_kms_instance_guid}"
+  count                    = local.create_cross_account_auth_policy ? 1 : 0
+  provider                 = ibm.kms
+  source_service_account   = data.ibm_iam_account_settings.iam_account_settings[0].account_id
+  source_service_name      = "databases-for-elasticsearch"
+  source_resource_group_id = module.resource_group.resource_group_id
+  roles                    = ["Reader"]
+  description              = "Allow all Elastic Search instances in the resource group ${module.resource_group.resource_group_id} in the account ${data.ibm_iam_account_settings.iam_account_settings[0].account_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.existing_kms_instance_guid}"
+  resource_attributes {
+    name     = "serviceName"
+    operator = "stringEquals"
+    value    = local.kms_service
+  }
+  resource_attributes {
+    name     = "accountId"
+    operator = "stringEquals"
+    value    = local.kms_account_id
+  }
+  resource_attributes {
+    name     = "serviceInstance"
+    operator = "stringEquals"
+    value    = local.existing_kms_instance_guid
+  }
+  resource_attributes {
+    name     = "resourceType"
+    operator = "stringEquals"
+    value    = "key"
+  }
+  resource_attributes {
+    name     = "resource"
+    operator = "stringEquals"
+    value    = local.kms_key_id
+  }
+  # Scope of policy now includes the key, so ensure to create new policy before
+  # destroying old one to prevent any disruption to every day services.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
@@ -67,7 +97,7 @@ module "kms" {
   providers = {
     ibm = ibm.kms
   }
-  count                       = var.existing_kms_key_crn != null || local.use_existing_db_instance ? 0 : 1 # no need to create any KMS resources if passing an existing key
+  count                       = var.existing_kms_key_crn != null || local.use_existing_db_instance || var.use_ibm_owned_encryption_key ? 0 : 1 # no need to create any KMS resources if passing an existing key or using IBM owned keys
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
   version                     = "4.16.4"
   create_key_protect_instance = false
@@ -107,6 +137,7 @@ module "elasticsearch" {
   skip_iam_authorization_policy = var.skip_iam_authorization_policy || local.create_cross_account_auth_policy
   elasticsearch_version         = var.elasticsearch_version
   existing_kms_instance_guid    = local.existing_kms_instance_guid
+  use_ibm_owned_encryption_key  = var.use_ibm_owned_encryption_key
   kms_key_crn                   = local.kms_key_crn
   access_tags                   = var.access_tags
   tags                          = var.tags

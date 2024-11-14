@@ -151,13 +151,12 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 
 	// if error producing tar patterns (very unexpected) fail test immediately
 	require.NoError(t, recurseErr, "Schematic Test had unexpected error traversing directory tree")
-	prefix := "els-sr-da"
 	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
 		Testing:                t,
 		TarIncludePatterns:     tarIncludePatterns,
 		TemplateFolder:         standardSolutionTerraformDir,
 		BestRegionYAMLPath:     regionSelectionPath,
-		Prefix:                 prefix,
+		Prefix:                 "els-sr-da",
 		ResourceGroup:          resourceGroup,
 		DeleteWorkspaceOnFail:  false,
 		WaitJobCompleteMinutes: 60,
@@ -165,14 +164,14 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 
 	serviceCredentialSecrets := []map[string]interface{}{
 		{
-			"secret_group_name": fmt.Sprintf("%s-secret-group", prefix),
+			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
 			"service_credentials": []map[string]string{
 				{
-					"secret_name": fmt.Sprintf("%s-cred-reader", prefix),
+					"secret_name": fmt.Sprintf("%s-cred-reader", options.Prefix),
 					"service_credentials_source_service_role": "Reader",
 				},
 				{
-					"secret_name": fmt.Sprintf("%s-cred-writer", prefix),
+					"secret_name": fmt.Sprintf("%s-cred-writer", options.Prefix),
 					"service_credentials_source_service_role": "Writer",
 				},
 			},
@@ -193,6 +192,8 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "admin_pass_sm_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_sm_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
+		{Name: "provider_visibility", Value: "private", DataType: "string"},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 	}
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
@@ -214,6 +215,7 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
 		"kms_endpoint_type":         "public",
 		"resource_group_name":       options.Prefix,
+		"provider_visibility":       "public",
 		// Currently, we can not have upgrade test for elser model, because test provision private endpoint for ES (fscloud profile), and script can not connect to private ES API without schematics
 		// "plan":                      "platinum",
 		// "enable_elser_model":        true,
@@ -241,6 +243,30 @@ func TestRunBasicExample(t *testing.T) {
 			"elasticsearch_version": "8.12", // Always lock this test into the latest supported elasticsearch version
 		},
 	})
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
+}
+
+// Test the DA when using IBM owned encryption keys
+func TestRunStandardSolutionIBMKeys(t *testing.T) {
+	t.Parallel()
+
+	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
+		Testing:       t,
+		TerraformDir:  standardSolutionTerraformDir,
+		Region:        "us-south",
+		Prefix:        "es-icd-key",
+		ResourceGroup: resourceGroup,
+	})
+
+	options.TerraformVars = map[string]interface{}{
+		"elasticsearch_version":        "8.12",
+		"provider_visibility":          "public",
+		"resource_group_name":          options.Prefix,
+		"use_ibm_owned_encryption_key": true,
+	}
 
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
