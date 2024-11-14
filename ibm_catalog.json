@@ -42,6 +42,10 @@
           {
             "title": "Attaches access tags",
             "description": "Attaches access tags to the Elasticsearch instance."
+          },
+          {
+            "title": "Supports backup restoration",
+            "description": "Provides database restoration using a backup created by a deployment with the same service ID."
           }
         ],
         "flavors": [
@@ -273,6 +277,9 @@
                 },
                 {
                   "key": "auto_scaling"
+                },
+                {
+                  "key": "backup_crn"
                 },
                 {
                   "key": "enable_elser_model"
