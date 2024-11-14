@@ -25,24 +25,52 @@ locals {
   # Determine if host_flavor is used
   host_flavor_set = var.member_host_flavor != null ? true : false
 
-  # Determine what KMS service is being used for database encryption
-  kms_service = var.kms_key_crn != null ? (
-    can(regex(".*kms.*", var.kms_key_crn)) ? "kms" : (
-      can(regex(".*hs-crypto.*", var.kms_key_crn)) ? "hs-crypto" : "unrecognized key type"
-    )
-  ) : "no key crn"
-
   create_kp_auth_policy = var.kms_encryption_enabled == false || var.skip_iam_authorization_policy ? 0 : 1
+
+  parsed_kms_key_crn = var.kms_key_crn != null ? split(":", var.kms_key_crn) : []
+  kms_service        = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[4] : null
+  kms_scope          = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[6] : null
+  kms_account_id     = length(local.parsed_kms_key_crn) > 0 ? split("/", local.kms_scope)[1] : null
+  kms_key_id         = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[9] : null
 }
 
 # Create IAM Access Policy to allow Key protect to access Elasticsearch instance
 resource "ibm_iam_authorization_policy" "policy" {
-  count                       = local.create_kp_auth_policy
-  source_service_name         = "databases-for-elasticsearch"
-  source_resource_group_id    = var.resource_group_id
-  target_service_name         = local.kms_service
-  target_resource_instance_id = var.existing_kms_instance_guid
-  roles                       = ["Reader"]
+  count                    = local.create_kp_auth_policy
+  source_service_name      = "databases-for-elasticsearch"
+  source_resource_group_id = var.resource_group_id
+  roles                    = ["Reader"]
+  description              = "Allow all Elastic Search instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${var.existing_kms_instance_guid}"
+  resource_attributes {
+    name     = "serviceName"
+    operator = "stringEquals"
+    value    = local.kms_service
+  }
+  resource_attributes {
+    name     = "accountId"
+    operator = "stringEquals"
+    value    = local.kms_account_id
+  }
+  resource_attributes {
+    name     = "serviceInstance"
+    operator = "stringEquals"
+    value    = var.existing_kms_instance_guid
+  }
+  resource_attributes {
+    name     = "resourceType"
+    operator = "stringEquals"
+    value    = "key"
+  }
+  resource_attributes {
+    name     = "resource"
+    operator = "stringEquals"
+    value    = local.kms_key_id
+  }
+  # Scope of policy now includes the key, so ensure to create new policy before
+  # destroying old one to prevent any disruption to every day services.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
@@ -83,9 +111,9 @@ resource "ibm_database" "elasticsearch" {
   ## This is used to conditionally add one, OR, the other group block depending on var.local.host_flavor_set
   ## This block is for if host_flavor IS set to specific pre-defined host sizes and not set to "multitenant"
   dynamic "group" {
-    for_each = local.host_flavor_set && var.member_host_flavor != "multitenant" ? [1] : []
+    for_each = local.host_flavor_set && var.member_host_flavor != "multitenant" && var.backup_crn == null ? [1] : []
     content {
-      group_id = "member" # Only member type is allowed for postgresql
+      group_id = "member" # Only member type is allowed for elasticsearch
       host_flavor {
         id = var.member_host_flavor
       }
@@ -100,9 +128,9 @@ resource "ibm_database" "elasticsearch" {
 
   ## This block is for if host_flavor IS set to "multitenant"
   dynamic "group" {
-    for_each = local.host_flavor_set && var.member_host_flavor == "multitenant" ? [1] : []
+    for_each = local.host_flavor_set && var.member_host_flavor == "multitenant" && var.backup_crn == null ? [1] : []
     content {
-      group_id = "member" # Only member type is allowed for postgresql
+      group_id = "member" # Only member type is allowed for elasticsearch
       host_flavor {
         id = var.member_host_flavor
       }
@@ -123,9 +151,9 @@ resource "ibm_database" "elasticsearch" {
 
   ## This block is for if host_flavor IS NOT set
   dynamic "group" {
-    for_each = local.host_flavor_set ? [] : [1]
+    for_each = local.host_flavor_set == false && var.backup_crn == null ? [1] : []
     content {
-      group_id = "member" # Only member type is allowed for postgresql
+      group_id = "member" # Only member type is allowed for elasticsearch
       memory {
         allocation_mb = var.member_memory_mb
       }
@@ -180,6 +208,8 @@ resource "ibm_database" "elasticsearch" {
 
   timeouts {
     create = "120m" #Extending provisioning time to 120 minutes
+    update = "120m"
+    delete = "15m"
   }
 }
 
