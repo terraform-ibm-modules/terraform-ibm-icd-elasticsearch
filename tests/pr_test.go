@@ -155,7 +155,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		Testing:                t,
 		TarIncludePatterns:     tarIncludePatterns,
 		TemplateFolder:         standardSolutionTerraformDir,
-		BestRegionYAMLPath:     regionSelectionPath,
+		Region:                 "us-south",
 		Prefix:                 "els-sr-da",
 		ResourceGroup:          resourceGroup,
 		DeleteWorkspaceOnFail:  false,
