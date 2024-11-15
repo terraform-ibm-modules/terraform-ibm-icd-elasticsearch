@@ -156,18 +156,10 @@ module "elasticsearch" {
 
 resource "random_password" "admin_password" {
   count            = var.admin_pass == null ? 1 : 0
-  length           = 32
+  length           = 31
   special          = true
   override_special = "-_"
   min_numeric      = 1
-}
-
-locals {
-  # _- are invalid first characters
-  # if - replace first char with J
-  # elseif _ replace first char with K
-  # else use asis
-  admin_password = startswith(random_password.admin_password[0].result, "-") ? "J${substr(random_password.admin_password[0].result, 1, -1)}" : startswith(random_password.admin_password[0].result, "_") ? "K${substr(random_password.admin_password[0].result, 1, -1)}" : random_password.admin_password[0].result
 }
 
 # create a service authorization between Secrets Manager and the target service (Elastic Search)
@@ -212,7 +204,8 @@ locals {
     }
   ]
 
-  admin_pass = var.admin_pass == null ? local.admin_password : var.admin_pass
+  # Ensure password does not start with special character
+  admin_pass = var.admin_pass == null ? "J${random_password.admin_password[0].result}" : var.admin_pass
   admin_pass_secret = [{
     secret_group_name     = var.prefix != null && var.admin_pass_sm_secret_group != null ? "${var.prefix}-${var.admin_pass_sm_secret_group}" : var.admin_pass_sm_secret_group
     existing_secret_group = var.use_existing_admin_pass_sm_secret_group
