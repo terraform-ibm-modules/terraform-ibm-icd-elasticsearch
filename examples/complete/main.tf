@@ -20,7 +20,7 @@ module "resource_group" {
 
 module "key_protect_all_inclusive" {
   source            = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version           = "4.16.4"
+  version           = "4.16.8"
   resource_group_id = module.resource_group.resource_group_id
   # Only us-south, eu-de backup encryption keys are supported. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok for details.
   # Note: Database instance and Key Protect must be created on the same region.
@@ -72,7 +72,7 @@ module "icd_elasticsearch" {
 # Create Secrets Manager Instance (if not using existing one)
 module "secrets_manager" {
   source               = "terraform-ibm-modules/secrets-manager/ibm"
-  version              = "1.18.6"
+  version              = "1.18.13"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
   secrets_manager_name = "${var.prefix}-secrets-manager"
@@ -95,7 +95,7 @@ module "secrets_manager_secrets_group" {
 # Add service credentials to secret manager as a username/password secret type in the created secret group
 module "secrets_manager_service_credentials_user_pass" {
   source                  = "terraform-ibm-modules/secrets-manager-secret/ibm"
-  version                 = "1.3.2"
+  version                 = "1.3.3"
   for_each                = var.service_credential_names
   region                  = local.sm_region
   secrets_manager_guid    = local.sm_guid
@@ -110,7 +110,7 @@ module "secrets_manager_service_credentials_user_pass" {
 # Add secrets manager certificate to secret manager as a certificate secret type in the created secret group
 module "secrets_manager_service_credentials_cert" {
   source                    = "terraform-ibm-modules/secrets-manager-secret/ibm"
-  version                   = "1.3.2"
+  version                   = "1.3.3"
   region                    = local.sm_region
   secrets_manager_guid      = local.sm_guid
   secret_group_id           = module.secrets_manager_secrets_group.secret_group_id
