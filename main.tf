@@ -42,7 +42,7 @@ resource "ibm_iam_authorization_policy" "policy" {
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = var.resource_group_id
   roles                    = ["Reader"]
-  description              = "Allow all Elastic Search instances in the account ${local.kms_account_id} in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${var.existing_kms_instance_guid}"
+  description              = "Allow all Elastic Search instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${var.existing_kms_instance_guid}"
   resource_attributes {
     name     = "serviceName"
     operator = "stringEquals"
@@ -89,7 +89,7 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy" {
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = var.resource_group_id
   roles                    = ["Reader"]
-  description              = "Allow all Elastic Search instances in the account ${local.kms_account_id} in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.backup_encryption_key_crn} from the instance GUID ${var.existing_kms_instance_guid}"
+  description              = "Allow all Elastic Search instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.backup_encryption_key_crn} from the instance GUID ${var.existing_kms_instance_guid}"
   resource_attributes {
     name     = "serviceName"
     operator = "stringEquals"
