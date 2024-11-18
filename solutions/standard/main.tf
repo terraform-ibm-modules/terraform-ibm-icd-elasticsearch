@@ -43,7 +43,7 @@ module "resource_group" {
 #######################################################################################################################
 
 data "ibm_iam_account_settings" "iam_account_settings" {
-  count = local.create_cross_account_auth_policy || (!var.skip_iam_authorization_policy && local.backup_kms_key_id != null) ? 1 : 0
+  count = local.create_cross_account_auth_policy ? 1 : 0
 }
 
 resource "ibm_iam_authorization_policy" "kms_policy" {
@@ -135,9 +135,6 @@ locals {
   backup_key_ring_name    = var.prefix != null ? "${var.prefix}-backup-encryption-${var.elasticsearch_key_ring_name}" : "backup-encryption-${var.elasticsearch_key_ring_name}"
   backup_kms_key_crn      = var.existing_backup_kms_key_crn != null ? var.existing_backup_kms_key_crn : var.existing_backup_kms_instance_crn != null ? module.backup_kms[0].keys[format("%s.%s", local.backup_key_ring_name, local.backup_key_name)].crn : null
   backup_kms_service_name = var.existing_backup_kms_instance_crn != null ? module.backup_kms_instance_crn_parser[0].service_name : null
-
-  parsed_backup_kms_key_crn = local.backup_kms_key_crn != null ? split(":", local.backup_kms_key_crn) : []
-  backup_kms_key_id         = length(local.parsed_backup_kms_key_crn) > 0 ? local.parsed_backup_kms_key_crn[9] : null
 }
 
 # If existing KMS intance CRN passed, parse details from it
@@ -148,7 +145,7 @@ module "backup_kms_instance_crn_parser" {
   crn     = var.existing_backup_kms_instance_crn
 }
 
-resource "ibm_iam_authorization_policy" "backup_kms_policy_cross_account" {
+resource "ibm_iam_authorization_policy" "backup_kms_policy" {
   count                       = local.existing_backup_kms_instance_guid == local.existing_kms_instance_guid ? 0 : var.existing_backup_kms_key_crn != null ? 0 : var.existing_backup_kms_instance_crn != null ? !var.skip_iam_authorization_policy ? 1 : 0 : 0
   provider                    = ibm.kms
   source_service_account      = local.create_cross_account_auth_policy ? data.ibm_iam_account_settings.iam_account_settings[0].account_id : null
@@ -158,51 +155,6 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy_cross_account" {
   target_resource_instance_id = local.existing_backup_kms_instance_guid
   roles                       = ["Reader"]
   description                 = "Allow all Elasticsearch instances in the resource group ${module.resource_group.resource_group_id} to read from the ${local.backup_kms_service_name} instance GUID ${local.existing_backup_kms_instance_guid}"
-}
-
-# workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
-resource "time_sleep" "wait_for_backup_kms_authorization_policy_cross_account" {
-  depends_on      = [ibm_iam_authorization_policy.backup_kms_policy_cross_account]
-  create_duration = "30s"
-}
-
-resource "ibm_iam_authorization_policy" "backup_kms_policy" {
-  count                    = !var.skip_iam_authorization_policy && local.backup_kms_key_id != null ? 1 : 0
-  source_service_account   = data.ibm_iam_account_settings.iam_account_settings[0].account_id
-  source_service_name      = "databases-for-elasticsearch"
-  source_resource_group_id = module.resource_group.resource_group_id
-  roles                    = ["Reader"]
-  description              = "Allow all Elastic Search instances in the resource group ${module.resource_group.resource_group_id} in the account ${data.ibm_iam_account_settings.iam_account_settings[0].account_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.existing_kms_instance_guid}"
-  resource_attributes {
-    name     = "serviceName"
-    operator = "stringEquals"
-    value    = local.kms_service
-  }
-  resource_attributes {
-    name     = "accountId"
-    operator = "stringEquals"
-    value    = local.kms_account_id
-  }
-  resource_attributes {
-    name     = "serviceInstance"
-    operator = "stringEquals"
-    value    = local.existing_kms_instance_guid
-  }
-  resource_attributes {
-    name     = "resourceType"
-    operator = "stringEquals"
-    value    = "key"
-  }
-  resource_attributes {
-    name     = "resource"
-    operator = "stringEquals"
-    value    = local.backup_kms_key_id
-  }
-  # Scope of policy now includes the key, so ensure to create new policy before
-  # destroying old one to prevent any disruption to every day services.
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
@@ -248,7 +200,7 @@ module "backup_kms" {
 module "elasticsearch" {
   count                         = local.use_existing_db_instance ? 0 : 1
   source                        = "../../modules/fscloud"
-  depends_on                    = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy_cross_account]
+  depends_on                    = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   resource_group_id             = module.resource_group.resource_group_id
   name                          = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
   region                        = var.region

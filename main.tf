@@ -17,7 +17,9 @@ locals {
 
   # For more info, see https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok and https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
 
-  backup_encryption_key_crn = var.use_default_backup_encryption_key == true ? null : (var.backup_encryption_key_crn != null ? var.backup_encryption_key_crn : var.kms_key_crn)
+  backup_encryption_key_crn       = var.use_default_backup_encryption_key == true ? null : (var.backup_encryption_key_crn != null ? var.backup_encryption_key_crn : var.kms_key_crn)
+  backup_encryption_key_is_unique = var.backup_encryption_key_crn != var.kms_key_crn
+  create_backup_kms_policy        = local.create_kp_auth_policy == 1 && local.backup_encryption_key_is_unique && local.backup_encryption_key_crn != null
 
   # Determine if auto scaling is enabled
   auto_scaling_enabled = var.auto_scaling == null ? [] : [1]
@@ -40,7 +42,7 @@ resource "ibm_iam_authorization_policy" "policy" {
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = var.resource_group_id
   roles                    = ["Reader"]
-  description              = "Allow all Elastic Search instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${var.existing_kms_instance_guid}"
+  description              = "Allow all Elastic Search instances in the account ${local.kms_account_id} in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${var.existing_kms_instance_guid}"
   resource_attributes {
     name     = "serviceName"
     operator = "stringEquals"
@@ -81,6 +83,50 @@ resource "time_sleep" "wait_for_authorization_policy" {
   create_duration = "30s"
 }
 
+resource "ibm_iam_authorization_policy" "backup_kms_policy" {
+  count                    = local.create_backup_kms_policy ? 1 : 0
+  source_service_account   = local.kms_account_id
+  source_service_name      = "databases-for-elasticsearch"
+  source_resource_group_id = var.resource_group_id
+  roles                    = ["Reader"]
+  description              = "Allow all Elastic Search instances in the account ${local.kms_account_id} in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.backup_encryption_key_crn} from the instance GUID ${var.existing_kms_instance_guid}"
+  resource_attributes {
+    name     = "serviceName"
+    operator = "stringEquals"
+    value    = local.kms_service
+  }
+  resource_attributes {
+    name     = "accountId"
+    operator = "stringEquals"
+    value    = local.kms_account_id
+  }
+  resource_attributes {
+    name     = "serviceInstance"
+    operator = "stringEquals"
+    value    = var.existing_kms_instance_guid
+  }
+  resource_attributes {
+    name     = "resourceType"
+    operator = "stringEquals"
+    value    = "key"
+  }
+  resource_attributes {
+    name     = "resource"
+    operator = "stringEquals"
+    value    = local.backup_encryption_key_crn
+  }
+  # Scope of policy now includes the key, so ensure to create new policy before
+  # destroying old one to prevent any disruption to every day services.
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
+resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
+  depends_on      = [ibm_iam_authorization_policy.backup_kms_policy]
+  create_duration = "30s"
+}
 
 resource "ibm_database" "elasticsearch" {
   depends_on                = [time_sleep.wait_for_authorization_policy]
