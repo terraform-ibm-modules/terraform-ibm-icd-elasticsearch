@@ -91,6 +91,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 			fmt.Sprintf("%s/*.tf", standardSolutionTerraformDir),
 			fmt.Sprintf("%s/*.tf", fscloudExampleTerraformDir),
 			fmt.Sprintf("%s/*.tf", "modules/fscloud"),
+			fmt.Sprintf("%s/*.sh", "scripts"),
 		},
 		TemplateFolder:         standardSolutionTerraformDir,
 		BestRegionYAMLPath:     regionSelectionPath,
