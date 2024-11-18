@@ -196,11 +196,6 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy" {
   resource_attributes {
     name     = "resource"
     operator = "stringEquals"
-    value    = local.kms_key_id
-  }
-  resource_attributes {
-    name     = "resource"
-    operator = "stringEquals"
     value    = local.backup_kms_key_id
   }
   # Scope of policy now includes the key, so ensure to create new policy before
