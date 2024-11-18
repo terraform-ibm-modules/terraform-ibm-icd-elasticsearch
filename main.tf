@@ -87,7 +87,6 @@ resource "time_sleep" "wait_for_authorization_policy" {
 
 resource "ibm_iam_authorization_policy" "backup_kms_policy" {
   count                    = local.create_backup_kms_policy ? 1 : 0
-  source_service_account   = local.kms_account_id
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = var.resource_group_id
   roles                    = ["Reader"]
@@ -115,7 +114,7 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy" {
   resource_attributes {
     name     = "resource"
     operator = "stringEquals"
-    value    = local.backup_encryption_key_crn
+    value    = local.backup_kms_key_id
   }
   # Scope of policy now includes the key, so ensure to create new policy before
   # destroying old one to prevent any disruption to every day services.
@@ -126,12 +125,12 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy" {
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
-  depends_on      = [ibm_iam_authorization_policy.backup_kms_policy, ibm_iam_authorization_policy.backup_kms_policy]
+  depends_on      = [ibm_iam_authorization_policy.backup_kms_policy]
   create_duration = "30s"
 }
 
 resource "ibm_database" "elasticsearch" {
-  depends_on                = [time_sleep.wait_for_authorization_policy]
+  depends_on                = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   name                      = var.name
   plan                      = var.plan
   location                  = var.region
