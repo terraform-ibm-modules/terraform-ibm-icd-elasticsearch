@@ -40,7 +40,7 @@ locals {
 
 # Create IAM Access Policy to allow Key protect to access Elasticsearch instance
 resource "ibm_iam_authorization_policy" "policy" {
-  count                    = local.create_kp_auth_policy ? 1 : 0
+  count                    = local.create_kp_auth_policy
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = var.resource_group_id
   roles                    = ["Reader"]
@@ -126,7 +126,7 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy" {
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
-  depends_on      = [ibm_iam_authorization_policy.backup_kms_policy]
+  depends_on      = [ibm_iam_authorization_policy.backup_kms_policy, ibm_iam_authorization_policy.backup_kms_policy]
   create_duration = "30s"
 }
 
