@@ -40,7 +40,7 @@ locals {
 
 # Create IAM Access Policy to allow Key protect to access Elasticsearch instance
 resource "ibm_iam_authorization_policy" "policy" {
-  count                    = local.create_kp_auth_policy
+  count                    = local.create_kp_auth_policy ? 1 : 0
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = var.resource_group_id
   roles                    = ["Reader"]
