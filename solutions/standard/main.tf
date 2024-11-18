@@ -43,7 +43,7 @@ module "resource_group" {
 #######################################################################################################################
 
 data "ibm_iam_account_settings" "iam_account_settings" {
-  count = local.create_cross_account_auth_policy ? 1 : 0
+  count = local.create_cross_account_auth_policy || (!var.skip_iam_authorization_policy && local.backup_kms_key_id != null) ? 1 : 0
 }
 
 resource "ibm_iam_authorization_policy" "kms_policy" {
