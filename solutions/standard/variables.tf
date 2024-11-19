@@ -18,7 +18,7 @@ variable "ibmcloud_kms_api_key" {
 variable "provider_visibility" {
   description = "Set the visibility value for the IBM terraform provider. Supported values are `public`, `private`, `public-and-private`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/guides/custom-service-endpoints)."
   type        = string
-  default     = "public"
+  default     = "private"
 
   validation {
     condition     = contains(["public", "private", "public-and-private"], var.provider_visibility)
@@ -29,7 +29,7 @@ variable "provider_visibility" {
 variable "prefix" {
   type        = string
   description = "Prefix to add to all resources created by this solution."
-  default     = "test-es"
+  default     = null
 }
 
 ##############################################################################
@@ -39,7 +39,6 @@ variable "prefix" {
 variable "resource_group_name" {
   type        = string
   description = "The name of a new or an existing resource group to provision the Databases for Elasicsearch in. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-  default     = "test-es"
 }
 
 variable "use_existing_resource_group" {
@@ -163,7 +162,7 @@ variable "users" {
 variable "service_credential_names" {
   type        = map(string)
   description = "The map of name and role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-types.md)."
-  default     = { "admin_test" : "Administrator", "editor_test" : "Editor" }
+  default     = {}
 }
 
 variable "tags" {
@@ -228,7 +227,7 @@ variable "skip_iam_authorization_policy" {
 variable "kms_endpoint_type" {
   type        = string
   description = "The type of endpoint to use to communicate with the KMS instance. Possible values: `public`, `private`."
-  default     = "public"
+  default     = "private"
   validation {
     condition     = can(regex("public|private", var.kms_endpoint_type))
     error_message = "The kms_endpoint_type value must be 'public' or 'private'."
@@ -238,7 +237,7 @@ variable "kms_endpoint_type" {
 variable "existing_kms_instance_crn" {
   type        = string
   description = "The CRN of an Hyper Protect Crypto Services or Key Protect instance that you want to use for both disk and backup encryption. Backup encryption is only supported is some regions ([learn more](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok)), so if you need to use a different instance for backup encryption from a supported region, use the `existing_backup_kms_instance_crn` input."
-  default     = "crn:v1:bluemix:public:hs-crypto:us-south:a/abac0df06b644a9cabc6e44f55b3880e:e6dce284-e80f-46e1-a3c1-830f7adff7a9::"
+  default     = null
 }
 
 ##############################################################
@@ -269,14 +268,14 @@ variable "elasticsearch_key_name" {
 
 variable "existing_secrets_manager_instance_crn" {
   type        = string
-  default     = "crn:v1:bluemix:public:secrets-manager:us-south:a/abac0df06b644a9cabc6e44f55b3880e:79c6d411-c18f-4670-b009-b0044a238667::"
+  default     = null
   description = "The CRN of existing secrets manager to use to create service credential secrets for Databases for Elasticsearch instance."
 }
 
 variable "existing_secrets_manager_endpoint_type" {
   type        = string
   description = "The endpoint type to use if `existing_secrets_manager_instance_crn` is specified. Possible values: public, private."
-  default     = "public"
+  default     = "private"
   validation {
     condition     = contains(["public", "private"], var.existing_secrets_manager_endpoint_type)
     error_message = "Only \"public\" and \"private\" are allowed values for 'existing_secrets_endpoint_type'."
@@ -300,22 +299,8 @@ variable "service_credential_secrets" {
 
     }))
   }))
-  default = [
-    {
-      "secret_group_name" : "test-es-secret-group",
-      "service_credentials" : [
-        {
-          "secret_name" : "test-es-cred-reader",
-          "service_credentials_source_service_role" : "Reader",
-        },
-        {
-          "secret_name" : "test-es-cred-writer",
-          "service_credentials_source_service_role" : "Writer",
-        },
-      ]
-    },
-  ]
-  description = "Service credential secrets configuration for Databases for Elasticsearch. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-elasticsearch/tree/main/solutions/instance/DA-types.md#service-credential-secrets)."
+  default     = []
+  description = "Service credential secrets configuration for Databases for Elasticsearch. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/standard/DA-types.md#service-credential-secrets)."
 
   validation {
     condition = alltrue([
@@ -339,7 +324,7 @@ variable "skip_es_sm_auth_policy" {
 variable "admin_pass_sm_secret_group" {
   type        = string
   description = "The name of a new or existing secrets manager secret group for admin password. To use existing secret group, `use_existing_admin_pass_sm_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-  default     = "test-es"
+  default     = "elasticsearch-secrets"
 }
 
 variable "use_existing_admin_pass_sm_secret_group" {
@@ -351,7 +336,7 @@ variable "use_existing_admin_pass_sm_secret_group" {
 variable "admin_pass_sm_secret_name" {
   type        = string
   description = "The name of a new elasticsearch administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-  default     = "test-es"
+  default     = "elasticsearch-admin-password"
 }
 
 ##############################################################
@@ -367,7 +352,7 @@ variable "existing_code_engine_project_id" {
 variable "enable_kibana_dashboard" {
   type        = bool
   description = "Set it true to deploy Kibana in code engine. NOTE: Kibana image is coming direcly from the official registry (https://www.docker.elastic.co/) and not certified by the IBM."
-  default     = true
+  default     = false
 }
 
 variable "elasticsearch_full_version" {
@@ -382,7 +367,7 @@ variable "elasticsearch_full_version" {
 variable "existing_backup_kms_key_crn" {
   type        = string
   description = "The CRN of an Hyper Protect Crypto Services or Key Protect encryption key that you want to use to encrypt database backups. If no value is passed, the value of `existing_kms_key_crn` is used. If no value is passed for that, a new key will be created in the provided KMS instance and used for both disk encryption, and backup encryption."
-  default     = "crn:v1:bluemix:public:hs-crypto:us-south:a/abac0df06b644a9cabc6e44f55b3880e:e6dce284-e80f-46e1-a3c1-830f7adff7a9:key:76170fae-4e0c-48c3-8ebe-326059ebb533"
+  default     = null
 }
 
 variable "existing_backup_kms_instance_crn" {
