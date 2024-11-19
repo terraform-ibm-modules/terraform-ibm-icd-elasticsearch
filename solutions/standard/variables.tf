@@ -354,3 +354,9 @@ variable "elasticsearch_full_version" {
   type        = string
   default     = null
 }
+
+variable "kibana_image_reference" {
+  description = "The docker image reference for Kibana.Please give your image input or leave blank for default."
+  type        = string
+  default     = ""
+}

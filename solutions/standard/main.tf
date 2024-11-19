@@ -307,7 +307,7 @@ module "code_engine_kibana" {
 
   apps = {
     (local.code_engine_app_name) = {
-      image_reference = "docker.elastic.co/kibana/kibana:${local.es_full_version}"
+      image_reference = var.kibana_image_reference != "" ? var.kibana_image_reference : "docker.elastic.co/kibana/kibana:${local.es_full_version}"
       image_port      = 5601
       run_env_variables = [{
         type  = "literal"
