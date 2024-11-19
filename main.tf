@@ -21,7 +21,7 @@ locals {
   parsed_backup_encryption_key_crn = local.backup_encryption_key_crn != null ? split(":", local.backup_encryption_key_crn) : []
   backup_kms_key_id                = length(local.parsed_backup_encryption_key_crn) > 0 ? local.parsed_backup_encryption_key_crn[9] : null
 
-  create_backup_kms_policy = local.create_kp_auth_policy == 1 && local.backup_encryption_key_crn != null
+  create_backup_kms_policy = local.create_kp_auth_policy == 1 && local.backup_encryption_key_crn != null && var.backup_encryption_key_crn != null
 
   # Determine if auto scaling is enabled
   auto_scaling_enabled = var.auto_scaling == null ? [] : [1]

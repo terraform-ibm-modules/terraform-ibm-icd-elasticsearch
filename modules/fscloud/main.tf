@@ -11,7 +11,7 @@ module "elasticsearch" {
   name                          = var.name
   region                        = var.region
   skip_iam_authorization_policy = var.skip_iam_authorization_policy
-  service_endpoints             = "private"
+  service_endpoints             = "public"
   elasticsearch_version         = var.elasticsearch_version
   kms_encryption_enabled        = !var.use_ibm_owned_encryption_key
   existing_kms_instance_guid    = var.existing_kms_instance_guid
