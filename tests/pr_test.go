@@ -3,16 +3,12 @@ package test
 
 import (
 	"fmt"
-	"io/fs"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/cloudinfo"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
@@ -22,6 +18,7 @@ import (
 const completeExampleTerraformDir = "examples/complete"
 const fscloudExampleTerraformDir = "examples/fscloud"
 const standardSolutionTerraformDir = "solutions/standard"
+const latestVersion = "8.15"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-elasticsearch"
@@ -64,7 +61,7 @@ func TestRunFSCloudExample(t *testing.T) {
 		*/
 		//ResourceGroup: resourceGroup,
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version":      "8.12", // Always lock this test into the latest supported elasticsearch version
+			"elasticsearch_version":      latestVersion, // Always lock this test into the latest supported elasticsearch version
 			"access_tags":                permanentResources["accessTags"],
 			"existing_kms_instance_guid": permanentResources["hpcs_south"],
 			"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
@@ -84,76 +81,18 @@ func TestRunFSCloudExample(t *testing.T) {
 	options.TestTearDown()
 }
 
-type tarIncludePatterns struct {
-	excludeDirs []string
-
-	includeFiletypes []string
-
-	includeDirs []string
-}
-
-func getTarIncludePatternsRecursively(dir string, dirsToExclude []string, fileTypesToInclude []string) ([]string, error) {
-	r := tarIncludePatterns{dirsToExclude, fileTypesToInclude, nil}
-	err := filepath.WalkDir(dir, func(path string, entry fs.DirEntry, err error) error {
-		return walk(&r, path, entry, err)
-	})
-	if err != nil {
-		fmt.Println("error")
-		return r.includeDirs, err
-	}
-	return r.includeDirs, nil
-}
-
-func walk(r *tarIncludePatterns, s string, d fs.DirEntry, err error) error {
-	if err != nil {
-		return err
-	}
-	if d.IsDir() {
-		for _, excludeDir := range r.excludeDirs {
-			if strings.Contains(s, excludeDir) {
-				return nil
-			}
-		}
-		if s == ".." {
-			r.includeDirs = append(r.includeDirs, "*.tf")
-			return nil
-		}
-		for _, includeFiletype := range r.includeFiletypes {
-			r.includeDirs = append(r.includeDirs, strings.ReplaceAll(s+"/*"+includeFiletype, "../", ""))
-		}
-	}
-	return nil
-}
-
 func TestRunStandardSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
-	excludeDirs := []string{
-		".terraform",
-		".docs",
-		".github",
-		".git",
-		".idea",
-		"common-dev-assets",
-		"examples",
-		"tests",
-		"reference-architectures",
-	}
-	includeFiletypes := []string{
-		".tf",
-		".yaml",
-		".py",
-		".tpl",
-		".sh",
-	}
-
-	tarIncludePatterns, recurseErr := getTarIncludePatternsRecursively("..", excludeDirs, includeFiletypes)
-
-	// if error producing tar patterns (very unexpected) fail test immediately
-	require.NoError(t, recurseErr, "Schematic Test had unexpected error traversing directory tree")
 	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
-		Testing:                t,
-		TarIncludePatterns:     tarIncludePatterns,
+		Testing: t,
+		TarIncludePatterns: []string{
+			"*.tf",
+			fmt.Sprintf("%s/*.tf", standardSolutionTerraformDir),
+			fmt.Sprintf("%s/*.tf", fscloudExampleTerraformDir),
+			fmt.Sprintf("%s/*.tf", "modules/fscloud"),
+			fmt.Sprintf("%s/*.sh", "scripts"),
+		},
 		TemplateFolder:         standardSolutionTerraformDir,
 		BestRegionYAMLPath:     regionSelectionPath,
 		Prefix:                 "els-sr-da",
@@ -241,7 +180,7 @@ func TestRunBasicExample(t *testing.T) {
 		CloudInfoService:   sharedInfoSvc,
 
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version": "8.12", // Always lock this test into the latest supported elasticsearch version
+			"elasticsearch_version": latestVersion, // Always lock this test into the latest supported elasticsearch version
 		},
 	})
 

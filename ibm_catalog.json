@@ -194,6 +194,10 @@
                   "key": "elasticsearch_version",
                   "required": true,
                   "options": [
+                     {
+                      "displayname": "8.15",
+                      "value": "8.15"
+                    },
                     {
                       "displayname": "8.12",
                       "value": "8.12"
