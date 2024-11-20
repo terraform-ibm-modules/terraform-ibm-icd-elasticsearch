@@ -201,6 +201,9 @@
                   ]
                 },
                 {
+                  "key":"kibana_image_reference"
+                },
+                {
                   "key": "access_tags"
                 },
                 {

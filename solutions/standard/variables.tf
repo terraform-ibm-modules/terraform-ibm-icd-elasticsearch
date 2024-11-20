@@ -345,18 +345,18 @@ variable "existing_code_engine_project_id" {
 
 variable "enable_kibana_dashboard" {
   type        = bool
-  description = "Set it true to deploy Kibana in code engine. NOTE: Kibana image is coming direcly from the official registry (https://www.docker.elastic.co/) and not certified by the IBM."
+  description = "Set it true to deploy Kibana in code engine. When enabled, the Kibana image reference can be specified using the 'kibana_image_reference' input.NOTE: Kibana image is coming direcly from the official registry (https://www.docker.elastic.co/) and not certified by the IBM."
   default     = false
 }
 
 variable "elasticsearch_full_version" {
-  description = "(Optional) Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. If no value is passed, data lookup will fetch the full version using the Elasticsearch API, see https://github.com/elastic/kibana?tab=readme-ov-file#version-compatibility-with-elasticsearch"
+  description = "(Optional) Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard.Value is only used if enable_kibana_dashboard is true and if no value is passed for kibana_image_reference. If no value is passed, data lookup will fetch the full version using the Elasticsearch API, see https://github.com/elastic/kibana?tab=readme-ov-file#version-compatibility-with-elasticsearch"
   type        = string
   default     = null
 }
 
 variable "kibana_image_reference" {
-  description = "The docker image reference for Kibana.Please give your image input or leave blank for default."
+  description = "The docker image reference to use for Kibana if enable_kibana_dashboard is set to true. If no value is set, it will pull the image from the official Elastic registry (https://www.docker.elastic.co). Ensure to use a version that is compatible with the Elasticsearch version being used."
   type        = string
-  default     = ""
+  default     = null
 }
