@@ -341,8 +341,9 @@ module "code_engine_kibana" {
           value = "none"
         }
       ]
-      scale_min_instances = 1
-      scale_max_instances = 3
+      scale_min_instances     = 1
+      scale_max_instances     = 3
+      managed_domain_mappings = "local_private"
     }
   }
 }
