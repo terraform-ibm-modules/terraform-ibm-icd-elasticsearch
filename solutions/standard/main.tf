@@ -316,7 +316,7 @@ module "code_engine_kibana" {
   apps = {
     (local.code_engine_app_name) = {
       image_reference = "docker.elastic.co/kibana/kibana:${local.es_full_version}"
-      image_port      = 5601
+      image_port      = var.image_port
       run_env_variables = [{
         type  = "literal"
         name  = "ELASTICSEARCH_HOSTS"
@@ -351,7 +351,7 @@ module "code_engine_kibana" {
       ]
       scale_min_instances     = 1
       scale_max_instances     = 3
-      managed_domain_mappings = "local_private"
+      managed_domain_mappings = var.managed_domain_mappings
     }
   }
 }

@@ -354,3 +354,15 @@ variable "elasticsearch_full_version" {
   type        = string
   default     = null
 }
+
+variable "image_port" {
+  description = "The port which is used to connect to the port that is exposed by the container image."
+  type        = number
+  default     = 5601
+}
+
+variable "managed_domain_mappings" {
+  description = "Define which of the system managed domain mappings (Kibana endpint URL) will be setup for the application. Valid values are 'local_public', 'local_private' and 'local'."
+  type        = string
+  default     = "local_private"
+}
