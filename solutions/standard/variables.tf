@@ -208,7 +208,7 @@ variable "auto_scaling" {
 
 variable "existing_kms_key_crn" {
   type        = string
-  description = "The CRN of a Hyper Protect Crypto Services or Key Protect root key to use for disk encryption. If not specified, a root key is created in the KMS instance."
+  description = "The CRN of a Hyper Protect Crypto Services or Key Protect root key to use for disk encryption. If not specified, a root key is created in the KMS instance specified in the `existing_kms_instance_crn` input."
   default     = null
 }
 
@@ -230,7 +230,7 @@ variable "kms_endpoint_type" {
 
 variable "existing_kms_instance_crn" {
   type        = string
-  description = "The CRN of a Hyper Protect Crypto Services or Key Protect instance in the same account as the Databases for Elasticsearch instance. This value is used to create an authorization policy if `skip_iam_authorization_policy` is false. If not specified, a root key is created."
+  description = "The CRN of a Hyper Protect Crypto Services or Key Protect instance. Required to create a new root key if no value is passed with the `existing_kms_key_crn` input. Also required to create an authorization policy if `skip_iam_authorization_policy` is false."
   default     = null
 }
 
