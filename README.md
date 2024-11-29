@@ -60,7 +60,7 @@ You need the following permissions to run this module.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
-| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.68.1, <2.0.0 |
+| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.70.0, <2.0.0 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.2.1, < 4.0.0 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.9.1 |
 
@@ -68,7 +68,7 @@ You need the following permissions to run this module.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_cbr_rule"></a> [cbr\_rule](#module\_cbr\_rule) | terraform-ibm-modules/cbr/ibm//modules/cbr-rule-module | 1.27.0 |
+| <a name="module_cbr_rule"></a> [cbr\_rule](#module\_cbr\_rule) | terraform-ibm-modules/cbr/ibm//modules/cbr-rule-module | 1.29.0 |
 
 ### Resources
 
@@ -93,7 +93,7 @@ You need the following permissions to run this module.
 | <a name="input_backup_crn"></a> [backup\_crn](#input\_backup\_crn) | The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after both provisioning is complete and the new deployment that uses that data starts. Specify a backup CRN is in the format `crn:v1:<...>:backup:`. If not specified, the database is provisioned empty. | `string` | `null` | no |
 | <a name="input_backup_encryption_key_crn"></a> [backup\_encryption\_key\_crn](#input\_backup\_encryption\_key\_crn) | The CRN of a Hyper Protect Crypto Services use for encrypting the disk that holds deployment backups. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups | `string` | `null` | no |
 | <a name="input_cbr_rules"></a> [cbr\_rules](#input\_cbr\_rules) | The list of context-based restriction rules to create. | <pre>list(object({<br/>    description = string<br/>    account_id  = string<br/>    rule_contexts = list(object({<br/>      attributes = optional(list(object({<br/>        name  = string<br/>        value = string<br/>    }))) }))<br/>    enforcement_mode = string<br/>  }))</pre> | `[]` | no |
-| <a name="input_elasticsearch_version"></a> [elasticsearch\_version](#input\_elasticsearch\_version) | The version of Databases for Elasticsearch to deploy. Possible values: `8.7`, `8.10`, `8.12`, which requires an Enterprise Platinum pricing plan. If no value is specified, the current preferred version for IBM Cloud Databases is used. | `string` | `null` | no |
+| <a name="input_elasticsearch_version"></a> [elasticsearch\_version](#input\_elasticsearch\_version) | The version of Databases for Elasticsearch to deploy. Possible values: `8.7`, `8.10`, `8.12`, `8.15` which requires an Enterprise Platinum pricing plan. If no value is specified, the current preferred version for IBM Cloud Databases is used. | `string` | `null` | no |
 | <a name="input_elser_model_type"></a> [elser\_model\_type](#input\_elser\_model\_type) | Trained ELSER model to be used for Elastic's Natural Language Processing. Possible values: `.elser_model_1`, `.elser_model_2` and `.elser_model_2_linux-x86_64`. [Learn more](https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-elser.html) | `string` | `".elser_model_2_linux-x86_64"` | no |
 | <a name="input_enable_elser_model"></a> [enable\_elser\_model](#input\_enable\_elser\_model) | Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch) | `bool` | `false` | no |
 | <a name="input_existing_kms_instance_guid"></a> [existing\_kms\_instance\_guid](#input\_existing\_kms\_instance\_guid) | The GUID of a Hyper Protect Crypto Services or Key Protect instance for the CRN specified in `kms_key_crn` and `backup_encryption_key_crn`. Applies only if `kms_encryption_enabled` is true, `skip_iam_authorization_policy` is false, and you specify values for `kms_key_crn` or `backup_encryption_key_crn`. | `string` | `null` | no |

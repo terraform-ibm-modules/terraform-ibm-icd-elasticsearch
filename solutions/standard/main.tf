@@ -99,7 +99,7 @@ module "kms" {
   }
   count                       = var.existing_kms_key_crn != null || local.use_existing_db_instance || var.use_ibm_owned_encryption_key ? 0 : 1 # no need to create any KMS resources if passing an existing key or using IBM owned keys
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version                     = "4.16.4"
+  version                     = "4.16.11"
   create_key_protect_instance = false
   region                      = local.existing_kms_instance_region
   existing_kms_instance_crn   = var.existing_kms_instance_crn
@@ -162,6 +162,14 @@ resource "random_password" "admin_password" {
   min_numeric      = 1
 }
 
+locals {
+  # _- are invalid first characters
+  # if - replace first char with J
+  # elseif _ replace first char with K
+  # else use asis
+  admin_password = startswith(random_password.admin_password[0].result, "-") ? "J${substr(random_password.admin_password[0].result, 1, -1)}" : startswith(random_password.admin_password[0].result, "_") ? "K${substr(random_password.admin_password[0].result, 1, -1)}" : random_password.admin_password[0].result
+}
+
 # create a service authorization between Secrets Manager and the target service (Elastic Search)
 resource "ibm_iam_authorization_policy" "secrets_manager_key_manager" {
   count                       = local.create_sm_auth_policy
@@ -204,7 +212,7 @@ locals {
     }
   ]
 
-  admin_pass = var.admin_pass == null ? random_password.admin_password[0].result : var.admin_pass
+  admin_pass = var.admin_pass == null ? local.admin_password : var.admin_pass
   admin_pass_secret = [{
     secret_group_name     = var.prefix != null && var.admin_pass_sm_secret_group != null ? "${var.prefix}-${var.admin_pass_sm_secret_group}" : var.admin_pass_sm_secret_group
     existing_secret_group = var.use_existing_admin_pass_sm_secret_group
@@ -233,7 +241,7 @@ module "secrets_manager_service_credentials" {
   count                       = var.existing_secrets_manager_instance_crn == null ? 0 : 1
   depends_on                  = [time_sleep.wait_for_es_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version                     = "1.18.6"
+  version                     = "1.18.14"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
@@ -292,7 +300,7 @@ data "http" "es_metadata" {
 module "code_engine_kibana" {
   count               = var.enable_kibana_dashboard ? 1 : 0
   source              = "terraform-ibm-modules/code-engine/ibm"
-  version             = "2.0.4"
+  version             = "2.0.7"
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
