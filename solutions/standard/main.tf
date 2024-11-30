@@ -99,7 +99,7 @@ module "kms" {
   }
   count                       = var.existing_kms_key_crn != null || local.use_existing_db_instance || var.use_ibm_owned_encryption_key ? 0 : 1 # no need to create any KMS resources if passing an existing key or using IBM owned keys
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version                     = "4.17.0"
+  version                     = "4.17.1"
   create_key_protect_instance = false
   region                      = local.existing_kms_instance_region
   existing_kms_instance_crn   = var.existing_kms_instance_crn
@@ -300,7 +300,7 @@ data "http" "es_metadata" {
 module "code_engine_kibana" {
   count               = var.enable_kibana_dashboard ? 1 : 0
   source              = "terraform-ibm-modules/code-engine/ibm"
-  version             = "2.1.1"
+  version             = "2.1.2"
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
