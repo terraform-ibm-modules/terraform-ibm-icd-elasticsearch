@@ -59,6 +59,12 @@ variable "elasticsearch_version" {
   default     = null
 }
 
+variable "backup_crn" {
+  type        = string
+  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
+  default     = null
+}
+
 variable "region" {
   type        = string
   description = "The region where you want to deploy your instance."
@@ -208,7 +214,7 @@ variable "auto_scaling" {
 
 variable "existing_kms_key_crn" {
   type        = string
-  description = "The CRN of a Hyper Protect Crypto Services or Key Protect root key to use for disk encryption. If not specified, a root key is created in the KMS instance specified in the `existing_kms_instance_crn` input."
+  description = "The CRN of a Hyper Protect Crypto Services or Key Protect root key to use for disk encryption. If not specified, a root key is created in the KMS instance specified in the `existing_kms_instance_crn` input. Backup encryption is only supported is some regions ([learn more](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok)), so if you need to use a key from a different region for backup encryption, use the `existing_backup_kms_key_crn` input."
   default     = null
 }
 
@@ -230,7 +236,7 @@ variable "kms_endpoint_type" {
 
 variable "existing_kms_instance_crn" {
   type        = string
-  description = "The CRN of a Hyper Protect Crypto Services or Key Protect instance. Required to create a new root key if no value is passed with the `existing_kms_key_crn` input. Also required to create an authorization policy if `skip_iam_authorization_policy` is false."
+  description = "The CRN of a Hyper Protect Crypto Services or Key Protect instance. Required to create a new root key if no value is passed with the `existing_kms_key_crn` input. Also required to create an authorization policy if `skip_iam_authorization_policy` is false. Backup encryption is only supported is some regions ([learn more](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok)), so if you need to use a different instance for backup encryption from a supported region, use the `existing_backup_kms_instance_crn` input."
   default     = null
 }
 
@@ -294,7 +300,7 @@ variable "service_credential_secrets" {
     }))
   }))
   default     = []
-  description = "Service credential secrets configuration for Databases for Elasticsearch. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-elasticsearch/tree/main/solutions/instance/DA-types.md#service-credential-secrets)."
+  description = "Service credential secrets configuration for Databases for Elasticsearch. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/standard/DA-types.md#service-credential-secrets)."
 
   validation {
     condition = alltrue([
@@ -357,6 +363,21 @@ variable "elasticsearch_full_version" {
 
 variable "kibana_image_reference" {
   description = "The docker image reference to use for Kibana if `enable_kibana_dashboard` is set to true. If no value is set, it will pull the image from the official Elastic registry (https://www.docker.elastic.co). Ensure to use a version that is compatible with the Elasticsearch version being used."
+  type        = string
+  default     = null
+}
+
+##############################################################
+# Backup Encryption
+##############################################################
+variable "existing_backup_kms_key_crn" {
+  type        = string
+  description = "The CRN of an Hyper Protect Crypto Services or Key Protect encryption key that you want to use to encrypt database backups. If no value is passed, the value of `existing_kms_key_crn` is used. If no value is passed for that, a new key will be created in the provided KMS instance and used for both disk encryption, and backup encryption."
+  default     = null
+}
+
+variable "existing_backup_kms_instance_crn" {
+  description = "The CRN of an Hyper Protect Crypto Services or Key Protect instance that you want to use to encrypt database backups. If no value is passed, the value of the `existing_kms_instance_crn` input will be used, however backup encryption is only supported in certain regions so you need to ensure the KMS for backup is coming from one of the supported regions. [Learn more](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok)"
   type        = string
   default     = null
 }
