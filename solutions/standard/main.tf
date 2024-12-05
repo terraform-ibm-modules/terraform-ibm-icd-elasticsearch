@@ -424,7 +424,7 @@ module "code_engine_kibana" {
       ]
       scale_min_instances     = 1
       scale_max_instances     = 3
-      managed_domain_mappings = var.kibana_app_visibility
+      managed_domain_mappings = var.kibana_visibility
     }
   }
 }
