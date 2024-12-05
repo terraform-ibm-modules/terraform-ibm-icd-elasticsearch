@@ -360,6 +360,17 @@ variable "elasticsearch_full_version" {
   type        = string
   default     = null
 }
+variable "kibana_image_port" {
+  description = "Specify the port number used to connect to the Kibana service exposed by the container image. Default port is 5601 and it is only applicable if `enable_kibana_dashboard` is true"
+  type        = number
+  default     = 5601
+}
+
+variable "kibana_app_visibility" {
+  description = "Specify the visibility of Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. See https://cloud.ibm.com/docs/codeengine?topic=codeengine-application-workloads#optionsvisibility"
+  type        = string
+  default     = "local_private"
+}
 
 ##############################################################
 # Backup Encryption
@@ -374,16 +385,4 @@ variable "existing_backup_kms_instance_crn" {
   description = "The CRN of an Hyper Protect Crypto Services or Key Protect instance that you want to use to encrypt database backups. If no value is passed, the value of the `existing_kms_instance_crn` input will be used, however backup encryption is only supported in certain regions so you need to ensure the KMS for backup is coming from one of the supported regions. [Learn more](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok)"
   type        = string
   default     = null
-}
-
-variable "image_port" {
-  description = "The port which is used to connect to the port that is exposed by the container image."
-  type        = number
-  default     = 5601
-}
-
-variable "managed_domain_mappings" {
-  description = "Define which of the system managed domain mappings (Kibana endpint URL) will be setup for the application. Valid values are 'local_public', 'local_private' and 'local'."
-  type        = string
-  default     = "local_private"
 }
