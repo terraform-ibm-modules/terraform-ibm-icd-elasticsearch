@@ -99,7 +99,7 @@ module "kms" {
   }
   count                       = var.existing_kms_key_crn != null || local.use_existing_db_instance || var.use_ibm_owned_encryption_key ? 0 : 1 # no need to create any KMS resources if passing an existing key or using IBM owned keys
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version                     = "4.16.11"
+  version                     = "4.17.1"
   create_key_protect_instance = false
   region                      = local.existing_kms_instance_region
   existing_kms_instance_crn   = var.existing_kms_instance_crn
@@ -122,6 +122,77 @@ module "kms" {
   ]
 }
 
+
+#######################################################################################################################
+# KMS backup encryption key for Elasticsearch
+#######################################################################################################################
+
+locals {
+  existing_backup_kms_instance_guid   = var.existing_backup_kms_instance_crn != null ? module.backup_kms_instance_crn_parser[0].service_instance : null
+  existing_backup_kms_instance_region = var.existing_backup_kms_instance_crn != null ? module.backup_kms_instance_crn_parser[0].region : null
+
+  backup_key_name         = var.prefix != null ? "${var.prefix}-backup-encryption-${var.elasticsearch_key_name}" : "backup-encryption-${var.elasticsearch_key_name}"
+  backup_key_ring_name    = var.prefix != null ? "${var.prefix}-backup-encryption-${var.elasticsearch_key_ring_name}" : "backup-encryption-${var.elasticsearch_key_ring_name}"
+  backup_kms_key_crn      = var.existing_backup_kms_key_crn != null ? var.existing_backup_kms_key_crn : var.existing_backup_kms_instance_crn != null ? module.backup_kms[0].keys[format("%s.%s", local.backup_key_ring_name, local.backup_key_name)].crn : null
+  backup_kms_service_name = var.existing_backup_kms_instance_crn != null ? module.backup_kms_instance_crn_parser[0].service_name : null
+}
+
+# If existing KMS intance CRN passed, parse details from it
+module "backup_kms_instance_crn_parser" {
+  count   = var.existing_backup_kms_instance_crn != null ? 1 : 0
+  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
+  version = "1.1.0"
+  crn     = var.existing_backup_kms_instance_crn
+}
+
+resource "ibm_iam_authorization_policy" "backup_kms_policy" {
+  count                       = local.existing_backup_kms_instance_guid == local.existing_kms_instance_guid ? 0 : var.existing_backup_kms_key_crn != null ? 0 : var.existing_backup_kms_instance_crn != null ? !var.skip_iam_authorization_policy ? 1 : 0 : 0
+  provider                    = ibm.kms
+  source_service_account      = local.create_cross_account_auth_policy ? data.ibm_iam_account_settings.iam_account_settings[0].account_id : null
+  source_service_name         = "databases-for-elasticsearch"
+  source_resource_group_id    = module.resource_group.resource_group_id
+  target_service_name         = local.backup_kms_service_name
+  target_resource_instance_id = local.existing_backup_kms_instance_guid
+  roles                       = ["Reader"]
+  description                 = "Allow all Elasticsearch instances in the resource group ${module.resource_group.resource_group_id} to read from the ${local.backup_kms_service_name} instance GUID ${local.existing_backup_kms_instance_guid}"
+}
+
+# workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
+resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
+  depends_on      = [ibm_iam_authorization_policy.backup_kms_policy]
+  create_duration = "30s"
+}
+
+module "backup_kms" {
+  providers = {
+    ibm = ibm.kms
+  }
+  count                       = var.use_ibm_owned_encryption_key ? 0 : var.existing_backup_kms_key_crn != null ? 0 : var.existing_backup_kms_instance_crn != null ? 1 : 0
+  source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
+  version                     = "4.16.8"
+  create_key_protect_instance = false
+  region                      = local.existing_backup_kms_instance_region
+  existing_kms_instance_crn   = var.existing_backup_kms_instance_crn
+  key_ring_endpoint_type      = var.kms_endpoint_type
+  key_endpoint_type           = var.kms_endpoint_type
+  keys = [
+    {
+      key_ring_name         = local.backup_key_ring_name
+      existing_key_ring     = false
+      force_delete_key_ring = true
+      keys = [
+        {
+          key_name                 = local.backup_key_name
+          standard_key             = false
+          rotation_interval_month  = 3
+          dual_auth_delete_enabled = false
+          force_delete             = true
+        }
+      ]
+    }
+  ]
+}
+
 #######################################################################################################################
 # Elasticsearch
 #######################################################################################################################
@@ -129,7 +200,7 @@ module "kms" {
 module "elasticsearch" {
   count                         = local.use_existing_db_instance ? 0 : 1
   source                        = "../../modules/fscloud"
-  depends_on                    = [time_sleep.wait_for_authorization_policy]
+  depends_on                    = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   resource_group_id             = module.resource_group.resource_group_id
   name                          = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
   region                        = var.region
@@ -139,6 +210,8 @@ module "elasticsearch" {
   existing_kms_instance_guid    = local.existing_kms_instance_guid
   use_ibm_owned_encryption_key  = var.use_ibm_owned_encryption_key
   kms_key_crn                   = local.kms_key_crn
+  backup_encryption_key_crn     = local.backup_kms_key_crn
+  backup_crn                    = var.backup_crn
   access_tags                   = var.access_tags
   tags                          = var.tags
   admin_pass                    = local.admin_pass
@@ -241,7 +314,7 @@ module "secrets_manager_service_credentials" {
   count                       = var.existing_secrets_manager_instance_crn == null ? 0 : 1
   depends_on                  = [time_sleep.wait_for_es_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version                     = "1.18.14"
+  version                     = "1.19.2"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
@@ -300,7 +373,7 @@ data "http" "es_metadata" {
 module "code_engine_kibana" {
   count               = var.enable_kibana_dashboard ? 1 : 0
   source              = "terraform-ibm-modules/code-engine/ibm"
-  version             = "2.0.7"
+  version             = "2.1.2"
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
