@@ -34,6 +34,10 @@ module "key_protect_all_inclusive" {
         {
           key_name     = "${var.prefix}-elasticsearch"
           force_delete = true
+        },
+        {
+          key_name     = "backup-${var.prefix}-elasticsearch"
+          force_delete = true
         }
       ]
     }
@@ -58,6 +62,7 @@ module "icd_elasticsearch" {
   service_credential_names   = var.service_credential_names
   elasticsearch_version      = var.elasticsearch_version
   kms_key_crn                = module.key_protect_all_inclusive.keys["icd.${var.prefix}-elasticsearch"].crn
+  backup_encryption_key_crn  = module.key_protect_all_inclusive.keys["icd.backup-${var.prefix}-elasticsearch"].crn
   tags                       = var.resource_tags
   auto_scaling               = var.auto_scaling
   member_host_flavor         = "multitenant"

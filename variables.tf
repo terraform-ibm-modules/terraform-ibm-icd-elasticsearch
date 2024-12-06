@@ -188,6 +188,12 @@ variable "use_default_backup_encryption_key" {
   default     = false
 }
 
+variable "use_custom_backup_encryption_key" {
+  type        = bool
+  description = "Whether to use a custom IBM Cloud Databases generated key for backup encryption."
+  default     = false
+}
+
 variable "kms_key_crn" {
   type        = string
   description = "The root key CRN of the Key Protect or Hyper Protect Crypto Services instance to use for disk encryption. Applies only if `kms_encryption_enabled` is true."

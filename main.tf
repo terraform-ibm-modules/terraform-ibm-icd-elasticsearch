@@ -7,7 +7,11 @@ locals {
   # tflint-ignore: terraform_unused_declarations
   validate_auth_policy = var.kms_encryption_enabled && var.skip_iam_authorization_policy == false && var.existing_kms_instance_guid == null ? tobool("When var.skip_iam_authorization_policy is set to false, and var.kms_encryption_enabled to true, a value must be passed for var.existing_kms_instance_guid in order to create the auth policy.") : true
   # tflint-ignore: terraform_unused_declarations
-  validate_backup_key = var.backup_encryption_key_crn != null && var.use_default_backup_encryption_key == true ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to 'true'") : true
+  validate_backup_key_default = var.backup_encryption_key_crn != null && var.use_default_backup_encryption_key == true ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to 'true'") : true
+  # tflint-ignore: terraform_unused_declarations
+  validate_backup_key_custom = var.backup_encryption_key_crn == null && var.use_custom_backup_encryption_key == true ? tobool("When setting 'use_custom_backup_encryption_key' to 'true' you must also pass a value for 'backup_encryption_key_crn'") : true
+  # tflint-ignore: terraform_unused_declarations
+  validate_backup_key_custom_or_default = var.use_default_backup_encryption_key == true && var.use_custom_backup_encryption_key == true ? tobool("You cannot set 'use_default_backup_encryption_key' and 'use_custom_backup_encryption_key' simultaneously. You must choose one or the other.") : true
   # tflint-ignore: terraform_unused_declarations
   validate_plan = var.enable_elser_model && var.plan != "platinum" ? tobool("When var.enable_elser_model is set to true, a value for var.plan must be 'platinum' in order to enable ELSER model.") : true
   # tflint-ignore: terraform_unused_declarations
@@ -21,7 +25,7 @@ locals {
   parsed_backup_encryption_key_crn = local.backup_encryption_key_crn != null ? split(":", local.backup_encryption_key_crn) : []
   backup_kms_key_id                = length(local.parsed_backup_encryption_key_crn) > 0 ? local.parsed_backup_encryption_key_crn[9] : null
 
-  create_backup_kms_policy = local.create_kp_auth_policy == 1 && local.backup_encryption_key_crn != null && var.backup_encryption_key_crn != null
+  create_backup_kms_policy = local.create_kp_auth_policy == 1 && (var.use_custom_backup_encryption_key || var.use_default_backup_encryption_key)
 
   # Determine if auto scaling is enabled
   auto_scaling_enabled = var.auto_scaling == null ? [] : [1]
