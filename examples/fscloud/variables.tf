@@ -34,20 +34,10 @@ variable "access_tags" {
   default     = []
 }
 
-variable "existing_kms_instance_guid" {
-  description = "The GUID of the Hyper Protect Crypto services in which the key specified in var.kms_key_crn is coming from"
-  type        = string
-}
-
-variable "kms_key_crn" {
-  type        = string
-  description = "The root key CRN of a Hyper Protect Crypto Services (HPCS) that you want to use for disk encryption. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs&interface=ui for more information on integrating HPCS with Elasticsearch instance."
-}
-
 variable "elasticsearch_version" {
   type        = string
   description = "Version of the Elasticsearch instance. If no value is passed, the current preferred version of IBM Cloud Databases is used."
-  default     = null
+  default     = "8.15"
 }
 
 variable "service_credential_names" {
