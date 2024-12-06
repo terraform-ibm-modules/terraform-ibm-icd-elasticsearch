@@ -90,7 +90,7 @@ module "elasticsearch" {
   region                           = var.region
   tags                             = var.resource_tags
   access_tags                      = var.access_tags
-  existing_kms_instance_guid       = module.key_protect_all_inclusive.key_protect_crn
+  existing_kms_instance_guid       = module.key_protect_all_inclusive.key_protect_id
   kms_key_crn                      = module.key_protect_all_inclusive.keys["icd.${var.prefix}-elasticsearch"].crn
   backup_encryption_key_crn        = module.key_protect_all_inclusive.keys["icd.backup-${var.prefix}-elasticsearch"].crn
   elasticsearch_version            = var.elasticsearch_version
