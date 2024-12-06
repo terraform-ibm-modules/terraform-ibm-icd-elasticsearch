@@ -50,6 +50,32 @@ module "cbr_zone" {
 }
 
 ##############################################################################
+# Key Protect All Inclusive
+##############################################################################
+
+module "key_protect_all_inclusive" {
+  source            = "terraform-ibm-modules/kms-all-inclusive/ibm"
+  version           = "4.17.1"
+  resource_group_id = module.resource_group.resource_group_id
+  # Only us-south, eu-de backup encryption keys are supported. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok for details.
+  # Note: Database instance and Key Protect must be created on the same region.
+  region                    = var.region
+  key_protect_instance_name = "${var.prefix}-kp"
+  resource_tags             = var.resource_tags
+  keys = [
+    {
+      key_ring_name = "icd"
+      keys = [
+        {
+          key_name     = "backup-${var.prefix}-elasticsearch"
+          force_delete = true
+        }
+      ]
+    }
+  ]
+}
+
+##############################################################################
 # ICD elasticsearch database
 ##############################################################################
 
@@ -66,7 +92,7 @@ module "elasticsearch" {
   service_credential_names   = var.service_credential_names
   auto_scaling               = var.auto_scaling
   member_host_flavor         = "b3c.4x16.encrypted"
-  backup_encryption_key_crn  = var.backup_encryption_key_crn
+  backup_encryption_key_crn  = module.key_protect_all_inclusive.keys["icd.backup-${var.prefix}-elasticsearch"].crn
   backup_crn                 = var.backup_crn
   enable_elser_model         = var.enable_elser_model
   cbr_rules = [

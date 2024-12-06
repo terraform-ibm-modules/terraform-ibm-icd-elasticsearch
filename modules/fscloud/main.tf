@@ -18,7 +18,7 @@ module "elasticsearch" {
   kms_key_crn                      = var.kms_key_crn
   backup_crn                       = var.backup_crn
   backup_encryption_key_crn        = var.backup_encryption_key_crn
-  use_custom_backup_encryption_key = var.backup_encryption_key_crn != null ? true : false
+  use_custom_backup_encryption_key = var.use_custom_backup_encryption_key
   cbr_rules                        = var.cbr_rules
   access_tags                      = var.access_tags
   tags                             = var.tags

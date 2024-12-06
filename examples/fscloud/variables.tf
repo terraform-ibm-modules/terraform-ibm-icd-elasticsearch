@@ -102,13 +102,6 @@ variable "backup_crn" {
   default     = null
 }
 
-variable "backup_encryption_key_crn" {
-  type        = string
-  description = "The CRN of a Hyper Protect Crypto Services use for encrypting the disk that holds deployment backups. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
-  default     = null
-  # Validation happens in the root module
-}
-
 variable "enable_elser_model" {
   type        = bool
   description = "Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"

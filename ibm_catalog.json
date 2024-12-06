@@ -292,6 +292,9 @@
                   "key": "existing_backup_kms_instance_crn"
                 },
                 {
+                  "key": "use_custom_backup_encryption_key"
+                },
+                {
                   "key": "enable_elser_model"
                 },
                 {
