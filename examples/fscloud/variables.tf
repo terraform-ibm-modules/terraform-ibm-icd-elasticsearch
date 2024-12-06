@@ -37,7 +37,6 @@ variable "access_tags" {
 variable "elasticsearch_version" {
   type        = string
   description = "Version of the Elasticsearch instance. If no value is passed, the current preferred version of IBM Cloud Databases is used."
-  default     = "8.15"
 }
 
 variable "service_credential_names" {

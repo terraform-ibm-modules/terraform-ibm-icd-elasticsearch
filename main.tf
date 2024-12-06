@@ -11,6 +11,8 @@ locals {
   # tflint-ignore: terraform_unused_declarations
   validate_backup_key_custom = var.backup_encryption_key_crn == null && var.use_custom_backup_encryption_key == true ? tobool("When setting 'use_custom_backup_encryption_key' to 'true' you must also pass a value for 'backup_encryption_key_crn'") : true
   # tflint-ignore: terraform_unused_declarations
+  validate_backup_key_custom_flag = var.backup_encryption_key_crn != null && var.use_custom_backup_encryption_key == false ? tobool("When passing a value for 'backup_encryption_key_crn', 'use_custom_backup_encryption_key' must also be set to 'true'") : true
+  # tflint-ignore: terraform_unused_declarations
   validate_backup_key_custom_or_default = var.use_default_backup_encryption_key == true && var.use_custom_backup_encryption_key == true ? tobool("You cannot set 'use_default_backup_encryption_key' and 'use_custom_backup_encryption_key' simultaneously. You must choose one or the other.") : true
   # tflint-ignore: terraform_unused_declarations
   validate_plan = var.enable_elser_model && var.plan != "platinum" ? tobool("When var.enable_elser_model is set to true, a value for var.plan must be 'platinum' in order to enable ELSER model.") : true
@@ -129,6 +131,7 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy" {
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
+  count           = local.create_backup_kms_policy ? 1 : 0
   depends_on      = [ibm_iam_authorization_policy.backup_kms_policy]
   create_duration = "30s"
 }
