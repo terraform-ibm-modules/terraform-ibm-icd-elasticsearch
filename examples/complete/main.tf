@@ -49,24 +49,25 @@ module "key_protect_all_inclusive" {
 ##############################################################################
 
 module "icd_elasticsearch" {
-  source                     = "../../"
-  resource_group_id          = module.resource_group.resource_group_id
-  name                       = "${var.prefix}-elasticsearch"
-  region                     = var.region
-  plan                       = var.plan
-  kms_encryption_enabled     = true
-  access_tags                = var.access_tags
-  admin_pass                 = var.admin_pass
-  users                      = var.users
-  existing_kms_instance_guid = module.key_protect_all_inclusive.kms_guid
-  service_credential_names   = var.service_credential_names
-  elasticsearch_version      = var.elasticsearch_version
-  kms_key_crn                = module.key_protect_all_inclusive.keys["icd.${var.prefix}-elasticsearch"].crn
-  backup_encryption_key_crn  = module.key_protect_all_inclusive.keys["icd.backup-${var.prefix}-elasticsearch"].crn
-  tags                       = var.resource_tags
-  auto_scaling               = var.auto_scaling
-  member_host_flavor         = "multitenant"
-  member_memory_mb           = 4096
+  source                           = "../../"
+  resource_group_id                = module.resource_group.resource_group_id
+  name                             = "${var.prefix}-elasticsearch"
+  region                           = var.region
+  plan                             = var.plan
+  kms_encryption_enabled           = true
+  access_tags                      = var.access_tags
+  admin_pass                       = var.admin_pass
+  users                            = var.users
+  existing_kms_instance_guid       = module.key_protect_all_inclusive.kms_guid
+  service_credential_names         = var.service_credential_names
+  elasticsearch_version            = var.elasticsearch_version
+  kms_key_crn                      = module.key_protect_all_inclusive.keys["icd.${var.prefix}-elasticsearch"].crn
+  backup_encryption_key_crn        = module.key_protect_all_inclusive.keys["icd.backup-${var.prefix}-elasticsearch"].crn
+  use_custom_backup_encryption_key = true
+  tags                             = var.resource_tags
+  auto_scaling                     = var.auto_scaling
+  member_host_flavor               = "multitenant"
+  member_memory_mb                 = 4096
 }
 
 
