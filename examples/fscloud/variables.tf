@@ -34,20 +34,9 @@ variable "access_tags" {
   default     = []
 }
 
-variable "existing_kms_instance_guid" {
-  description = "The GUID of the Hyper Protect Crypto services in which the key specified in var.kms_key_crn is coming from"
-  type        = string
-}
-
-variable "kms_key_crn" {
-  type        = string
-  description = "The root key CRN of a Hyper Protect Crypto Services (HPCS) that you want to use for disk encryption. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs&interface=ui for more information on integrating HPCS with Elasticsearch instance."
-}
-
 variable "elasticsearch_version" {
   type        = string
   description = "Version of the Elasticsearch instance. If no value is passed, the current preferred version of IBM Cloud Databases is used."
-  default     = null
 }
 
 variable "service_credential_names" {
@@ -100,13 +89,6 @@ variable "backup_crn" {
   type        = string
   description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
   default     = null
-}
-
-variable "backup_encryption_key_crn" {
-  type        = string
-  description = "The CRN of a Hyper Protect Crypto Services use for encrypting the disk that holds deployment backups. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
-  default     = null
-  # Validation happens in the root module
 }
 
 variable "enable_elser_model" {

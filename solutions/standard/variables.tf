@@ -375,3 +375,9 @@ variable "existing_backup_kms_instance_crn" {
   type        = string
   default     = null
 }
+
+variable "use_custom_backup_encryption_key" {
+  type        = bool
+  description = "Whether to use a custom IBM Cloud Databases generated key for backup encryption."
+  default     = false
+}

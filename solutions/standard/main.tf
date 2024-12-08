@@ -198,33 +198,34 @@ module "backup_kms" {
 #######################################################################################################################
 
 module "elasticsearch" {
-  count                         = local.use_existing_db_instance ? 0 : 1
-  source                        = "../../modules/fscloud"
-  depends_on                    = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
-  resource_group_id             = module.resource_group.resource_group_id
-  name                          = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
-  region                        = var.region
-  plan                          = var.plan
-  skip_iam_authorization_policy = var.skip_iam_authorization_policy || local.create_cross_account_auth_policy
-  elasticsearch_version         = var.elasticsearch_version
-  existing_kms_instance_guid    = local.existing_kms_instance_guid
-  use_ibm_owned_encryption_key  = var.use_ibm_owned_encryption_key
-  kms_key_crn                   = local.kms_key_crn
-  backup_encryption_key_crn     = local.backup_kms_key_crn
-  backup_crn                    = var.backup_crn
-  access_tags                   = var.access_tags
-  tags                          = var.tags
-  admin_pass                    = local.admin_pass
-  users                         = var.users
-  members                       = var.members
-  member_host_flavor            = var.member_host_flavor
-  member_memory_mb              = var.member_memory_mb
-  member_disk_mb                = var.member_disk_mb
-  member_cpu_count              = var.member_cpu_count
-  auto_scaling                  = var.auto_scaling
-  service_credential_names      = var.service_credential_names
-  enable_elser_model            = var.enable_elser_model
-  elser_model_type              = var.elser_model_type
+  count                            = local.use_existing_db_instance ? 0 : 1
+  source                           = "../../modules/fscloud"
+  depends_on                       = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
+  resource_group_id                = module.resource_group.resource_group_id
+  name                             = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
+  region                           = var.region
+  plan                             = var.plan
+  skip_iam_authorization_policy    = var.skip_iam_authorization_policy || local.create_cross_account_auth_policy
+  elasticsearch_version            = var.elasticsearch_version
+  existing_kms_instance_guid       = local.existing_kms_instance_guid
+  use_ibm_owned_encryption_key     = var.use_ibm_owned_encryption_key
+  kms_key_crn                      = local.kms_key_crn
+  backup_encryption_key_crn        = local.backup_kms_key_crn
+  use_custom_backup_encryption_key = var.use_custom_backup_encryption_key
+  backup_crn                       = var.backup_crn
+  access_tags                      = var.access_tags
+  tags                             = var.tags
+  admin_pass                       = local.admin_pass
+  users                            = var.users
+  members                          = var.members
+  member_host_flavor               = var.member_host_flavor
+  member_memory_mb                 = var.member_memory_mb
+  member_disk_mb                   = var.member_disk_mb
+  member_cpu_count                 = var.member_cpu_count
+  auto_scaling                     = var.auto_scaling
+  service_credential_names         = var.service_credential_names
+  enable_elser_model               = var.enable_elser_model
+  elser_model_type                 = var.elser_model_type
 }
 
 resource "random_password" "admin_password" {
