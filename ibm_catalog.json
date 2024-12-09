@@ -111,10 +111,12 @@
                   ]
                 },
                 {
-                  "key": "use_existing_resource_group"
+                  "key": "use_existing_resource_group",
+                  "required": true
                 },
                 {
-                  "key": "resource_group_name"
+                  "key": "resource_group_name",
+                  "required": true
                 },
                 {
                   "key": "prefix"
@@ -280,7 +282,7 @@
                   "key": "existing_secrets_manager_endpoint_type"
                 },
                 {
-                  "key": "skip_elasticsearch_to_secret_manager_auth_policy"
+                  "key": "skip_elasticsearch_to_secrets_manager_auth_policy"
                 },
                 {
                   "key": "service_credential_secrets"

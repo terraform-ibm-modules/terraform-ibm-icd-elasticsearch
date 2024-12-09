@@ -11,16 +11,18 @@ locals {
   elasticsearch_key_ring_name = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 
 
-  kms_key_crn = var.existing_elasticsearch_instance_crn != null ? null : (var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn)
+  existing_elasticsearch_instance_guid = var.existing_elasticsearch_instance_crn != null ? element(split(":", var.existing_elasticsearch_instance_crn), length(split(":", var.existing_elasticsearch_instance_crn)) - 3) : null
+  use_existing_elasticsearch_instance  = var.existing_elasticsearch_instance_crn != null
 
-  existing_db_instance_guid           = var.existing_elasticsearch_instance_crn != null ? element(split(":", var.existing_elasticsearch_instance_crn), length(split(":", var.existing_elasticsearch_instance_crn)) - 3) : null
-  use_existing_elasticsearch_instance = var.existing_elasticsearch_instance_crn != null
+  create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key
+  create_sm_auth_policy            = var.skip_elasticsearch_to_secrets_manager_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
 
-  create_cross_account_auth_policy = !var.skip_iam_authorization_policy && var.ibmcloud_kms_api_key != null
-  create_sm_auth_policy            = var.skip_elasticsearch_to_secret_manager_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
-  kms_service_name = local.kms_key_crn != null ? (
-    can(regex(".*kms.*", local.kms_key_crn)) ? "kms" : can(regex(".*hs-crypto.*", local.kms_key_crn)) ? "hs-crypto" : null
-  ) : null
+  kms_key_crn        = var.existing_elasticsearch_instance_crn != null ? null : !var.use_ibm_owned_encryption_key ? var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn : null
+  parsed_kms_key_crn = local.kms_key_crn != null ? split(":", local.kms_key_crn) : []
+  kms_service        = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[4] : null
+  kms_scope          = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[6] : null
+  kms_account_id     = length(local.parsed_kms_key_crn) > 0 ? split("/", local.kms_scope)[1] : null
+  kms_key_id         = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[9] : null
 
   elasticsearch_guid = local.use_existing_elasticsearch_instance ? data.ibm_database.existing_db_instance[0].guid : module.elasticsearch[0].guid
 }
@@ -95,7 +97,7 @@ module "kms" {
   providers = {
     ibm = ibm.kms
   }
-  count                       = var.existing_kms_key_crn != null || local.use_existing_elasticsearch_instance ? 0 : 1 # no need to create any KMS resources if passing an existing key
+  count                       = var.existing_kms_key_crn != null || local.use_existing_elasticsearch_instance || var.use_ibm_owned_encryption_key ? 0 : 1 # no need to create any KMS resources if passing an existing key or using IBM owned keys
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
   version                     = "4.17.1"
   create_key_protect_instance = false
@@ -323,7 +325,7 @@ module "secrets_manager_service_credentials" {
 # requires a name and resource_id to retrieve the data
 data "ibm_resource_instance" "existing_instance_resource" {
   count      = local.use_existing_elasticsearch_instance ? 1 : 0
-  identifier = local.existing_db_instance_guid
+  identifier = local.existing_elasticsearch_instance_guid
 }
 
 data "ibm_database" "existing_db_instance" {
@@ -352,10 +354,10 @@ locals {
   code_engine_project_name = local.code_engine_project_id != null ? null : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
   code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
 
-  es_host         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].hostname
-  es_port         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
-  es_cert         = local.use_existing_db_instance ? data.ibm_database_connection.existing_connection[0].https[0].certificate[0].certificate_base64 : module.elasticsearch[0].certificate_base64
-  es_username     = local.use_existing_db_instance ? data.ibm_database.existing_db_instance[0].adminuser : "admin"
+  es_host         = local.use_existing_elasticsearch_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].hostname
+  es_port         = local.use_existing_elasticsearch_instance ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
+  es_cert         = local.use_existing_elasticsearch_instance ? data.ibm_database_connection.existing_connection[0].https[0].certificate[0].certificate_base64 : module.elasticsearch[0].certificate_base64
+  es_username     = local.use_existing_elasticsearch_instance ? data.ibm_database.existing_db_instance[0].adminuser : "admin"
   es_password     = local.admin_pass
   es_data         = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body) : null
   es_full_version = var.enable_kibana_dashboard ? (var.elasticsearch_full_version != null ? var.elasticsearch_full_version : local.es_data.version.number) : null
