@@ -360,6 +360,17 @@ variable "elasticsearch_full_version" {
   type        = string
   default     = null
 }
+variable "kibana_image_port" {
+  description = "Specify the port number used to connect to the Kibana service exposed by the container image. Default port is 5601 and it is only applicable if `enable_kibana_dashboard` is true"
+  type        = number
+  default     = 5601
+}
+
+variable "kibana_visibility" {
+  description = "Specify the visibility of Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. See https://cloud.ibm.com/docs/codeengine?topic=codeengine-application-workloads#optionsvisibility"
+  type        = string
+  default     = "local_private"
+}
 
 ##############################################################
 # Backup Encryption
