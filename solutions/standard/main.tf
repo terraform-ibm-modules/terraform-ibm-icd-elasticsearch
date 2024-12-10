@@ -10,11 +10,25 @@ module "resource_group" {
 }
 
 #######################################################################################################################
+# KMS related variable validation
+# (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
+#
+# TODO: Replace with terraform cross variable validation: https://github.ibm.com/GoldenEye/issues/issues/10836
+#######################################################################################################################
+
+locals {
+  # tflint-ignore: terraform_unused_declarations
+  validate_kms_1 = var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn != null || var.existing_kms_key_crn != null || var.existing_backup_kms_key_crn != null) ? tobool("When setting values for 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn', the 'use_ibm_owned_encryption_key' input must be set to false.") : true
+  # tflint-ignore: terraform_unused_declarations
+  validate_kms_2 = !var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn == null && var.existing_kms_key_crn == null) ? tobool("When 'use_ibm_owned_encryption_key' is false, a value is required for either 'existing_kms_instance_crn' (to create a new key), or 'existing_kms_key_crn' to use an existing key.") : true
+}
+
+#######################################################################################################################
 # KMS encryption key
 #######################################################################################################################
 
 locals {
-  create_new_kms_key          = var.existing_kms_key_crn != null || var.existing_db_instance_crn == null || var.use_ibm_owned_encryption_key ? 0 : 1 # no need to create any KMS resources if using existing Elasticsearch, passing an existing key, or using IBM owned keys
+  create_new_kms_key          = var.existing_db_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? 1 : 0 # no need to create any KMS resources if using existing Elasticsearch, passing an existing key, or using IBM owned keys
   elasticsearch_key_name      = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_name}" : var.elasticsearch_key_name
   elasticsearch_key_ring_name = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 }
@@ -94,7 +108,7 @@ locals {
   kms_instance_guid = var.existing_db_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_instance : module.kms_instance_crn_parser[0].service_instance
   kms_key_crn       = var.existing_db_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn
   kms_key_id        = var.existing_db_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].resource : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].key_id
-  kms_region        = var.existing_db_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].kms_region : module.kms_instance_crn_parser[0].region
+  kms_region        = var.existing_db_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].region : module.kms_instance_crn_parser[0].region
 
   # If creating KMS cross account policy for backups, parse backup key details from passed in key CRN
   backup_kms_account_id    = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].account_id : local.kms_account_id

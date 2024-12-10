@@ -60,7 +60,7 @@ variable "backup_crn" {
 
 variable "region" {
   type        = string
-  description = "The region where you want to deploy your instance."
+  description = "The region where you want to deploy your instance, or the region in which your existing instance is in."
   default     = "us-south"
 }
 
