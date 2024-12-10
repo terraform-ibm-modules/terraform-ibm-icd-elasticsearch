@@ -122,7 +122,6 @@
                 {
                   "key": "region",
                   "required": true,
-                  "default_value": "",
                   "options": [
                     {
                       "displayname": "Chennai (che01)",
@@ -251,7 +250,7 @@
                   "key": "admin_pass_sm_secret_name"
                 },
                 {
-                  "key": "skip_iam_authorization_policy"
+                  "key": "skip_es_kms_auth_policy"
                 },
                 {
                   "key": "kms_endpoint_type",
@@ -274,6 +273,9 @@
                   "required": true
                 },
                 {
+                  "key": "use_default_backup_encryption_key"
+                },
+                {
                   "key": "elasticsearch_key_ring_name"
                 },
                 {
@@ -287,9 +289,6 @@
                 },
                 {
                   "key": "existing_backup_kms_key_crn"
-                },
-                {
-                  "key": "existing_backup_kms_instance_crn"
                 },
                 {
                   "key": "enable_elser_model"
