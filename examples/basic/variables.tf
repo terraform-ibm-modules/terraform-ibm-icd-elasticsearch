@@ -39,14 +39,3 @@ variable "resource_tags" {
   description = "Optional list of tags to be added to created resources"
   default     = []
 }
-
-variable "service_credential_names" {
-  description = "Map of name, role for service credentials that you want to create for the database"
-  type        = map(string)
-  default = {
-    "elasticsearch_admin" : "Administrator",
-    "elasticsearch_operator" : "Operator",
-    "elasticsearch_viewer" : "Viewer",
-    "elasticsearch_editor" : "Editor",
-  }
-}

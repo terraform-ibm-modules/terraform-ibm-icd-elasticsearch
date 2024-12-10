@@ -54,21 +54,25 @@ module "cbr_zone" {
 ##############################################################################
 
 module "elasticsearch" {
-  source                     = "../../modules/fscloud"
-  resource_group_id          = module.resource_group.resource_group_id
-  name                       = "${var.prefix}-elasticsearch"
-  region                     = var.region
-  tags                       = var.resource_tags
-  access_tags                = var.access_tags
-  kms_key_crn                = var.kms_key_crn
-  existing_kms_instance_guid = var.existing_kms_instance_guid
-  elasticsearch_version      = var.elasticsearch_version
-  service_credential_names   = var.service_credential_names
-  auto_scaling               = var.auto_scaling
-  member_host_flavor         = "b3c.4x16.encrypted"
-  backup_encryption_key_crn  = var.backup_encryption_key_crn
-  backup_crn                 = var.backup_crn
-  enable_elser_model         = var.enable_elser_model
+  source                = "../../modules/fscloud"
+  resource_group_id     = module.resource_group.resource_group_id
+  name                  = "${var.prefix}-elasticsearch"
+  region                = var.region
+  tags                  = var.resource_tags
+  access_tags           = var.access_tags
+  kms_key_crn           = var.kms_key_crn
+  elasticsearch_version = var.elasticsearch_version
+  service_credential_names = {
+    "elasticsearch_admin" : "Administrator",
+    "elasticsearch_operator" : "Operator",
+    "elasticsearch_viewer" : "Viewer",
+    "elasticsearch_editor" : "Editor",
+  }
+  auto_scaling              = var.auto_scaling
+  member_host_flavor        = "b3c.4x16.encrypted"
+  backup_encryption_key_crn = var.backup_encryption_key_crn
+  backup_crn                = var.backup_crn
+  enable_elser_model        = var.enable_elser_model
   cbr_rules = [
     {
       description      = "${var.prefix}-elasticsearch access only from vpc"

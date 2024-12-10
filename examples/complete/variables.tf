@@ -58,17 +58,6 @@ variable "existing_sm_instance_region" {
   default     = null
 }
 
-variable "service_credential_names" {
-  description = "Map of name, role for service credentials that you want to create for the database"
-  type        = map(string)
-  default = {
-    "es_admin" : "Administrator",
-    "es_operator" : "Operator",
-    "es_viewer" : "Viewer",
-    "es_editor" : "Editor",
-  }
-}
-
 variable "admin_pass" {
   type        = string
   default     = null
