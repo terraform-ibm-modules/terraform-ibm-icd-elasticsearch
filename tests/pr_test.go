@@ -63,7 +63,6 @@ func TestRunFSCloudExample(t *testing.T) {
 		TerraformVars: map[string]interface{}{
 			"elasticsearch_version":      latestVersion, // Always lock this test into the latest supported elasticsearch version
 			"access_tags":                permanentResources["accessTags"],
-			"existing_kms_instance_guid": permanentResources["hpcs_south"],
 			"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
 		},
 		CloudInfoService: sharedInfoSvc,

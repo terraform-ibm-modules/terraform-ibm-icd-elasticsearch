@@ -411,7 +411,7 @@ locals {
   # Concatinate into 1 secrets object
   secrets = concat(local.service_credential_secrets, local.admin_pass_secret)
   # Parse Secrets Manager details from the CRN
-  existing_secrets_manager_instance_guid   = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].guid : null
+  existing_secrets_manager_instance_guid   = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].service_instance : null
   existing_secrets_manager_instance_region = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].region : null
 }
 
