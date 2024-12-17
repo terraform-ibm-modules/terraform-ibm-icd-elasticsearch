@@ -22,7 +22,7 @@ locals {
   # tflint-ignore: terraform_unused_declarations
   validate_kms_2 = var.existing_db_instance_crn != null ? true : !var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn == null && var.existing_kms_key_crn == null) ? tobool("When 'use_ibm_owned_encryption_key' is false, a value is required for either 'existing_kms_instance_crn' (to create a new key), or 'existing_kms_key_crn' to use an existing key.") : true
   # tflint-ignore: terraform_unused_declarations
-  validate_kms_3 = var.existing_db_instance_crn != null ? true : !var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn != null && var.existing_kms_key_crn != null) ? tobool("When 'use_ibm_owned_encryption_key' is false, a value cannot be passed for both 'existing_kms_instance_crn' (to create a new key), and 'existing_kms_key_crn' to use an existing key.") : true
+  validate_kms_3 = var.existing_db_instance_crn != null ? true : !var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn != null && var.existing_kms_key_crn != null) ? tobool("When 'use_ibm_owned_encryption_key' is false, a value cannot be passed for both 'existing_kms_instance_crn' (to create a new key), and 'existing_kms_key_crn' (to use an existing key).") : true
 }
 
 #######################################################################################################################
