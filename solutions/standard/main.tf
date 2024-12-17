@@ -30,7 +30,7 @@ locals {
 #######################################################################################################################
 
 locals {
-  create_new_kms_key          = var.existing_db_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null && var.existing_kms_instance_crn != null ? true : false # no need to create any KMS resources if using existing Elasticsearch, passing an existing key, or using IBM owned keys
+  create_new_kms_key          = var.existing_db_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null && var.existing_kms_instance_crn != null ? 1 : 0 # no need to create any KMS resources if using existing Elasticsearch, passing an existing key, or using IBM owned keys
   elasticsearch_key_name      = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_name}" : var.elasticsearch_key_name
   elasticsearch_key_ring_name = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 }
@@ -39,7 +39,7 @@ module "kms" {
   providers = {
     ibm = ibm.kms
   }
-  count                       = local.create_new_kms_key ? 1 : 0
+  count                       = local.create_new_kms_key
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
   version                     = "4.18.1"
   create_key_protect_instance = false
