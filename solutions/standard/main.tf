@@ -21,6 +21,8 @@ locals {
   validate_kms_1 = var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn != null || var.existing_kms_key_crn != null || var.existing_backup_kms_key_crn != null) ? tobool("When setting values for 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn', the 'use_ibm_owned_encryption_key' input must be set to false.") : true
   # tflint-ignore: terraform_unused_declarations
   validate_kms_2 = !var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn == null && var.existing_kms_key_crn == null) ? tobool("When 'use_ibm_owned_encryption_key' is false, a value is required for either 'existing_kms_instance_crn' (to create a new key), or 'existing_kms_key_crn' to use an existing key.") : true
+  # tflint-ignore: terraform_unused_declarations
+  validate_kms_3 = local.create_new_kms_key && var.existing_kms_instance_crn == null ? tobool("If a value is not provided for 'existing_db_instance_crn' or 'existing_kms_key_crn', and 'use_ibm_owned_encryption_key' is not set to true, you must provide a value for 'existing_kms_instance_crn'.") : true
 }
 
 #######################################################################################################################
@@ -28,7 +30,7 @@ locals {
 #######################################################################################################################
 
 locals {
-  create_new_kms_key          = var.existing_db_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? 1 : 0 # no need to create any KMS resources if using existing Elasticsearch, passing an existing key, or using IBM owned keys
+  create_new_kms_key          = var.existing_db_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? true : false # no need to create any KMS resources if using existing Elasticsearch, passing an existing key, or using IBM owned keys
   elasticsearch_key_name      = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_name}" : var.elasticsearch_key_name
   elasticsearch_key_ring_name = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 }
@@ -37,7 +39,7 @@ module "kms" {
   providers = {
     ibm = ibm.kms
   }
-  count                       = local.create_new_kms_key
+  count                       = local.create_new_kms_key ? 1 : 0
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
   version                     = "4.18.1"
   create_key_protect_instance = false
