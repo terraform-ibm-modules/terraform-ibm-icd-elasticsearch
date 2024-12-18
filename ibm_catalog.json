@@ -42,6 +42,10 @@
           {
             "title": "Attaches access tags",
             "description": "Attaches access tags to the Elasticsearch instance."
+          },
+          {
+            "title": "Supports backup restoration",
+            "description": "Provides database restoration using a backup created by a deployment with the same service ID."
           }
         ],
         "flavors": [
@@ -118,7 +122,6 @@
                 {
                   "key": "region",
                   "required": true,
-                  "default_value": "",
                   "options": [
                     {
                       "displayname": "Chennai (che01)",
@@ -174,6 +177,9 @@
                   "key": "name"
                 },
                 {
+                  "key": "existing_db_instance_crn"
+                },
+                {
                   "key": "plan",
                   "options": [
                     {
@@ -205,16 +211,13 @@
                   ]
                 },
                 {
-                  "key": "access_tags"
-                },
-                {
-                  "key": "use_ibm_owned_encryption_key"
-                },
-                {
                   "key": "tags"
                 },
                 {
-                  "key": "users"
+                  "key": "access_tags"
+                },
+                {
+                  "key": "auto_scaling"
                 },
                 {
                   "key": "members"
@@ -232,10 +235,32 @@
                   "key": "member_host_flavor"
                 },
                 {
+                  "key": "admin_pass"
+                },
+                {
+                  "key": "users"
+                },
+                {
                   "key": "service_credential_names"
                 },
                 {
-                  "key": "admin_pass"
+                  "key": "existing_secrets_manager_instance_crn"
+                },
+                {
+                  "key": "existing_secrets_manager_endpoint_type",
+                  "options": [
+                    {
+                      "displayname": "public",
+                      "value": "public"
+                    },
+                    {
+                      "displayname": "private",
+                      "value": "private"
+                    }
+                  ]
+                },
+                {
+                  "key": "service_credential_secrets"
                 },
                 {
                   "key": "admin_pass_sm_secret_group"
@@ -247,7 +272,10 @@
                   "key": "admin_pass_sm_secret_name"
                 },
                 {
-                  "key": "skip_iam_authorization_policy"
+                  "key": "skip_es_sm_auth_policy"
+                },
+                {
+                  "key": "ibmcloud_kms_api_key"
                 },
                 {
                   "key": "kms_endpoint_type",
@@ -263,11 +291,20 @@
                   ]
                 },
                 {
-                  "key": "existing_kms_key_crn",
+                  "key": "use_ibm_owned_encryption_key"
+                },
+                {
+                  "key": "existing_kms_instance_crn",
                   "required": true
                 },
                 {
-                  "key": "existing_kms_instance_crn"
+                  "key": "existing_kms_key_crn"
+                },
+                {
+                  "key": "existing_backup_kms_key_crn"
+                },
+                {
+                  "key": "use_default_backup_encryption_key"
                 },
                 {
                   "key": "elasticsearch_key_ring_name"
@@ -276,7 +313,10 @@
                   "key": "elasticsearch_key_name"
                 },
                 {
-                  "key": "auto_scaling"
+                  "key": "skip_es_kms_auth_policy"
+                },
+                {
+                  "key": "backup_crn"
                 },
                 {
                   "key": "enable_elser_model"
@@ -299,13 +339,10 @@
                   ]
                 },
                 {
-                  "key": "kibana_image_reference"
+                  "key": "enable_kibana_dashboard"
                 },
                 {
                   "key": "existing_code_engine_project_id"
-                },
-                {
-                  "key": "enable_kibana_dashboard"
                 },
                 {
                   "key": "elasticsearch_full_version"

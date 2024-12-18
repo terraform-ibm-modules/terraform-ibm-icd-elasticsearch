@@ -61,10 +61,9 @@ func TestRunFSCloudExample(t *testing.T) {
 		*/
 		//ResourceGroup: resourceGroup,
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version":      latestVersion, // Always lock this test into the latest supported elasticsearch version
-			"access_tags":                permanentResources["accessTags"],
-			"existing_kms_instance_guid": permanentResources["hpcs_south"],
-			"kms_key_crn":                permanentResources["hpcs_south_root_key_crn"],
+			"elasticsearch_version": latestVersion, // Always lock this test into the latest supported elasticsearch version
+			"access_tags":           permanentResources["accessTags"],
+			"kms_key_crn":           permanentResources["hpcs_south_root_key_crn"],
 		},
 		CloudInfoService: sharedInfoSvc,
 	})
@@ -121,6 +120,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
+		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "public", DataType: "string"},
 		{Name: "resource_group_name", Value: options.Prefix, DataType: "string"},
 		{Name: "plan", Value: "platinum", DataType: "string"},
