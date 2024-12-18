@@ -467,7 +467,7 @@ module "code_engine_kibana" {
       image_port      = 5601
       run_env_variables = [{
         type  = "literal"
-        name  = "ELASTICSEARCH_HOSTS"
+        name  = "ELASTICSEARCH_HOSTS",
         value = "[\"https://${local.elasticsearch_hostname}:${local.elasticsearch_port}\"]"
         },
         {
