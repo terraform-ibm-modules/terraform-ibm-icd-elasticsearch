@@ -347,6 +347,12 @@
             },
             {
               "key": "elasticsearch_full_version"
+                },
+                {
+                  "key": "kibana_image_port"
+                },
+                {
+                  "key": "kibana_visibility"
             }
           ]
         }
