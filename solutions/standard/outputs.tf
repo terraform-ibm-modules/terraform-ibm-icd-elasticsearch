@@ -24,13 +24,13 @@ output "crn" {
 
 output "service_credentials_json" {
   description = "Service credentials json map"
-  value       = var.existing_db_instance_crn != null ? null : module.elasticsearch[0].service_credentials_json
+  value       = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].service_credentials_json
   sensitive   = true
 }
 
 output "service_credentials_object" {
   description = "Service credentials object"
-  value       = var.existing_db_instance_crn != null ? null : module.elasticsearch[0].service_credentials_object
+  value       = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].service_credentials_object
   sensitive   = true
 }
 
