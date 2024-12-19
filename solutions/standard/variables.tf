@@ -359,24 +359,18 @@ variable "existing_code_engine_project_id" {
 
 variable "enable_kibana_dashboard" {
   type        = bool
-  description = "Set to true to deploy Kibana in Code Engine. NOTE: By default, the Kibana image will be pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM, however this can be overridden using the `kibana_image_reference` input."
+  description = "Set to true to deploy Kibana in Code Engine. NOTE: By default, the Kibana image will be pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM, however this can be overridden using the `kibana_registry_namespace_image` and `kibana_image_digest` input."
   default     = false
 }
 
 variable "kibana_registry_namespace_image" {
-  description = "Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. Value is only used if `enable_kibana_dashboard` is true and if no value is passed for `kibana_image_reference`. If no value is passed, data lookup will fetch the full version using the Elasticsearch API, see https://github.com/elastic/kibana?tab=readme-ov-file#version-compatibility-with-elasticsearch"
+  description = "Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. Value is only used if `enable_kibana_dashboard` is true . By default, the image will be fetched from `docker.elastic.co/kibana/kibana`. If overriding this value, ensure it is compatible with your Elasticsearch instance."
   type        = string
   default     = "docker.elastic.co/kibana/kibana"
 }
 
 variable "kibana_image_digest" {
-  description = "By default, when enable_kibana_dashboard is set to true, the DA will deploy a kibana using an image tag version that is applicable with the version of Elasticsearch deployed. Alternatively you can override this by supplying an image digest in the format of sha256:xxxxx..., however if doing so ensure the digest entered is an applicable version for your Elasticsearch instance."
-  type        = string
-  default     = null
-}
-
-variable "kibana_image_reference" {
-  description = "The docker image reference to use for Kibana if `enable_kibana_dashboard` is set to true. If no value is set, it will pull the image from the official Elastic registry (https://www.docker.elastic.co). Ensure to use a version that is compatible with the Elasticsearch version being used."
+  description = "By default, when `enable_kibana_dashboard` is set to true, the DA will deploy a kibana using an image tag version that is applicable with the version of Elasticsearch deployed. Alternatively you can override this by supplying an image digest in the format of `sha256:xxxxx...`, however if doing so ensure the digest entered is an applicable version for your Elasticsearch instance."
   type        = string
   default     = null
 }
