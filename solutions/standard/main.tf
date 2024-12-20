@@ -431,18 +431,17 @@ module "secrets_manager_service_credentials" {
 # Code Engine Kibana Dashboard instance
 ########################################################################################################################
 
-locals {
-  code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
-  code_engine_project_name = local.code_engine_project_id != null ? null : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
-  code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
-  es_data                  = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body) : null
-  es_full_version          = var.enable_kibana_dashboard ? (var.kibana_registry_namespace_image != null ? var.kibana_registry_namespace_image : local.es_data.version.number) : null
-}
-
 data "http" "es_metadata" {
   count       = var.enable_kibana_dashboard ? 1 : 0
   url         = "https://${local.elasticsearch_username}:${local.admin_pass}@${local.elasticsearch_hostname}:${local.elasticsearch_port}"
   ca_cert_pem = base64decode(local.elasticsearch_cert)
+}
+
+locals {
+  code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
+  code_engine_project_name = local.code_engine_project_id != null ? null : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
+  code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
+  kibana_version           = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
 }
 
 module "code_engine_kibana" {
@@ -463,7 +462,7 @@ module "code_engine_kibana" {
 
   apps = {
     (local.code_engine_app_name) = {
-      image_reference = var.kibana_image_digest != null ? "${var.kibana_registry_namespace_image}@${var.kibana_image_digest}" : "docker.elastic.co/kibana/kibana:${local.es_full_version}"
+      image_reference = var.kibana_image_digest != null ? "${var.kibana_registry_namespace_image}@${var.kibana_image_digest}" : "${var.kibana_registry_namespace_image}:${local.kibana_version}"
       image_port      = 5601
       run_env_variables = [{
         type  = "literal"

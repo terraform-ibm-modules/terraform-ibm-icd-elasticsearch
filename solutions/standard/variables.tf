@@ -352,8 +352,8 @@ variable "admin_pass_sm_secret_name" {
 ##############################################################
 
 variable "existing_code_engine_project_id" {
-  description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."
   type        = string
+  description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."
   default     = null
 }
 
@@ -364,13 +364,13 @@ variable "enable_kibana_dashboard" {
 }
 
 variable "kibana_registry_namespace_image" {
-  description = "Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. Value is only used if `enable_kibana_dashboard` is true . By default, the image will be fetched from `docker.elastic.co/kibana/kibana`. If overriding this value, ensure it is compatible with your Elasticsearch instance."
   type        = string
+  description = "Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. Value is only used if `enable_kibana_dashboard` is true . By default, the image will be fetched from `docker.elastic.co/kibana/kibana`. If overriding this value, ensure it is compatible with your Elasticsearch instance."
   default     = "docker.elastic.co/kibana/kibana"
 }
 
 variable "kibana_image_digest" {
-  description = "By default, when `enable_kibana_dashboard` is set to true, the DA will deploy a kibana using an image tag version that is applicable with the version of Elasticsearch deployed. Alternatively you can override this by supplying an image digest in the format of `sha256:xxxxx...`, however if doing so ensure the digest entered is an applicable version for your Elasticsearch instance."
   type        = string
+  description = "By default, when `enable_kibana_dashboard` is set to true, the DA will deploy a kibana using an image tag version that is applicable with the version of Elasticsearch deployed. Alternatively you can override this by supplying an image digest in the format of `sha256:xxxxx...`, however if doing so ensure the digest entered is an applicable version for your Elasticsearch instance."
   default     = null
 }
