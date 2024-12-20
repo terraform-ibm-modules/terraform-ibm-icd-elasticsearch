@@ -347,12 +347,26 @@
             },
             {
               "key": "elasticsearch_full_version"
+            },
+            {
+              "key": "kibana_image_port"
+            },
+            {
+              "key": "kibana_visibility",
+              "options": [
+                {
+                  "displayname": "local_public",
+                  "value": "local_public"
                 },
                 {
-                  "key": "kibana_image_port"
+                  "displayname": "local_private",
+                  "value": "local_private"
                 },
                 {
-                  "key": "kibana_visibility"
+                  "displayname": "local",
+                  "value": "local"
+                }
+              ]
             }
           ]
         }
