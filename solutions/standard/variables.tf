@@ -365,12 +365,12 @@ variable "enable_kibana_dashboard" {
 
 variable "kibana_registry_namespace_image" {
   type        = string
-  description = "Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. Value is only used if `enable_kibana_dashboard` is true . By default, the image will be fetched from `docker.elastic.co/kibana/kibana`. If overriding this value, ensure it is compatible with your Elasticsearch instance."
+  description = "The full Elasticsearch version (format `x.x.x`) required to deploy the Kibana dashboard. This value is used only when `enable_kibana_dashboard` is set to true. By default, the image is pulled from `docker.elastic.co/kibana/kibana`. If overridden, ensure the version is compatible with the Elasticsearch instance."
   default     = "docker.elastic.co/kibana/kibana"
 }
 
 variable "kibana_image_digest" {
   type        = string
-  description = "By default, when `enable_kibana_dashboard` is set to true, the DA will deploy a kibana using an image tag version that is applicable with the version of Elasticsearch deployed. Alternatively you can override this by supplying an image digest in the format of `sha256:xxxxx...`, however if doing so ensure the digest entered is an applicable version for your Elasticsearch instance."
+  description = "When `enable_kibana_dashboard` is set to true, Kibana is deployed using an image tag compatible with the Elasticsearch version. Alternatively, an image digest in the format `sha256:xxxxx...` can also be specified but it must correspond to a version compatible with the Elasticsearch instance."
   default     = null
 }

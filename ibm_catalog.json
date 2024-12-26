@@ -71,7 +71,7 @@
               }
             ],
             "architecture": {
-              "descriptions": "This architecture creates an instance of IBM CLoud Databases for Elasticsearch instance with KMS encryption. Supports autoscaling.",
+              "descriptions": "This architecture creates an instance of IBM Cloud Databases for Elasticsearch instance with KMS encryption. Supports autoscaling.",
               "features": [
                 {
                   "title": " Creates an instance of Databases for Elasticsearch",
