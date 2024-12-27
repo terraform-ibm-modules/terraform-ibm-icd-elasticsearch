@@ -277,6 +277,7 @@ func TestRunExistingESSolution(t *testing.T) {
 			{Name: "resource_group_name", Value: fmt.Sprintf("%s-resource-group", prefix), DataType: "string"},
 			{Name: "region", Value: region, DataType: "string"},
 			{Name: "use_existing_resource_group", Value: true, DataType: "bool"},
+			{Name: "provider_visibility", Value: "public", DataType: "string"},
 		}
 		err := options.RunSchematicTest()
 		assert.Nil(t, err, "This should not have errored")
