@@ -353,7 +353,7 @@ variable "admin_pass_sm_secret_name" {
 
 variable "existing_code_engine_project_id" {
   type        = string
-  description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."
+  description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project ID will be created."
   default     = null
 }
 
