@@ -420,7 +420,7 @@ module "secrets_manager_service_credentials" {
   count                       = var.existing_secrets_manager_instance_crn == null ? 0 : 1
   depends_on                  = [time_sleep.wait_for_es_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version                     = "1.19.9"
+  version                     = "1.19.10"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
@@ -431,17 +431,17 @@ module "secrets_manager_service_credentials" {
 # Code Engine Kibana Dashboard instance
 ########################################################################################################################
 
-data "http" "es_metadata" {
-  count       = var.enable_kibana_dashboard ? 1 : 0
-  url         = "https://${local.elasticsearch_username}:${local.admin_pass}@${local.elasticsearch_hostname}:${local.elasticsearch_port}"
-  ca_cert_pem = base64decode(local.elasticsearch_cert)
-}
-
 locals {
   code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
   code_engine_project_name = local.code_engine_project_id != null ? null : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
   code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
   kibana_version           = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
+}
+
+data "http" "es_metadata" {
+  count       = var.enable_kibana_dashboard ? 1 : 0
+  url         = "https://${local.elasticsearch_username}:${local.admin_pass}@${local.elasticsearch_hostname}:${local.elasticsearch_port}"
+  ca_cert_pem = base64decode(local.elasticsearch_cert)
 }
 
 module "code_engine_kibana" {
