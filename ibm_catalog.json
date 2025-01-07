@@ -345,7 +345,10 @@
                   "key": "existing_code_engine_project_id"
                 },
                 {
-                  "key": "elasticsearch_full_version"
+                  "key": "kibana_registry_namespace_image"
+                },
+                {
+                  "key": "kibana_image_digest"
                 }
               ]
           }
