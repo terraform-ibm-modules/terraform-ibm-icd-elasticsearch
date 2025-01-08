@@ -420,7 +420,7 @@ module "secrets_manager_service_credentials" {
   count                       = var.existing_secrets_manager_instance_crn == null ? 0 : 1
   depends_on                  = [time_sleep.wait_for_es_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version                     = "1.19.7"
+  version                     = "1.19.10"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
