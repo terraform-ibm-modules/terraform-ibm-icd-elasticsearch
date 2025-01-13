@@ -1,0 +1,1 @@
+The terraform code in this directory is used by the tests to provision a Elasticsearch which is required to test the DA.
