@@ -142,11 +142,12 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       standardSolutionTerraformDir,
-		BestRegionYAMLPath: regionSelectionPath,
-		Prefix:             "els-st-da-upg",
-		ResourceGroup:      resourceGroup,
+		Testing:                    t,
+		TerraformDir:               standardSolutionTerraformDir,
+		BestRegionYAMLPath:         regionSelectionPath,
+		Prefix:                     "els-st-da-upg",
+		ResourceGroup:              resourceGroup,
+		CheckApplyResultForUpgrade: true,
 	})
 
 	options.TerraformVars = map[string]interface{}{
