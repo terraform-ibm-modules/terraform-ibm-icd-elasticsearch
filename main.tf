@@ -1,23 +1,33 @@
+########################################################################################################################
+# Input variable validation
+# (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
+#
+# TODO: Replace with terraform cross variable validation: https://github.ibm.com/GoldenEye/issues/issues/10836
+########################################################################################################################
+
 locals {
-  # Validation (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
   # tflint-ignore: terraform_unused_declarations
-  validate_kms_values = !var.kms_encryption_enabled && (var.kms_key_crn != null || var.backup_encryption_key_crn != null) ? tobool("When passing values for var.backup_encryption_key_crn or var.kms_key_crn, you must set var.kms_encryption_enabled to true. Otherwise unset them to use default encryption") : true
+  validate_kms_values = var.use_ibm_owned_encryption_key && (var.kms_key_crn != null || var.backup_encryption_key_crn != null) ? tobool("When passing values for 'kms_key_crn' or 'backup_encryption_key_crn', you must set 'use_ibm_owned_encryption_key' to false. Otherwise unset them to use default encryption.") : true
   # tflint-ignore: terraform_unused_declarations
-  validate_kms_vars = var.kms_encryption_enabled && var.kms_key_crn == null && var.backup_encryption_key_crn == null ? tobool("When setting var.kms_encryption_enabled to true, a value must be passed for var.kms_key_crn and/or var.backup_encryption_key_crn") : true
+  validate_kms_vars = !var.use_ibm_owned_encryption_key && var.kms_key_crn == null ? tobool("When setting 'use_ibm_owned_encryption_key' to false, a value must be passed for 'kms_key_crn'.") : true
   # tflint-ignore: terraform_unused_declarations
-  validate_auth_policy = var.kms_encryption_enabled && var.skip_iam_authorization_policy == false && var.existing_kms_instance_guid == null ? tobool("When var.skip_iam_authorization_policy is set to false, and var.kms_encryption_enabled to true, a value must be passed for var.existing_kms_instance_guid in order to create the auth policy.") : true
+  validate_backup_key = !var.use_ibm_owned_encryption_key && var.backup_encryption_key_crn != null && (var.use_default_backup_encryption_key || var.use_same_kms_key_for_backups) ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to true or 'use_ibm_owned_encryption_key' to false.") : true
   # tflint-ignore: terraform_unused_declarations
-  validate_backup_key = var.backup_encryption_key_crn != null && var.use_default_backup_encryption_key == true ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to 'true'") : true
+  validate_backup_key_2 = !var.use_ibm_owned_encryption_key && var.backup_encryption_key_crn == null && !var.use_same_kms_key_for_backups ? tobool("When 'use_same_kms_key_for_backups' is set to false, a value needs to be passed for 'backup_encryption_key_crn'.") : true
   # tflint-ignore: terraform_unused_declarations
-  validate_plan = var.enable_elser_model && var.plan != "platinum" ? tobool("When var.enable_elser_model is set to true, a value for var.plan must be 'platinum' in order to enable ELSER model.") : true
+  validate_plan = var.enable_elser_model && var.plan != "platinum" ? tobool("When 'enable_elser_model' is set to true, the 'plan' must be set to 'platinum' in order to enable ELSER model.") : true
   # tflint-ignore: terraform_unused_declarations
-  validate_es_user = var.enable_elser_model && !((length(var.service_credential_names) > 0 && length([for k, v in var.service_credential_names : k if v == "Administrator"]) > 0) || var.admin_pass != null) ? tobool("When var.enable_elser_model is set to true, a value must be passed for var.service_credential_names or var.admin_pass. var.service_credential_names must contain at least one credential name with Administrator role.") : true
+  validate_es_user = var.enable_elser_model && !((length(var.service_credential_names) > 0 && length([for k, v in var.service_credential_names : k if v == "Administrator"]) > 0) || var.admin_pass != null) ? tobool("When 'enable_elser_model' is set to true, an Administrator role user must be created using the 'service_credential_names' input, or by passing a value for the 'admin_pass' input.") : true
+}
 
-  # If no value passed for 'backup_encryption_key_crn' use the value of 'kms_key_crn' and perform validation of 'kms_key_crn' to check if region is supported by backup encryption key.
+########################################################################################################################
+# Locals
+########################################################################################################################
 
-  # For more info, see https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok and https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
-
-  backup_encryption_key_crn = var.use_default_backup_encryption_key == true ? null : (var.backup_encryption_key_crn != null ? var.backup_encryption_key_crn : var.kms_key_crn)
+locals {
+  # If 'use_ibm_owned_encryption_key' is true or 'use_default_backup_encryption_key' is true, default to null.
+  # If no value is passed for 'backup_encryption_key_crn', then default to use 'kms_key_crn'.
+  backup_encryption_key_crn = var.use_ibm_owned_encryption_key || var.use_default_backup_encryption_key ? null : (var.backup_encryption_key_crn != null ? var.backup_encryption_key_crn : var.kms_key_crn)
 
   # Determine if auto scaling is enabled
   auto_scaling_enabled = var.auto_scaling == null ? [] : [1]
@@ -25,22 +35,55 @@ locals {
   # Determine if host_flavor is used
   host_flavor_set = var.member_host_flavor != null ? true : false
 
-  create_kp_auth_policy = var.kms_encryption_enabled == false || var.skip_iam_authorization_policy ? 0 : 1
-
-  parsed_kms_key_crn = var.kms_key_crn != null ? split(":", var.kms_key_crn) : []
-  kms_service        = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[4] : null
-  kms_scope          = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[6] : null
-  kms_account_id     = length(local.parsed_kms_key_crn) > 0 ? split("/", local.kms_scope)[1] : null
-  kms_key_id         = length(local.parsed_kms_key_crn) > 0 ? local.parsed_kms_key_crn[9] : null
 }
 
-# Create IAM Access Policy to allow Key protect to access Elasticsearch instance
+########################################################################################################################
+# Parse info from KMS key CRNs
+########################################################################################################################
+
+module "kms_key_crn_parser" {
+  count   = var.use_ibm_owned_encryption_key ? 0 : 1
+  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
+  version = "1.1.0"
+  crn     = var.kms_key_crn
+}
+
+module "backup_key_crn_parser" {
+  count   = var.use_ibm_owned_encryption_key ? 0 : 1
+  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
+  version = "1.1.0"
+  crn     = local.backup_encryption_key_crn
+}
+
+# Put parsed values into locals
+locals {
+  kms_service                  = !var.use_ibm_owned_encryption_key ? module.kms_key_crn_parser[0].service_name : null
+  kms_account_id               = !var.use_ibm_owned_encryption_key ? module.kms_key_crn_parser[0].account_id : null
+  kms_key_id                   = !var.use_ibm_owned_encryption_key ? module.kms_key_crn_parser[0].resource : null
+  kms_key_instance_guid        = !var.use_ibm_owned_encryption_key ? module.kms_key_crn_parser[0].service_instance : null
+  backup_kms_service           = !var.use_ibm_owned_encryption_key ? module.backup_key_crn_parser[0].service_name : null
+  backup_kms_account_id        = !var.use_ibm_owned_encryption_key ? module.backup_key_crn_parser[0].account_id : null
+  backup_kms_key_id            = !var.use_ibm_owned_encryption_key ? module.backup_key_crn_parser[0].resource : null
+  backup_kms_key_instance_guid = !var.use_ibm_owned_encryption_key ? module.backup_key_crn_parser[0].service_instance : null
+}
+
+########################################################################################################################
+# KMS IAM Authorization Policies
+########################################################################################################################
+
+locals {
+  # only create auth policy if 'use_ibm_owned_encryption_key' is false, and 'skip_iam_authorization_policy' is false
+  create_kms_auth_policy = !var.use_ibm_owned_encryption_key && !var.skip_iam_authorization_policy ? 1 : 0
+  # only create backup auth policy if 'use_ibm_owned_encryption_key' is false, 'skip_iam_authorization_policy' is false and 'use_same_kms_key_for_backups' is false
+  create_backup_kms_auth_policy = !var.use_ibm_owned_encryption_key && !var.skip_iam_authorization_policy && !var.use_same_kms_key_for_backups ? 1 : 0
+}
+
 resource "ibm_iam_authorization_policy" "policy" {
-  count                    = local.create_kp_auth_policy
+  count                    = local.create_kms_auth_policy
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = var.resource_group_id
   roles                    = ["Reader"]
-  description              = "Allow all Elastic Search instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${var.existing_kms_instance_guid}"
+  description              = "Allow all Elastic Search instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.kms_key_instance_guid}"
   resource_attributes {
     name     = "serviceName"
     operator = "stringEquals"
@@ -54,7 +97,7 @@ resource "ibm_iam_authorization_policy" "policy" {
   resource_attributes {
     name     = "serviceInstance"
     operator = "stringEquals"
-    value    = var.existing_kms_instance_guid
+    value    = local.kms_key_instance_guid
   }
   resource_attributes {
     name     = "resourceType"
@@ -75,15 +118,62 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_authorization_policy" {
-  count      = local.create_kp_auth_policy
-  depends_on = [ibm_iam_authorization_policy.policy]
-
+  count           = local.create_kms_auth_policy
+  depends_on      = [ibm_iam_authorization_policy.policy]
   create_duration = "30s"
 }
 
+resource "ibm_iam_authorization_policy" "backup_kms_policy" {
+  count                    = local.create_backup_kms_auth_policy
+  source_service_name      = "databases-for-elasticsearch"
+  source_resource_group_id = var.resource_group_id
+  roles                    = ["Reader"]
+  description              = "Allow all Elastic Search instances in the Resource Group ${var.resource_group_id} to read the ${local.backup_kms_service} key ${local.backup_kms_key_id} from the instance GUID ${local.backup_kms_key_instance_guid}"
+  resource_attributes {
+    name     = "serviceName"
+    operator = "stringEquals"
+    value    = local.backup_kms_service
+  }
+  resource_attributes {
+    name     = "accountId"
+    operator = "stringEquals"
+    value    = local.backup_kms_account_id
+  }
+  resource_attributes {
+    name     = "serviceInstance"
+    operator = "stringEquals"
+    value    = local.backup_kms_key_instance_guid
+  }
+  resource_attributes {
+    name     = "resourceType"
+    operator = "stringEquals"
+    value    = "key"
+  }
+  resource_attributes {
+    name     = "resource"
+    operator = "stringEquals"
+    value    = local.backup_kms_key_id
+  }
+  # Scope of policy now includes the key, so ensure to create new policy before
+  # destroying old one to prevent any disruption to every day services.
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
+resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
+  count           = local.create_backup_kms_auth_policy
+  depends_on      = [ibm_iam_authorization_policy.backup_kms_policy]
+  create_duration = "30s"
+}
+
+########################################################################################################################
+# Elasticsearch instance
+########################################################################################################################
 
 resource "ibm_database" "elasticsearch" {
-  depends_on                = [time_sleep.wait_for_authorization_policy]
+  depends_on                = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   name                      = var.name
   plan                      = var.plan
   location                  = var.region
@@ -207,7 +297,7 @@ resource "ibm_database" "elasticsearch" {
   }
 
   timeouts {
-    create = "120m" #Extending provisioning time to 120 minutes
+    create = "120m" # Extending provisioning time to 120 minutes
     update = "120m"
     delete = "15m"
   }
@@ -221,9 +311,9 @@ resource "ibm_resource_tag" "elasticsearch_tag" {
 }
 
 
-##############################################################################
+########################################################################################################################
 # Context Based Restrictions
-##############################################################################
+########################################################################################################################
 
 module "cbr_rule" {
   count            = length(var.cbr_rules) > 0 ? length(var.cbr_rules) : 0
