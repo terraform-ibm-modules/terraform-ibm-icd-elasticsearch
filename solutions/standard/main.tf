@@ -29,8 +29,8 @@ locals {
 
 locals {
   create_new_kms_key          = var.existing_db_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? 1 : 0 # no need to create any KMS resources if using existing Elasticsearch, passing an existing key, or using IBM owned keys
-  elasticsearch_key_name      = (var.prefix != null && var.prefix != "")? "${var.prefix}-${var.elasticsearch_key_name}" : var.elasticsearch_key_name
-  elasticsearch_key_ring_name = (var.prefix != null && var.prefix != "")? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
+  elasticsearch_key_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.elasticsearch_key_name}" : var.elasticsearch_key_name
+  elasticsearch_key_ring_name = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 }
 
 module "kms" {
@@ -292,7 +292,7 @@ module "elasticsearch" {
   source                            = "../../modules/fscloud"
   depends_on                        = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   resource_group_id                 = module.resource_group.resource_group_id
-  name                              = (var.prefix != null && var.prefix != "")? "${var.prefix}-${var.name}" : var.name
+  name                              = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.name}" : var.name
   region                            = var.region
   plan                              = var.plan
   skip_iam_authorization_policy     = var.skip_es_kms_auth_policy
