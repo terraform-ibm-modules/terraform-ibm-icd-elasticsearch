@@ -365,7 +365,7 @@ variable "enable_kibana_dashboard" {
 
 variable "kibana_registry_namespace_image" {
   type        = string
-  description = "The full Elasticsearch version (format `x.x.x`) required to deploy the Kibana dashboard. This value is used only when `enable_kibana_dashboard` is set to true. By default, the image is pulled from `docker.elastic.co/kibana/kibana`. If overridden, ensure the version is compatible with the Elasticsearch instance."
+  description = "The full Elasticsearch version (format `[registry-url]/[namespace]/[image]`) required to deploy the Kibana dashboard. This value is used only when `enable_kibana_dashboard` is set to true. By default, the image is pulled from `docker.elastic.co/kibana/kibana`. If overridden, ensure the version is compatible with the Elasticsearch instance."
   default     = "docker.elastic.co/kibana/kibana"
 }
 
@@ -373,4 +373,8 @@ variable "kibana_image_digest" {
   type        = string
   description = "When `enable_kibana_dashboard` is set to true, Kibana is deployed using an image tag compatible with the Elasticsearch version. Alternatively, an image digest in the format `sha256:xxxxx...` can also be specified but it must correspond to a version compatible with the Elasticsearch instance."
   default     = null
+  validation {
+    condition     = var.kibana_image_digest == null || regex("^sha256:", var.kibana_image_digest)
+    error_message = "If provided, the value of kibana_image_digest must start with 'sha256:'."
+  }
 }
