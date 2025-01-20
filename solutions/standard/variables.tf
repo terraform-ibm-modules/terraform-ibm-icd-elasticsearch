@@ -353,19 +353,19 @@ variable "admin_pass_sm_secret_name" {
 
 variable "existing_code_engine_project_id" {
   type        = string
-  description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project ID will be created."
+  description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."
   default     = null
 }
 
 variable "enable_kibana_dashboard" {
   type        = bool
-  description = "Set to true to deploy Kibana in Code Engine. NOTE: By default, the Kibana image will be pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM, however this can be overridden using the `kibana_registry_namespace_image` and `kibana_image_digest` input."
+  description = "Set to true to deploy Kibana in Code Engine. NOTE: By default, the Kibana image will be pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM, however this can be overridden using the `kibana_registry_namespace_image` and `kibana_image_digest` inputs."
   default     = false
 }
 
 variable "kibana_registry_namespace_image" {
   type        = string
-  description = "The full Elasticsearch version (format `[registry-url]/[namespace]/[image]`) required to deploy the Kibana dashboard. This value is used only when `enable_kibana_dashboard` is set to true. By default, the image is pulled from `docker.elastic.co/kibana/kibana`. If overridden, ensure the version is compatible with the Elasticsearch instance."
+  description = "The full Elasticsearch version (format `[registry-url]/[namespace]/[image]`) required to deploy the Kibana dashboard. This value is used only when `enable_kibana_dashboard` is set to true. By default, the image is pulled from `docker.elastic.co/kibana/kibana`."
   default     = "docker.elastic.co/kibana/kibana"
 }
 
