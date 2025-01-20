@@ -121,7 +121,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
-		{Name: "kms_endpoint_type", Value: "public", DataType: "string"},
+		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
 		{Name: "resource_group_name", Value: options.Prefix, DataType: "string"},
 		{Name: "plan", Value: "platinum", DataType: "string"},
 		{Name: "enable_elser_model", Value: true, DataType: "bool"},
