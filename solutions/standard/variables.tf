@@ -374,7 +374,9 @@ variable "kibana_image_digest" {
   description = "When `enable_kibana_dashboard` is set to true, Kibana is deployed using an image tag compatible with the Elasticsearch version. Alternatively, an image digest in the format `sha256:xxxxx...` can also be specified but it must correspond to a version compatible with the Elasticsearch instance."
   default     = null
   validation {
-    condition     = var.kibana_image_digest == null || regex("^sha256:", var.kibana_image_digest)
+    condition     = var.kibana_image_digest == null || can(regex("^sha256:", var.kibana_image_digest))
     error_message = "If provided, the value of kibana_image_digest must start with 'sha256:'."
   }
+
+
 }
