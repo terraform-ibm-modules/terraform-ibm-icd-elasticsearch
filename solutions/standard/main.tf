@@ -435,8 +435,7 @@ locals {
   code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
   code_engine_project_name = local.code_engine_project_id != null ? null : var.prefix != null ? "${var.prefix}-code-engine-kibana-project" : "ce-kibana-project"
   code_engine_app_name     = var.prefix != null ? "${var.prefix}-kibana-app" : "ce-kibana-app"
-  es_data                  = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body) : null
-  es_full_version          = var.enable_kibana_dashboard ? (var.elasticsearch_full_version != null ? var.elasticsearch_full_version : local.es_data.version.number) : null
+  kibana_version           = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
 }
 
 data "http" "es_metadata" {
@@ -463,7 +462,7 @@ module "code_engine_kibana" {
 
   apps = {
     (local.code_engine_app_name) = {
-      image_reference = "docker.elastic.co/kibana/kibana:${local.es_full_version}"
+      image_reference = var.kibana_image_digest != null ? "${var.kibana_registry_namespace_image}@${var.kibana_image_digest}" : "${var.kibana_registry_namespace_image}:${local.kibana_version}"
       image_port      = var.kibana_image_port
       run_env_variables = [{
         type  = "literal"

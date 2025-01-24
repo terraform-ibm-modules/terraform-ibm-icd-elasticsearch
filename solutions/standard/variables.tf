@@ -352,21 +352,33 @@ variable "admin_pass_sm_secret_name" {
 ##############################################################
 
 variable "existing_code_engine_project_id" {
-  description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."
   type        = string
+  description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."
   default     = null
 }
 
 variable "enable_kibana_dashboard" {
   type        = bool
-  description = "Set it true to deploy Kibana in code engine. NOTE: Kibana image is coming direcly from the official registry (https://www.docker.elastic.co/) and not certified by the IBM."
+  description = "Set to true to deploy Kibana in Code Engine. NOTE: By default, the Kibana image will be pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM, however this can be overridden using the `kibana_registry_namespace_image` and `kibana_image_digest` inputs."
   default     = false
 }
 
-variable "elasticsearch_full_version" {
-  description = "(Optional) Full version of the Elasticsearch instance in the format `x.x.x` to deploy Kibana dashboard. If no value is passed, data lookup will fetch the full version using the Elasticsearch API, see https://github.com/elastic/kibana?tab=readme-ov-file#version-compatibility-with-elasticsearch"
+variable "kibana_registry_namespace_image" {
   type        = string
+  description = "The full Elasticsearch version (format `[registry-url]/[namespace]/[image]`) required to deploy the Kibana dashboard. This value is used only when `enable_kibana_dashboard` is set to true. By default, the image is pulled from `docker.elastic.co/kibana/kibana`."
+  default     = "docker.elastic.co/kibana/kibana"
+}
+
+variable "kibana_image_digest" {
+  type        = string
+  description = "When `enable_kibana_dashboard` is set to true, Kibana is deployed using an image tag compatible with the Elasticsearch version. Alternatively, an image digest in the format `sha256:xxxxx...` can also be specified but it must correspond to a version compatible with the Elasticsearch instance."
   default     = null
+  validation {
+    condition     = var.kibana_image_digest == null || can(regex("^sha256:", var.kibana_image_digest))
+    error_message = "If provided, the value of kibana_image_digest must start with 'sha256:'."
+  }
+
+
 }
 variable "kibana_image_port" {
   description = "Specify the port number used to connect to the Kibana service exposed by the container image. Default port is 5601 and it is only applicable if `enable_kibana_dashboard` is true"
