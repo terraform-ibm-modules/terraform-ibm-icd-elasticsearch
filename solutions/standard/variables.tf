@@ -387,7 +387,7 @@ variable "kibana_image_port" {
 }
 
 variable "kibana_visibility" {
-  description = "Specify the visibility of Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. See https://cloud.ibm.com/docs/codeengine?topic=codeengine-application-workloads#optionsvisibility"
+  description = "Specify the visibility of Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. See https://cloud.ibm.com/docs/codeengine?topic=codeengine-application-workloads#optionsvisibility. If Kibana is enabled, you can access the Kibana application over a IBM private network using the method outlined here https://cloud.ibm.com/docs/codeengine?topic=codeengine-vpe."
   type        = string
   default     = "local_private"
   validation {

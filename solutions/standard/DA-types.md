@@ -202,3 +202,6 @@ The following example includes all the configuration options for four service cr
   }
 ]
 ```
+### Options for kibana_visibility
+
+When the Kibana application visibility is changed from private to public using kibana_visibility variable, it will become accessible from the public Internet. However, access via the IBM Cloud private network will no longer be available. This change takes effect immediately, potentially impacting active users or integrations. It is important to consider the associated security implications before proceeding.
