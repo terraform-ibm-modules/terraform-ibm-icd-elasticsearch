@@ -1,358 +1,360 @@
 {
-  "products": [
-    {
-      "name": "deploy-arch-ibm-icd-elasticsearch",
-      "label": "Cloud automation for Databases for Elasticsearch",
-      "product_kind": "solution",
-      "tags": [
-        "ibm_created",
-        "target_terraform",
-        "terraform",
-        "data_management",
-        "solution"
-      ],
-      "keywords": [
-        "elasticsearch",
-        "IaC",
-        "infrastructure as code",
-        "terraform",
-        "solution",
-        "elasticsearch standard",
-        "database",
-        "nosql"
-      ],
-      "short_description": "Creates and configures an instance of IBM Cloud Databases for Elasticsearch.",
-      "long_description": "This architecture supports creating and configuring an instance of Databases for Elasticsearch with KMS encryption.",
-      "offering_docs_url": "https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/README.md",
-      "offering_icon_url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/main/images/elasticsearch_icon.svg",
-      "provider_name": "IBM",
-      "features": [
-        {
-          "title": "Creates an instance of Databases for Elasticsearch",
-          "description": "Creates and configures an IBM Cloud Databases for Elasticsearch instance."
-        },
-        {
-          "title": "Supports KMS encryption",
-          "description": "Provides KMS encryption for the data that you store in the database."
-        },
-        {
-          "title": "Supports autoscaling",
-          "description": "Provides the autoscaling to allow the database to increase resources in response to usage."
-        },
-        {
-          "title": "Attaches access tags",
-          "description": "Attaches access tags to the Elasticsearch instance."
-        },
-        {
-          "title": "Supports backup restoration",
-          "description": "Provides database restoration using a backup created by a deployment with the same service ID."
-        }
-      ],
-      "flavors": [
-        {
-          "label": "Standard",
-          "name": "standard",
-          "install_type": "fullstack",
-          "working_directory": "solutions/standard",
-          "compliance": {
-            "authority": "scc-v3",
-            "profiles": [
-              {
-                "profile_name": "IBM Cloud Framework for Financial Services",
-                "profile_version": "1.7.0"
-              }
-            ]
+    "products": [
+      {
+        "name": "deploy-arch-ibm-icd-elasticsearch",
+        "label": "Cloud automation for Databases for Elasticsearch",
+        "product_kind": "solution",
+        "tags": [
+          "ibm_created",
+          "target_terraform",
+          "terraform",
+          "data_management",
+          "solution"
+        ],
+        "keywords": [
+          "elasticsearch",
+          "IaC",
+          "infrastructure as code",
+          "terraform",
+          "solution",
+          "elasticsearch standard",
+          "database",
+          "nosql"
+        ],
+        "short_description": "Creates and configures an instance of IBM Cloud Databases for Elasticsearch.",
+        "long_description": "This architecture supports creating and configuring an instance of Databases for Elasticsearch with KMS encryption.",
+        "offering_docs_url": "https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/README.md",
+        "offering_icon_url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/main/images/elasticsearch_icon.svg",
+        "provider_name": "IBM",
+        "features": [
+          {
+            "title": "Creates an instance of Databases for Elasticsearch",
+            "description": "Creates and configures an IBM Cloud Databases for Elasticsearch instance."
           },
-          "iam_permissions": [
-            {
-              "role_crns": [
-                "crn:v1:bluemix:public:iam::::role:Editor"
-              ],
-              "service_name": "databases-for-elasticsearch"
-            }
-          ],
-          "architecture": {
-            "descriptions": "This architecture creates an instance of IBM CLoud Databases for Elasticsearch instance with KMS encryption. Supports autoscaling.",
-            "features": [
+          {
+            "title": "Supports KMS encryption",
+            "description": "Provides KMS encryption for the data that you store in the database."
+          },
+          {
+            "title": "Supports autoscaling",
+            "description": "Provides the autoscaling to allow the database to increase resources in response to usage."
+          },
+          {
+            "title": "Attaches access tags",
+            "description": "Attaches access tags to the Elasticsearch instance."
+          },
+          {
+            "title": "Supports backup restoration",
+            "description": "Provides database restoration using a backup created by a deployment with the same service ID."
+          }
+        ],
+        "flavors": [
+          {
+            "label": "Standard",
+            "name": "standard",
+            "install_type": "fullstack",
+            "working_directory": "solutions/standard",
+            "compliance": {
+              "authority": "scc-v3",
+              "profiles": [
+                {
+                  "profile_name": "IBM Cloud Framework for Financial Services",
+                  "profile_version": "1.6.0"
+                }
+              ]},
+            "iam_permissions": [
               {
-                "title": " Creates an instance of Databases for Elasticsearch",
-                "description": "This architecture creates an instance of IBM Cloud Databases for Elasticsearch with KMS encryption. It accepts or creates a resource group, and provides autoscaling rules."
+                "role_crns": [
+                  "crn:v1:bluemix:public:iam::::role:Editor"
+                ],
+                "service_name": "databases-for-elasticsearch"
               }
             ],
-            "diagrams": [
-              {
-                "diagram": {
-                  "caption": "Databases for Elasticsearch instance on IBM Cloud",
-                  "url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/main/reference-architecture/deployable-architecture-elasticsearch.svg",
-                  "type": "image/svg+xml"
-                },
-                "description": "This architecture supports creating and configuring an instance of Databases for Elasticsearch instance with KMS encryption."
-              }
-            ]
-          },
-          "configuration": [
-            {
-              "key": "ibmcloud_api_key"
-            },
-            {
-              "key": "provider_visibility",
-              "options": [
+            "architecture": {
+              "descriptions": "This architecture creates an instance of IBM Cloud Databases for Elasticsearch instance with KMS encryption. Supports autoscaling.",
+              "features": [
                 {
-                  "displayname": "private",
-                  "value": "private"
-                },
+                  "title": " Creates an instance of Databases for Elasticsearch",
+                  "description": "This architecture creates an instance of IBM Cloud Databases for Elasticsearch with KMS encryption. It accepts or creates a resource group, and provides autoscaling rules."
+                }
+              ],
+              "diagrams": [
                 {
-                  "displayname": "public",
-                  "value": "public"
-                },
-                {
-                  "displayname": "public-and-private",
-                  "value": "public-and-private"
+                  "diagram": {
+                    "caption": "Databases for Elasticsearch instance on IBM Cloud",
+                    "url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/main/reference-architecture/deployable-architecture-elasticsearch.svg",
+                    "type": "image/svg+xml"
+                  },
+                  "description": "This architecture supports creating and configuring an instance of Databases for Elasticsearch instance with KMS encryption."
                 }
               ]
             },
-            {
-              "key": "use_existing_resource_group"
-            },
-            {
-              "key": "resource_group_name"
-            },
-            {
-              "key": "prefix",
+            "configuration": [
+                {
+                  "key": "ibmcloud_api_key"
+                },
+                {
+                  "key": "provider_visibility",
+                  "options": [
+                    {
+                      "displayname": "private",
+                      "value": "private"
+                    },
+                    {
+                      "displayname": "public",
+                      "value": "public"
+                    },
+                    {
+                      "displayname": "public-and-private",
+                      "value": "public-and-private"
+                    }
+                  ]
+                },
+                {
+                  "key": "use_existing_resource_group"
+                },
+                {
+                  "key": "resource_group_name"
+                },
+                {
+                  "key": "prefix",
               "required": true,
               "description": "Prefix to add to all resources created by this solution. To not use any prefix value, you can enter the string `__NULL__`."
-            },
-            {
-              "key": "region",
-              "required": true,
-              "options": [
-                {
-                  "displayname": "Chennai (che01)",
-                  "value": "che01"
                 },
                 {
-                  "displayname": "Dallas (us-south)",
-                  "value": "us-south"
+                  "key": "region",
+                  "required": true,
+                  "options": [
+                    {
+                      "displayname": "Chennai (che01)",
+                      "value": "che01"
+                    },
+                    {
+                      "displayname": "Dallas (us-south)",
+                      "value": "us-south"
+                    },
+                    {
+                      "displayname": "Frankfurt (eu-de)",
+                      "value": "eu-de"
+                    },
+                    {
+                      "displayname": "London (eu-gb)",
+                      "value": "eu-gb"
+                    },
+                    {
+                      "displayname": "Madrid (eu-es)",
+                      "value": "eu-es"
+                    },
+                    {
+                      "displayname": "Osaka (jp-osa)",
+                      "value": "jp-osa"
+                    },
+                    {
+                      "displayname": "Paris (par01)",
+                      "value": "par01"
+                    },
+                    {
+                      "displayname": "Sao Paulo (br-sao)",
+                      "value": "br-sao"
+                    },
+                    {
+                      "displayname": "Sydney (au-syd)",
+                      "value": "au-syd"
+                    },
+                    {
+                      "displayname": "Toronto (ca-tor)",
+                      "value": "ca-tor"
+                    },
+                    {
+                      "displayname": "Tokyo (jp-tok)",
+                      "value": "jp-tok"
+                    },
+                    {
+                      "displayname": "Washington (us-east)",
+                      "value": "us-east"
+                    }
+                  ]
                 },
                 {
-                  "displayname": "Frankfurt (eu-de)",
-                  "value": "eu-de"
+                  "key": "name"
                 },
                 {
-                  "displayname": "London (eu-gb)",
-                  "value": "eu-gb"
+                  "key": "existing_db_instance_crn"
                 },
                 {
-                  "displayname": "Madrid (eu-es)",
-                  "value": "eu-es"
+                  "key": "plan",
+                  "options": [
+                    {
+                      "displayname": "enterprise",
+                      "value": "enterprise"
+                    },
+                    {
+                      "displayname": "platinum",
+                      "value": "platinum"
+                    }
+                  ]
                 },
                 {
-                  "displayname": "Osaka (jp-osa)",
-                  "value": "jp-osa"
+                  "key": "elasticsearch_version",
+                  "required": true,
+                  "options": [
+                     {
+                      "displayname": "8.15",
+                      "value": "8.15"
+                    },
+                    {
+                      "displayname": "8.12",
+                      "value": "8.12"
+                    },
+                    {
+                      "displayname": "8.10",
+                      "value": "8.10"
+                    }
+                  ]
                 },
                 {
-                  "displayname": "Paris (par01)",
-                  "value": "par01"
+                  "key": "tags"
                 },
                 {
-                  "displayname": "Sao Paulo (br-sao)",
-                  "value": "br-sao"
+                  "key": "access_tags"
                 },
                 {
-                  "displayname": "Sydney (au-syd)",
-                  "value": "au-syd"
+                  "key": "auto_scaling"
                 },
                 {
-                  "displayname": "Toronto (ca-tor)",
-                  "value": "ca-tor"
+                  "key": "members"
                 },
                 {
-                  "displayname": "Tokyo (jp-tok)",
-                  "value": "jp-tok"
+                  "key": "member_memory_mb"
                 },
                 {
-                  "displayname": "Washington (us-east)",
-                  "value": "us-east"
+                  "key": "member_cpu_count"
+                },
+                {
+                  "key": "member_disk_mb"
+                },
+                {
+                  "key": "member_host_flavor"
+                },
+                {
+                  "key": "admin_pass"
+                },
+                {
+                  "key": "users"
+                },
+                {
+                  "key": "service_credential_names"
+                },
+                {
+                  "key": "existing_secrets_manager_instance_crn"
+                },
+                {
+                  "key": "existing_secrets_manager_endpoint_type",
+                  "options": [
+                    {
+                      "displayname": "public",
+                      "value": "public"
+                    },
+                    {
+                      "displayname": "private",
+                      "value": "private"
+                    }
+                  ]
+                },
+                {
+                  "key": "service_credential_secrets"
+                },
+                {
+                  "key": "admin_pass_sm_secret_group"
+                },
+                {
+                  "key": "use_existing_admin_pass_sm_secret_group"
+                },
+                {
+                  "key": "admin_pass_sm_secret_name"
+                },
+                {
+                  "key": "skip_es_sm_auth_policy"
+                },
+                {
+                  "key": "ibmcloud_kms_api_key"
+                },
+                {
+                  "key": "kms_endpoint_type",
+                  "options": [
+                    {
+                      "displayname": "public",
+                      "value": "public"
+                    },
+                    {
+                      "displayname": "private",
+                      "value": "private"
+                    }
+                  ]
+                },
+                {
+                  "key": "use_ibm_owned_encryption_key"
+                },
+                {
+                  "key": "existing_kms_instance_crn",
+                  "required": true
+                },
+                {
+                  "key": "existing_kms_key_crn"
+                },
+                {
+                  "key": "existing_backup_kms_key_crn"
+                },
+                {
+                  "key": "use_default_backup_encryption_key"
+                },
+                {
+                  "key": "elasticsearch_key_ring_name"
+                },
+                {
+                  "key": "elasticsearch_key_name"
+                },
+                {
+                  "key": "skip_es_kms_auth_policy"
+                },
+                {
+                  "key": "backup_crn"
+                },
+                {
+                  "key": "enable_elser_model"
+                },
+                {
+                  "key": "elser_model_type",
+                  "options": [
+                    {
+                      "displayname": ".elser_model_1",
+                      "value": ".elser_model_1"
+                    },
+                    {
+                      "displayname": ".elser_model_2",
+                      "value": ".elser_model_2"
+                    },
+                    {
+                      "displayname": ".elser_model_2_linux-x86_64",
+                      "value": ".elser_model_2_linux-x86_64"
+                    }
+                  ]
+                },
+                {
+                  "key": "enable_kibana_dashboard"
+                },
+                {
+                  "key": "existing_code_engine_project_id"
+                },
+                {
+                  "key": "kibana_registry_namespace_image"
+                },
+                {
+                  "key": "kibana_image_digest"
                 }
               ]
-            },
-            {
-              "key": "name"
-            },
-            {
-              "key": "existing_db_instance_crn"
-            },
-            {
-              "key": "plan",
-              "options": [
-                {
-                  "displayname": "enterprise",
-                  "value": "enterprise"
-                },
-                {
-                  "displayname": "platinum",
-                  "value": "platinum"
-                }
-              ]
-            },
-            {
-              "key": "elasticsearch_version",
-              "required": true,
-              "options": [
-                {
-                  "displayname": "8.15",
-                  "value": "8.15"
-                },
-                {
-                  "displayname": "8.12",
-                  "value": "8.12"
-                },
-                {
-                  "displayname": "8.10",
-                  "value": "8.10"
-                }
-              ]
-            },
-            {
-              "key": "tags"
-            },
-            {
-              "key": "access_tags"
-            },
-            {
-              "key": "auto_scaling"
-            },
-            {
-              "key": "members"
-            },
-            {
-              "key": "member_memory_mb"
-            },
-            {
-              "key": "member_cpu_count"
-            },
-            {
-              "key": "member_disk_mb"
-            },
-            {
-              "key": "member_host_flavor"
-            },
-            {
-              "key": "admin_pass"
-            },
-            {
-              "key": "users"
-            },
-            {
-              "key": "service_credential_names"
-            },
-            {
-              "key": "existing_secrets_manager_instance_crn"
-            },
-            {
-              "key": "existing_secrets_manager_endpoint_type",
-              "options": [
-                {
-                  "displayname": "public",
-                  "value": "public"
-                },
-                {
-                  "displayname": "private",
-                  "value": "private"
-                }
-              ]
-            },
-            {
-              "key": "service_credential_secrets"
-            },
-            {
-              "key": "admin_pass_sm_secret_group"
-            },
-            {
-              "key": "use_existing_admin_pass_sm_secret_group"
-            },
-            {
-              "key": "admin_pass_sm_secret_name"
-            },
-            {
-              "key": "skip_es_sm_auth_policy"
-            },
-            {
-              "key": "ibmcloud_kms_api_key"
-            },
-            {
-              "key": "kms_endpoint_type",
-              "options": [
-                {
-                  "displayname": "public",
-                  "value": "public"
-                },
-                {
-                  "displayname": "private",
-                  "value": "private"
-                }
-              ]
-            },
-            {
-              "key": "use_ibm_owned_encryption_key"
-            },
-            {
-              "key": "existing_kms_instance_crn",
-              "required": true
-            },
-            {
-              "key": "existing_kms_key_crn"
-            },
-            {
-              "key": "existing_backup_kms_key_crn"
-            },
-            {
-              "key": "use_default_backup_encryption_key"
-            },
-            {
-              "key": "elasticsearch_key_ring_name"
-            },
-            {
-              "key": "elasticsearch_key_name"
-            },
-            {
-              "key": "skip_es_kms_auth_policy"
-            },
-            {
-              "key": "backup_crn"
-            },
-            {
-              "key": "enable_elser_model"
-            },
-            {
-              "key": "elser_model_type",
-              "options": [
-                {
-                  "displayname": ".elser_model_1",
-                  "value": ".elser_model_1"
-                },
-                {
-                  "displayname": ".elser_model_2",
-                  "value": ".elser_model_2"
-                },
-                {
-                  "displayname": ".elser_model_2_linux-x86_64",
-                  "value": ".elser_model_2_linux-x86_64"
-                }
-              ]
-            },
-            {
-              "key": "enable_kibana_dashboard"
-            },
-            {
-              "key": "existing_code_engine_project_id"
-            },
-            {
-              "key": "elasticsearch_full_version"
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
+          }
+        ]
+      }
+    ]
+  }
