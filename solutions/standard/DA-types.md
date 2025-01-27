@@ -170,7 +170,7 @@ The following example includes all the configuration options for four service cr
   {
     "secret_group_name": "sg-1"
     "existing_secret_group": true
-    "service_credentials": [
+    "service_credentials": [                                              # pragma: allowlist secret
       {
         "secret_name": "cred-1"
         "service_credentials_source_service_role_crn":  "crn:v1:bluemix:public:iam::::role:Editor"
@@ -189,7 +189,7 @@ The following example includes all the configuration options for four service cr
   },
   {
     "secret_group_name": "sg-2"
-    "service_credentials": [
+    "service_credentials": [                                              # pragma: allowlist secret
       {
         "secret_name": "cred-3"
         "service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Viewer"
