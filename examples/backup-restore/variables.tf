@@ -13,12 +13,12 @@ variable "region" {
 variable "prefix" {
   type        = string
   description = "Prefix to append to all resources created by this example"
-  default = "backup"
+  default     = "backup"
 }
 
 variable "elasticsearch_version" {
   type        = string
-   description = "Version of the elasticsearch instance. If no value passed, the current ICD preferred version is used."
+  description = "Version of the elasticsearch instance. If no value passed, the current ICD preferred version is used."
   default     = null
 }
 variable "resource_group" {

@@ -254,7 +254,7 @@ module "es_instance_crn_parser" {
 
 # Existing instance local vars
 locals {
-  existing_elasticsearch_guid   = var.existing_db_instance_crn != null ? module.es_instance_crn_parser[0].guid : null
+  existing_elasticsearch_guid   = var.existing_db_instance_crn != null ? module.es_instance_crn_parser[0].service_instance : null
   existing_elasticsearch_region = var.existing_db_instance_crn != null ? module.es_instance_crn_parser[0].region : null
 
   # Validate the region input matches region detected in existing instance CRN (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)

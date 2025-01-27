@@ -16,13 +16,13 @@ data "ibm_database_backups" "backup_database" {
 }
 # New elasticsearch instance pointing to the backup instance
 module "restored_icd_elasticsearch" {
-  source             = "../.."
-  resource_group_id  = module.resource_group.resource_group_id
-  name               = "${var.prefix}-elasticsearch-restored"
+  source                = "../.."
+  resource_group_id     = module.resource_group.resource_group_id
+  name                  = "${var.prefix}-elasticsearch-restored"
   elasticsearch_version = var.elasticsearch_version
-  region             = var.region
-  tags      = var.resource_tags
-  access_tags        = var.access_tags
-  member_host_flavor = "multitenant"
-  backup_crn         = data.ibm_database_backups.backup_database.backups[0].backup_id
+  region                = var.region
+  tags                  = var.resource_tags
+  access_tags           = var.access_tags
+  member_host_flavor    = "multitenant"
+  backup_crn            = data.ibm_database_backups.backup_database.backups[0].backup_id
 }
