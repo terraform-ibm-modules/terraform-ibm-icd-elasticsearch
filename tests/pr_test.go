@@ -106,11 +106,11 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 			"service_credentials": []map[string]string{
 				{
 					"secret_name": fmt.Sprintf("%s-cred-reader", options.Prefix),
-					"service_credentials_source_service_role": "Reader",
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Viewer",
 				},
 				{
 					"secret_name": fmt.Sprintf("%s-cred-writer", options.Prefix),
-					"service_credentials_source_service_role": "Writer",
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Editor",
 				},
 			},
 		},
