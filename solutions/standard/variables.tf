@@ -365,7 +365,7 @@ variable "enable_kibana_dashboard" {
 
 variable "kibana_registry_namespace_image" {
   type        = string
-  description = "The full Elasticsearch version (format `[registry-url]/[namespace]/[image]`) required to deploy the Kibana dashboard. This value is used only when `enable_kibana_dashboard` is set to true. By default, the image is pulled from `docker.elastic.co/kibana/kibana`."
+  description = "The Kibana image reference in the format of `[registry-url]/[namespace]/[image]`. This value is used only when `enable_kibana_dashboard` is set to true. By default, the image is pulled from `docker.elastic.co/kibana/kibana`."
   default     = "docker.elastic.co/kibana/kibana"
 }
 
