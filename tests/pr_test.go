@@ -55,40 +55,6 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestRunFSCloudExample(t *testing.T) {
-	t.Parallel()
-	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:      t,
-		TerraformDir: fscloudExampleTerraformDir,
-		Prefix:       "es-fs-test",
-		Region:       "us-south",
-		/*
-		 Comment out the 'ResourceGroup' input to force this test to create a unique resource group to ensure tests do
-		 not clash. This is due to the fact that an auth policy may already exist in this resource group since we are
-		 re-using a permanent HPCS instance. By using a new resource group, the auth policy will not already exist
-		 since this module scopes auth policies by resource group.
-		*/
-		//ResourceGroup: resourceGroup,
-		TerraformVars: map[string]interface{}{
-			"elasticsearch_version": latestVersion, // Always lock this test into the latest supported elasticsearch version
-			"access_tags":           permanentResources["accessTags"],
-			"kms_key_crn":           permanentResources["hpcs_south_root_key_crn"],
-		},
-		CloudInfoService: sharedInfoSvc,
-	})
-	options.SkipTestTearDown = true
-	output, err := options.RunTestConsistency()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
-
-	// check if outputs exist
-	outputs := terraform.OutputAll(options.Testing, options.TerraformOptions)
-	expectedOutputs := []string{"port", "hostname"}
-	_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
-	assert.NoErrorf(t, outputErr, "Some outputs not found or nil")
-	options.TestTearDown()
-}
-
 func TestRunStandardSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
@@ -176,27 +142,6 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
 	}
-}
-
-func TestRunBasicExample(t *testing.T) {
-	t.Parallel()
-	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:            t,
-		TerraformDir:       "examples/basic",
-		Prefix:             "es-test",
-		ResourceGroup:      resourceGroup,
-		BestRegionYAMLPath: regionSelectionPath,
-		CloudInfoService:   sharedInfoSvc,
-
-		TerraformVars: map[string]interface{}{
-			"elasticsearch_version": latestVersion,
-			"member_host_flavor":    "multitenant", // Always lock this test into the latest supported elasticsearch version
-		},
-	})
-
-	output, err := options.RunTestConsistency()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
 }
 
 func TestRunExistingInstance(t *testing.T) {

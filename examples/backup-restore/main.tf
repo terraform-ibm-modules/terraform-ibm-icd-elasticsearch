@@ -10,9 +10,8 @@ module "resource_group" {
   existing_resource_group_name = var.resource_group
 }
 
-
 data "ibm_database_backups" "backup_database" {
-  deployment_id = var.elasticsearch_db_backup_crn
+  deployment_id = var.existing_database_crn
 }
 # New elasticsearch instance pointing to the backup instance
 module "restored_icd_elasticsearch" {

@@ -21,6 +21,7 @@ variable "elasticsearch_version" {
   description = "Version of the elasticsearch instance. If no value passed, the current ICD preferred version is used."
   default     = null
 }
+
 variable "resource_group" {
   type        = string
   description = "An existing resource group name to use for this example, if unset a new resource group will be created"
@@ -39,8 +40,8 @@ variable "access_tags" {
   default     = []
 }
 
-variable "elasticsearch_db_backup_crn" {
+variable "existing_database_crn" {
   type        = string
-  description = "The existing CRN of a backup resource to restore from. If null then it will create a new instance first and then create another instance pointing to the backup of the first instance."
+  description = "The existing CRN of a backup resource to restore from."
   default     = null
 }

@@ -94,7 +94,7 @@ func TestRunRestoredDBExample(t *testing.T) {
 		Region:        fmt.Sprint(permanentResources["elasticsearchRegion"]),
 		ResourceGroup: resourceGroup,
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_db_backup_crn": permanentResources["elasticsearchCrn"],
+			"existing_database_crn": permanentResources["elasticsearchCrn"],
 		},
 		CloudInfoService: sharedInfoSvc,
 	})
