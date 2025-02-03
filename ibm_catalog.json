@@ -356,18 +356,18 @@
                 {
                   "key": "kibana_visibility",
                   "options": [
-                      {
-                        "displayname": "local_public",
-                        "value": "local_public"
-                      },
-                      {
-                        "displayname": "local_private",
-                        "value": "local_private"
-                      },
-                      {
-                        "displayname": "local",
-                        "value": "local"
-                      }
+                    {
+                      "displayname": "local_public",
+                      "value": "local_public"
+                    },
+                    {
+                      "displayname": "local_private",
+                      "value": "local_private"
+                    },
+                    {
+                      "displayname": "local",
+                      "value": "local"
+                    }
                   ]
                 }
               ]
