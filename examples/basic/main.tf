@@ -13,14 +13,16 @@ module "resource_group" {
 # Elasticsearch Instance
 ##############################################################################
 
-module "icd_elasticsearch" {
+module "database" {
   source                = "../../"
   resource_group_id     = module.resource_group.resource_group_id
-  name                  = "${var.prefix}-elasticsearch"
+  name                  = "${var.prefix}-data-store"
   region                = var.region
   elasticsearch_version = var.elasticsearch_version
   tags                  = var.resource_tags
   access_tags           = var.access_tags
+  service_endpoints     = var.service_endpoints
+  member_host_flavor    = var.member_host_flavor
   service_credential_names = {
     "elasticsearch_admin" : "Administrator",
     "elasticsearch_operator" : "Operator",
@@ -32,7 +34,7 @@ module "icd_elasticsearch" {
 # wait 60 secs to allow IAM credential access to kick in before configuring instance
 # without the wait, you can intermittently get "Error 401 (Unauthorized)"
 resource "time_sleep" "wait" {
-  depends_on      = [module.icd_elasticsearch]
+  depends_on      = [module.database]
   create_duration = "60s"
 }
 
