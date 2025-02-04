@@ -296,14 +296,14 @@ variable "service_credential_secrets" {
     secret_group_description = optional(string)
     existing_secret_group    = optional(bool)
     service_credentials = list(object({
-      secret_name                             = string
-      service_credentials_source_service_role = string
-      secret_labels                           = optional(list(string))
-      secret_auto_rotation                    = optional(bool)
-      secret_auto_rotation_unit               = optional(string)
-      secret_auto_rotation_interval           = optional(number)
-      service_credentials_ttl                 = optional(string)
-      service_credential_secret_description   = optional(string)
+      secret_name                                 = string
+      service_credentials_source_service_role_crn = string
+      secret_labels                               = optional(list(string))
+      secret_auto_rotation                        = optional(bool)
+      secret_auto_rotation_unit                   = optional(string)
+      secret_auto_rotation_interval               = optional(number)
+      service_credentials_ttl                     = optional(string)
+      service_credential_secret_description       = optional(string)
 
     }))
   }))
@@ -311,15 +311,14 @@ variable "service_credential_secrets" {
   description = "Service credential secrets configuration for Databases for Elasticsearch. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/standard/DA-types.md#service-credential-secrets)."
 
   validation {
+    # Service roles CRNs can be found at https://cloud.ibm.com/iam/roles, select the IBM Cloud Database and select the role
     condition = alltrue([
       for group in var.service_credential_secrets : alltrue([
-        for credential in group.service_credentials : contains(
-          ["Writer", "Reader", "Manager", "None"], credential.service_credentials_source_service_role
-        )
+        # crn:v?:bluemix; two non-empty segments; three possibly empty segments; :serviceRole or role: non-empty segment
+        for credential in group.service_credentials : can(regex("^crn:v[0-9]:bluemix(:..*){2}(:.*){3}:(serviceRole|role):..*$", credential.service_credentials_source_service_role_crn))
       ])
     ])
-    error_message = "service_credentials_source_service_role role must be one of 'Writer', 'Reader', 'Manager', and 'None'."
-
+    error_message = "service_credentials_source_service_role_crn must be a serviceRole CRN. See https://cloud.ibm.com/iam/roles"
   }
 }
 
@@ -379,4 +378,19 @@ variable "kibana_image_digest" {
   }
 
 
+}
+variable "kibana_image_port" {
+  description = "Specify the port number used to connect to the Kibana service exposed by the container image. Default port is 5601 and it is only applicable if `enable_kibana_dashboard` is true"
+  type        = number
+  default     = 5601
+}
+
+variable "kibana_visibility" {
+  description = "Specify the visibility of Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/standard/DA-types.md#options-for-kibana_visibility)."
+  type        = string
+  default     = "local_private"
+  validation {
+    condition     = can(regex("local_public|local_private|local", var.kibana_visibility))
+    error_message = "Valid values are 'local_public', 'local_private', or 'local'."
+  }
 }

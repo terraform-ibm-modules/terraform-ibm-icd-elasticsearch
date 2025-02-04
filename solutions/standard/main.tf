@@ -381,16 +381,16 @@ locals {
       existing_secret_group    = service_credentials.existing_secret_group
       secrets = [
         for secret in service_credentials.service_credentials : {
-          secret_name                             = secret.secret_name
-          secret_labels                           = secret.secret_labels
-          secret_auto_rotation                    = secret.secret_auto_rotation
-          secret_auto_rotation_unit               = secret.secret_auto_rotation_unit
-          secret_auto_rotation_interval           = secret.secret_auto_rotation_interval
-          service_credentials_ttl                 = secret.service_credentials_ttl
-          service_credential_secret_description   = secret.service_credential_secret_description
-          service_credentials_source_service_role = secret.service_credentials_source_service_role
-          service_credentials_source_service_crn  = local.elasticsearch_crn
-          secret_type                             = "service_credentials" #checkov:skip=CKV_SECRET_6
+          secret_name                                 = secret.secret_name
+          secret_labels                               = secret.secret_labels
+          secret_auto_rotation                        = secret.secret_auto_rotation
+          secret_auto_rotation_unit                   = secret.secret_auto_rotation_unit
+          secret_auto_rotation_interval               = secret.secret_auto_rotation_interval
+          service_credentials_ttl                     = secret.service_credentials_ttl
+          service_credential_secret_description       = secret.service_credential_secret_description
+          service_credentials_source_service_role_crn = secret.service_credentials_source_service_role_crn
+          service_credentials_source_service_crn      = local.elasticsearch_crn
+          secret_type                                 = "service_credentials" #checkov:skip=CKV_SECRET_6
         }
       ]
     }
@@ -420,7 +420,7 @@ module "secrets_manager_service_credentials" {
   count                       = var.existing_secrets_manager_instance_crn == null ? 0 : 1
   depends_on                  = [time_sleep.wait_for_es_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version                     = "1.20.0"
+  version                     = "1.22.0"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
@@ -463,7 +463,7 @@ module "code_engine_kibana" {
   apps = {
     (local.code_engine_app_name) = {
       image_reference = var.kibana_image_digest != null ? "${var.kibana_registry_namespace_image}@${var.kibana_image_digest}" : "${var.kibana_registry_namespace_image}:${local.kibana_version}"
-      image_port      = 5601
+      image_port      = var.kibana_image_port
       run_env_variables = [{
         type  = "literal"
         name  = "ELASTICSEARCH_HOSTS"
@@ -496,8 +496,9 @@ module "code_engine_kibana" {
           value = "none"
         }
       ]
-      scale_min_instances = 1
-      scale_max_instances = 3
+      scale_min_instances     = 1
+      scale_max_instances     = 3
+      managed_domain_mappings = var.kibana_visibility
     }
   }
 }
