@@ -196,8 +196,13 @@
                 },
                 {
                   "key": "elasticsearch_version",
-                  "required": true,
+                  "required": false,
+                  "default_value": "__NULL__",
                   "options": [
+                     {
+                      "displayname": "preferred",
+                      "value": "__NULL__"
+                     },
                      {
                       "displayname": "8.15",
                       "value": "8.15"
