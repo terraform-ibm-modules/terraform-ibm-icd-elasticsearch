@@ -387,7 +387,7 @@ variable "kibana_image_port" {
 }
 
 variable "kibana_visibility" {
-  description = "Specify the visibility of Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true."
+  description = "Specify the visibility of Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/standard/DA-types.md#options-for-kibana_visibility)."
   type        = string
   default     = "local_private"
   validation {
