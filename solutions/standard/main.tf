@@ -29,9 +29,10 @@ locals {
 
 locals {
   create_new_kms_key          = var.existing_elasticsearch_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? 1 : 0 # no need to create any KMS resources if using existing Elasticsearch, passing an existing key, or using IBM owned keys
-  elasticsearch_key_name      = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_name}" : var.elasticsearch_key_name
-  elasticsearch_key_ring_name = var.prefix != null ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
+  elasticsearch_key_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.elasticsearch_key_name}" : var.elasticsearch_key_name
+  elasticsearch_key_ring_name = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 }
+
 
 module "kms" {
   providers = {
@@ -254,7 +255,7 @@ module "es_instance_crn_parser" {
 
 # Existing instance local vars
 locals {
-  existing_elasticsearch_guid   = var.existing_elasticsearch_instance_crn != null ? module.es_instance_crn_parser[0].guid : null
+  existing_elasticsearch_guid   = var.existing_elasticsearch_instance_crn != null ? module.es_instance_crn_parser[0].service_instance : null
   existing_elasticsearch_region = var.existing_elasticsearch_instance_crn != null ? module.es_instance_crn_parser[0].region : null
 
   # Validate the region input matches region detected in existing instance CRN (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
@@ -398,10 +399,10 @@ locals {
 
   # Build the structure of the arbitrary credential type secret for admin password
   admin_pass_secret = [{
-    secret_group_name     = var.prefix != null && var.admin_pass_secrets_manager_secret_group != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_group}" : var.admin_pass_secrets_manager_secret_group
+    secret_group_name     = (var.prefix != null && var.prefix != "") && var.admin_pass_secrets_manager_secret_group != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_group}" : var.admin_pass_secrets_manager_secret_group
     existing_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
     secrets = [{
-      secret_name             = var.prefix != null && var.admin_pass_secrets_manager_secret_name != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_name}" : var.admin_pass_secrets_manager_secret_name
+      secret_name             = (var.prefix != null && var.prefix != "") && var.admin_pass_secrets_manager_secret_name != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_name}" : var.admin_pass_secrets_manager_secret_name
       secret_type             = "arbitrary"
       secret_payload_password = local.admin_pass
       }
