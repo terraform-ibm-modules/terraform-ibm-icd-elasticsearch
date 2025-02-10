@@ -16,6 +16,7 @@
     * [Basic example with index creation and updates to cluster-wide settings](./examples/basic)
     * [Complete example with autoscaling, BYOK encryption and service credentials creation](./examples/complete)
     * [Financial Services Cloud profile example with autoscaling enabled](./examples/fscloud)
+    * [Restore from backup example](./examples/backup-restore)
 * [Contributing](#contributing)
 <!-- END OVERVIEW HOOK -->
 
