@@ -3,6 +3,12 @@ package test
 
 import (
 	"fmt"
+	"log"
+	"math/rand"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -13,11 +19,6 @@ import (
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testschematic"
-	"log"
-	"math/rand"
-	"os"
-	"strings"
-	"testing"
 )
 
 const completeExampleTerraformDir = "examples/complete"
@@ -103,8 +104,8 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "service_credential_names", Value: "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}", DataType: "map(string)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
-		{Name: "admin_pass_sm_secret_group", Value: options.Prefix, DataType: "string"},
-		{Name: "admin_pass_sm_secret_name", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
 		{Name: "provider_visibility", Value: "private", DataType: "string"},
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
@@ -176,7 +177,7 @@ func TestRunExistingInstance(t *testing.T) {
 	if existErr != nil {
 		assert.True(t, existErr == nil, "Init and Apply of temp existing resource failed")
 	} else {
-		logger.Log(t, " existing_db_instance_crn: ", terraform.Output(t, existingTerraformOptions, "elasticsearch_crn"))
+		logger.Log(t, "existing_elasticsearch_instance_crn: ", terraform.Output(t, existingTerraformOptions, "elasticsearch_crn"))
 		options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
 			Testing: t,
 			TarIncludePatterns: []string{
@@ -196,7 +197,7 @@ func TestRunExistingInstance(t *testing.T) {
 
 		options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 			{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
-			{Name: "existing_db_instance_crn", Value: terraform.Output(t, existingTerraformOptions, "elasticsearch_crn"), DataType: "string"},
+			{Name: "existing_elasticsearch_instance_crn", Value: terraform.Output(t, existingTerraformOptions, "elasticsearch_crn"), DataType: "string"},
 			{Name: "resource_group_name", Value: fmt.Sprintf("%s-resource-group", prefix), DataType: "string"},
 			{Name: "region", Value: region, DataType: "string"},
 			{Name: "use_existing_resource_group", Value: true, DataType: "bool"},

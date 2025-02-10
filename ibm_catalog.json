@@ -111,10 +111,12 @@
                   ]
                 },
                 {
-                  "key": "use_existing_resource_group"
+                  "key": "use_existing_resource_group",
+                  "required": true
                 },
                 {
-                  "key": "resource_group_name"
+                  "key": "resource_group_name",
+                  "required": true
                 },
                 {
                   "key": "prefix",
@@ -179,7 +181,7 @@
                   "key": "name"
                 },
                 {
-                  "key": "existing_db_instance_crn"
+                  "key": "existing_elasticsearch_instance_crn"
                 },
                 {
                   "key": "plan",
@@ -270,16 +272,16 @@
                   "key": "service_credential_secrets"
                 },
                 {
-                  "key": "admin_pass_sm_secret_group"
+                  "key": "use_existing_admin_pass_secrets_manager_secret_group"
                 },
                 {
-                  "key": "use_existing_admin_pass_sm_secret_group"
+                  "key": "admin_pass_secrets_manager_secret_name"
                 },
                 {
-                  "key": "admin_pass_sm_secret_name"
+                  "key": "admin_pass_secrets_manager_secret_group"
                 },
                 {
-                  "key": "skip_es_sm_auth_policy"
+                  "key": "skip_elasticsearch_to_secrets_manager_auth_policy"
                 },
                 {
                   "key": "ibmcloud_kms_api_key"
