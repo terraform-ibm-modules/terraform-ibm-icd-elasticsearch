@@ -2,10 +2,11 @@
 package test
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"log"
-	"math/rand"
+	"math/big"
 	"os"
 	"strings"
 	"testing"
@@ -152,7 +153,12 @@ func TestRunExistingInstance(t *testing.T) {
 	prefix := fmt.Sprintf("elastic-t-%s", strings.ToLower(random.UniqueId()))
 	realTerraformDir := ".."
 	tempTerraformDir, _ := files.CopyTerraformFolderToTemp(realTerraformDir, fmt.Sprintf(prefix+"-%s", strings.ToLower(random.UniqueId())))
-	region := validICDRegions[rand.Intn(len(validICDRegions))]
+
+	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(validICDRegions))))
+	if err != nil {
+		panic(err)
+	}
+	region := validICDRegions[nBig.Int64()]
 
 	// Verify ibmcloud_api_key variable is set
 	checkVariable := "TF_VAR_ibmcloud_api_key"
