@@ -244,8 +244,13 @@ variable "cbr_rules" {
         value = string
     }))) }))
     enforcement_mode = string
+    operations = optional(list(object({
+      api_types = list(object({
+        api_type_id = string
+      }))
+    })))
   }))
-  description = "The list of context-based restriction rules to create."
+  description = "(Optional, list) List of context-based restrictions rules to create. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-cbr_rules.md)"
   default     = []
   # Validation happens in the rule module
 }
