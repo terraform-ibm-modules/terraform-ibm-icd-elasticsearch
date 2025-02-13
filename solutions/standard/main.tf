@@ -316,6 +316,7 @@ module "elasticsearch" {
   service_credential_names          = var.service_credential_names
   enable_elser_model                = var.enable_elser_model
   elser_model_type                  = var.elser_model_type
+  cbr_rules                         = var.cbr_rules
 }
 
 locals {
