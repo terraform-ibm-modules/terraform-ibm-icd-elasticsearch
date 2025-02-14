@@ -3,6 +3,12 @@ package test
 
 import (
 	"fmt"
+	"log"
+	"math/rand"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -13,11 +19,6 @@ import (
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testschematic"
-	"log"
-	"math/rand"
-	"os"
-	"strings"
-	"testing"
 )
 
 const completeExampleTerraformDir = "examples/complete"
