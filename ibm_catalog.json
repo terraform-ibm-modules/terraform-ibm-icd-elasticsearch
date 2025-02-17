@@ -378,6 +378,9 @@
                       "value": "local"
                     }
                   ]
+                },
+                {
+                  "key": "cbr_rules"
                 }
               ]
           }
