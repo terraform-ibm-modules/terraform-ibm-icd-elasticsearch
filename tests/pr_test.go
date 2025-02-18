@@ -2,11 +2,11 @@
 package test
 
 import (
-	"crypto/rand"
+	crand "crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"log"
-	"math/big"
+	"math/rand"
 	"os"
 	"strings"
 	"testing"
@@ -154,11 +154,7 @@ func TestRunExistingInstance(t *testing.T) {
 	realTerraformDir := ".."
 	tempTerraformDir, _ := files.CopyTerraformFolderToTemp(realTerraformDir, fmt.Sprintf(prefix+"-%s", strings.ToLower(random.UniqueId())))
 
-	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(validICDRegions))))
-	if err != nil {
-		panic(err)
-	}
-	region := validICDRegions[nBig.Int64()]
+	region := validICDRegions[rand.Intn(len(validICDRegions))]
 
 	// Verify ibmcloud_api_key variable is set
 	checkVariable := "TF_VAR_ibmcloud_api_key"
@@ -321,7 +317,7 @@ func TestPlanValidation(t *testing.T) {
 func GetRandomAdminPassword(t *testing.T) string {
 	// Generate a 15 char long random string for the admin_pass
 	randomBytes := make([]byte, 13)
-	_, randErr := rand.Read(randomBytes)
+	_, randErr := crand.Read(randomBytes)
 	require.Nil(t, randErr) // do not proceed if we can't gen a random password
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 	return randomPass
