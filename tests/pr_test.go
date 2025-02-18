@@ -288,9 +288,9 @@ func TestPlanValidation(t *testing.T) {
 
 	// Create a map of the variables
 	tfVarsMap := map[string]map[string]interface{}{
-		"standardSolutionWithElserModelVars":                   standardSolutionWithElserModelVars,
-		"standardSolutionWithKibanaDashboardVars":              standardSolutionWithKibanaDashboardVars,
-		"standardSolutionWithPublicVisibilityAndBasicPlanVars": standardSolutionWithUseIbmOwnedEncKey,
+		"standardSolutionWithElserModelVars":      standardSolutionWithElserModelVars,
+		"standardSolutionWithKibanaDashboardVars": standardSolutionWithKibanaDashboardVars,
+		"standardSolutionWithUseIbmOwnedEncKey":   standardSolutionWithUseIbmOwnedEncKey,
 	}
 
 	_, initErr := terraform.InitE(t, options.TerraformOptions)
