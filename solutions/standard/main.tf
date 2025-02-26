@@ -40,7 +40,7 @@ module "kms" {
   }
   count                       = local.create_new_kms_key
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version                     = "4.19.7"
+  version                     = "4.19.8"
   create_key_protect_instance = false
   region                      = local.kms_region
   existing_kms_instance_crn   = var.existing_kms_instance_crn
@@ -422,7 +422,7 @@ module "secrets_manager_service_credentials" {
   count                       = var.existing_secrets_manager_instance_crn == null ? 0 : 1
   depends_on                  = [time_sleep.wait_for_es_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version                     = "1.23.6"
+  version                     = "1.23.9"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
@@ -449,7 +449,7 @@ data "http" "es_metadata" {
 module "code_engine_kibana" {
   count               = var.enable_kibana_dashboard ? 1 : 0
   source              = "terraform-ibm-modules/code-engine/ibm"
-  version             = "3.1.0"
+  version             = "3.1.1"
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
