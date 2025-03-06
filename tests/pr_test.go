@@ -2,10 +2,10 @@
 package test
 
 import (
-	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 	"testing"
