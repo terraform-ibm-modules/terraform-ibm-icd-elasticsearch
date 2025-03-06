@@ -2,11 +2,10 @@
 package test
 
 import (
-	crand "crypto/rand"
+	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"strings"
 	"testing"
@@ -317,7 +316,7 @@ func TestPlanValidation(t *testing.T) {
 func GetRandomAdminPassword(t *testing.T) string {
 	// Generate a 15 char long random string for the admin_pass
 	randomBytes := make([]byte, 13)
-	_, randErr := crand.Read(randomBytes)
+	_, randErr := rand.Read(randomBytes)
 	require.Nil(t, randErr) // do not proceed if we can't gen a random password
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 	return randomPass
