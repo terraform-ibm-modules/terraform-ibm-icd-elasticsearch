@@ -352,13 +352,13 @@ variable "admin_pass_secrets_manager_secret_name" {
 
 variable "kibana_code_engine_new_project_name" {
   type        = string
-  description = "The Code Engine project's name. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  description = "The Code Engine project name. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "ce-kibana-project"
 }
 
 variable "kibana_code_engine_new_app_name" {
   type        = string
-  description = "The Code Engine application's name. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  description = "The Code Engine application name. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "ce-kibana-app"
 }
 
