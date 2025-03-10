@@ -434,12 +434,10 @@ module "secrets_manager_service_credentials" {
 ########################################################################################################################
 
 locals {
-  default_code_engine_project_name = (var.kibana_code_engine_new_project_name != null && var.kibana_code_engine_new_project_name != "") ? var.kibana_code_engine_new_project_name : "ce-kibana-project"
-  default_code_engine_app_name     = (var.kibana_code_engine_new_app_name != null && var.kibana_code_engine_new_app_name != "") ? var.kibana_code_engine_new_app_name : "ce-kibana-app"
-  code_engine_project_id           = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
+  code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
   code_engine_project_name = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
-  code_engine_app_name = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
-  kibana_version                   = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
+  code_engine_app_name     = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
+  kibana_version           = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
 }
 
 data "http" "es_metadata" {
