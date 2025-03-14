@@ -2,9 +2,11 @@
 package test
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"log"
-	"math/rand"
+	"math/big"
 	"os"
 	"strings"
 	"testing"
@@ -109,6 +111,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
 		{Name: "provider_visibility", Value: "private", DataType: "string"},
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 	}
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
@@ -150,7 +153,12 @@ func TestRunExistingInstance(t *testing.T) {
 	prefix := fmt.Sprintf("elastic-t-%s", strings.ToLower(random.UniqueId()))
 	realTerraformDir := ".."
 	tempTerraformDir, _ := files.CopyTerraformFolderToTemp(realTerraformDir, fmt.Sprintf(prefix+"-%s", strings.ToLower(random.UniqueId())))
-	region := validICDRegions[rand.Intn(len(validICDRegions))]
+
+	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(validICDRegions))))
+	if err != nil {
+		panic(err)
+	}
+	region := validICDRegions[nBig.Int64()]
 
 	// Verify ibmcloud_api_key variable is set
 	checkVariable := "TF_VAR_ibmcloud_api_key"
@@ -242,4 +250,13 @@ func TestRunStandardSolutionIBMKeys(t *testing.T) {
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
+}
+
+func GetRandomAdminPassword(t *testing.T) string {
+	// Generate a 15 char long random string for the admin_pass
+	randomBytes := make([]byte, 13)
+	_, randErr := rand.Read(randomBytes)
+	require.Nil(t, randErr) // do not proceed if we can't gen a random password
+	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
+	return randomPass
 }
