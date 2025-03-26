@@ -8,11 +8,18 @@ variable "ibmcloud_api_key" {
   sensitive   = true
 }
 
+variable "existing_resource_group_name" {
+  type        = string
+  description = "The name of an existing resource group to provision the Databases for Elasticsearch in."
+  default     = "Default"
+  nullable    = false
+}
+
 variable "provider_visibility" {
   description = "Set the visibility value for the IBM terraform provider. Supported values are `public`, `private`, `public-and-private`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/guides/custom-service-endpoints)."
   type        = string
   default     = "private"
-
+  nullable    = false
   validation {
     condition     = contains(["public", "private", "public-and-private"], var.provider_visibility)
     error_message = "Invalid visibility option. Allowed values are 'public', 'private', or 'public-and-private'."
@@ -21,23 +28,28 @@ variable "provider_visibility" {
 
 variable "prefix" {
   type        = string
-  description = "Prefix to add to all resources created by this solution. To not use any prefix value, you can set this value to `null` or an empty string."
+  description = "The prefix to add to all resources that this solution creates (e.g `prod`, `test`, `dev`). To not use any prefix value, you can set this value to `null` or an empty string."
+  nullable    = true
+  validation {
+    condition = (var.prefix == null ? true :
+      alltrue([
+        can(regex("^[a-z]{0,1}[-a-z0-9]{0,14}[a-z0-9]{0,1}$", var.prefix)),
+        length(regexall("^.*--.*", var.prefix)) == 0
+      ])
+    )
+    error_message = "Prefix must begin with a lowercase letter, contain only lowercase letters, numbers, and - characters. Prefixes must end with a lowercase letter or number and be 16 or fewer characters."
+  }
 }
 
 ##############################################################################
 # Input Variables
 ##############################################################################
 
-variable "existing_resource_group_name" {
-  type        = string
-  description = "The name of an existing resource group to provision the Databases for Elasicsearch in."
-  default     = "Default"
-}
-
 variable "name" {
   type        = string
   description = "The name of the Databases for Elasticsearch instance. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch"
+  nullable    = false
 }
 
 variable "elasticsearch_version" {
@@ -56,18 +68,21 @@ variable "region" {
   type        = string
   description = "The region where you want to deploy your instance, or the region in which your existing instance is in."
   default     = "us-south"
+  nullable    = false
 }
 
 variable "plan" {
   type        = string
   description = "The name of the service plan for your Databases for Elasticsearch instance. Possible values: `enterprise`, `platinum`."
   default     = "platinum"
+  nullable    = false
 }
 
 variable "service_endpoints" {
   type        = string
   description = "Specify whether you want to enable public, or both public and private service endpoints. Possible values: `public`, `public-and-private`"
   default     = "private"
+  nullable    = false
   validation {
     condition     = contains(["public", "private"], var.service_endpoints)
     error_message = "The specified service endpoint is not supported. The following endpoint options are supported: `public`, `private`"
@@ -78,18 +93,21 @@ variable "existing_elasticsearch_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
+  nullable    = true
 }
 
 variable "enable_elser_model" {
   type        = bool
   description = "Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
   default     = false
+  nullable    = false
 }
 
 variable "elser_model_type" {
   type        = string
   description = "Trained ELSER model to be used for Elastic's Natural Language Processing. Possible values: `.elser_model_1`, `.elser_model_2` and `.elser_model_2_linux-x86_64`. Applies only if also 'plan' is set to 'platinum' and 'enable_elser_model' is enabled. [Learn more](https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-elser.html)"
   default     = ".elser_model_2_linux-x86_64"
+  nullable    = false
   validation {
     condition     = contains([".elser_model_1", ".elser_model_2", ".elser_model_2_linux-x86_64"], var.elser_model_type)
     error_message = "The specified elser_model_type is not a valid selection!"
