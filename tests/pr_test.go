@@ -26,6 +26,7 @@ import (
 const completeExampleTerraformDir = "examples/complete"
 const fscloudExampleTerraformDir = "examples/fscloud"
 const standardSolutionTerraformDir = "solutions/standard"
+const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
 const latestVersion = "8.15"
 
 // Use existing resource group
@@ -129,7 +130,7 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 		CheckApplyResultForUpgrade: true,
 	})
 
-	options.TerraformVars = map[string]any{
+	options.TerraformVars = map[string]interface{}{
 		"access_tags":               permanentResources["accessTags"],
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
 		"kms_endpoint_type":         "public",
@@ -146,6 +147,62 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
 	}
+}
+
+func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
+	t.Parallel()
+
+	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
+		Testing: t,
+		TarIncludePatterns: []string{
+			"*.tf",
+			fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
+			fmt.Sprintf("%s/*.sh", "scripts"),
+		},
+		TemplateFolder:         fullyConfigurableSolutionTerraformDir,
+		BestRegionYAMLPath:     regionSelectionPath,
+		Prefix:                 "els-sr-da",
+		ResourceGroup:          resourceGroup,
+		DeleteWorkspaceOnFail:  false,
+		WaitJobCompleteMinutes: 60,
+	})
+
+	serviceCredentialSecrets := []map[string]interface{}{
+		{
+			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
+			"service_credentials": []map[string]string{
+				{
+					"secret_name": fmt.Sprintf("%s-cred-reader", options.Prefix),
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Viewer",
+				},
+				{
+					"secret_name": fmt.Sprintf("%s-cred-writer", options.Prefix),
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Editor",
+				},
+			},
+		},
+	}
+
+	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "elasticsearch_access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
+		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
+		{Name: "existing_resource_group_name", Value: permanentResources["general_test_storage_cos_instance_resource_group"], DataType: "string"},
+		{Name: "plan", Value: "platinum", DataType: "string"},
+		{Name: "enable_elser_model", Value: true, DataType: "bool"},
+		{Name: "service_credential_names", Value: "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}", DataType: "map(string)"},
+		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
+		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
+		{Name: "service_endpoints", Value: "private", DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
+		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
+		{Name: "provider_visibility", Value: "private", DataType: "string"},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+	}
+	err := options.RunSchematicTest()
+	assert.Nil(t, err, "This should not have errored")
 }
 
 func TestRunExistingInstance(t *testing.T) {
