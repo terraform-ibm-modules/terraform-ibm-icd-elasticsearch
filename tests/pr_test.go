@@ -326,11 +326,3 @@ func GetRandomAdminPassword(t *testing.T) string {
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 	return randomPass
 }
-
-func getRandomIndex(max int) (int, error) {
-	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
-	if err != nil {
-		return 0, err
-	}
-	return int(nBig.Int64()), nil
-}
