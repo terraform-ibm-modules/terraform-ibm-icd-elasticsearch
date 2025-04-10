@@ -112,6 +112,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
 		{Name: "provider_visibility", Value: "private", DataType: "string"},
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 	}
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
@@ -249,6 +250,72 @@ func TestRunStandardSolutionIBMKeys(t *testing.T) {
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
+}
+
+func TestPlanValidation(t *testing.T) {
+	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
+		Testing:       t,
+		TerraformDir:  standardSolutionTerraformDir,
+		Prefix:        "validate-plan",
+		ResourceGroup: resourceGroup,
+		Region:        "us-south", // skip VPC region picker
+	})
+	options.TestSetup()
+	options.TerraformOptions.NoColor = true
+	options.TerraformOptions.Logger = logger.Discard
+	options.TerraformOptions.Vars = map[string]interface{}{
+		"prefix":                options.Prefix,
+		"region":                "us-south",
+		"elasticsearch_version": "8.10",
+		"provider_visibility":   "public",
+		"resource_group_name":   options.Prefix,
+	}
+
+	// Test the DA when using Elser model
+	var standardSolutionWithElserModelVars = map[string]interface{}{
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"enable_elser_model":        true,
+		"plan":                      "platinum",
+	}
+
+	// Test the DA when using Kibana dashboard and existing KMS instance
+	var standardSolutionWithKibanaDashboardVars = map[string]interface{}{
+		"enable_kibana_dashboard":   true,
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"plan":                      "enterprise",
+	}
+
+	// Test the DA when using IBM owned encryption key
+	var standardSolutionWithUseIbmOwnedEncKey = map[string]interface{}{
+		"use_ibm_owned_encryption_key": true,
+	}
+
+	// Create a map of the variables
+	tfVarsMap := map[string]map[string]interface{}{
+		"standardSolutionWithElserModelVars":      standardSolutionWithElserModelVars,
+		"standardSolutionWithKibanaDashboardVars": standardSolutionWithKibanaDashboardVars,
+		"standardSolutionWithUseIbmOwnedEncKey":   standardSolutionWithUseIbmOwnedEncKey,
+	}
+
+	_, initErr := terraform.InitE(t, options.TerraformOptions)
+	if assert.Nil(t, initErr, "This should not have errored") {
+		// Iterate over the slice of maps
+		for name, tfVars := range tfVarsMap {
+			t.Run(name, func(t *testing.T) {
+				// Iterate over the keys and values in each map
+				for key, value := range tfVars {
+					options.TerraformOptions.Vars[key] = value
+				}
+				output, err := terraform.PlanE(t, options.TerraformOptions)
+				assert.Nil(t, err, "This should not have errored")
+				assert.NotNil(t, output, "Expected some output")
+				// Delete the keys from the map
+				for key := range tfVars {
+					delete(options.TerraformOptions.Vars, key)
+				}
+			})
+		}
+	}
 }
 
 func GetRandomAdminPassword(t *testing.T) string {
