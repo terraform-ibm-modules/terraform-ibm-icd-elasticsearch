@@ -121,8 +121,7 @@
             },
             {
               "key": "prefix",
-              "required": true,
-              "description": "Prefix to add to all resources created by this solution. To not use any prefix value, you can enter the string `__NULL__`."
+              "required": true
             },
             {
               "key": "region",
@@ -350,6 +349,12 @@
             },
             {
               "key": "enable_kibana_dashboard"
+            },
+            {
+              "key": "kibana_code_engine_new_project_name"
+            },
+            {
+              "key": "kibana_code_engine_new_app_name"
             },
             {
               "key": "existing_code_engine_project_id"

@@ -350,6 +350,18 @@ variable "admin_pass_secrets_manager_secret_name" {
 # Kibana Configuration
 ##############################################################
 
+variable "kibana_code_engine_new_project_name" {
+  type        = string
+  description = "The Code Engine project name. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "ce-kibana-project"
+}
+
+variable "kibana_code_engine_new_app_name" {
+  type        = string
+  description = "The Code Engine application name. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "ce-kibana-app"
+}
+
 variable "existing_code_engine_project_id" {
   type        = string
   description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."

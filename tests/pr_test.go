@@ -37,7 +37,7 @@ const regionSelectionPath = "../common-dev-assets/common-go-assets/icd-region-pr
 // Define a struct with fields that match the structure of the YAML data
 const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
 
-var permanentResources map[string]interface{}
+var permanentResources map[string]any
 
 var sharedInfoSvc *cloudinfo.CloudInfoService
 var validICDRegions = []string{
@@ -78,7 +78,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		WaitJobCompleteMinutes: 60,
 	})
 
-	serviceCredentialSecrets := []map[string]interface{}{
+	serviceCredentialSecrets := []map[string]any{
 		{
 			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
 			"service_credentials": []map[string]string{
@@ -106,6 +106,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "service_credential_names", Value: "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}", DataType: "map(string)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
+		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
@@ -129,7 +130,7 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 		CheckApplyResultForUpgrade: true,
 	})
 
-	options.TerraformVars = map[string]interface{}{
+	options.TerraformVars = map[string]any{
 		"access_tags":               permanentResources["accessTags"],
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
 		"kms_endpoint_type":         "public",
@@ -154,9 +155,11 @@ func TestRunExistingInstance(t *testing.T) {
 	realTerraformDir := ".."
 	tempTerraformDir, _ := files.CopyTerraformFolderToTemp(realTerraformDir, fmt.Sprintf(prefix+"-%s", strings.ToLower(random.UniqueId())))
 
-	index, err := getRandomIndex(len(validICDRegions))
-	require.Nil(t, err, "Failed to generate random index")
-	region := validICDRegions[index]
+	index, err := rand.Int(rand.Reader, big.NewInt(int64(len(validICDRegions))))
+	if err != nil {
+		log.Fatalf("Failed to generate a secure random index: %v", err)
+	}
+	region := validICDRegions[index.Int64()]
 
 	// Verify ibmcloud_api_key variable is set
 	checkVariable := "TF_VAR_ibmcloud_api_key"
@@ -167,7 +170,7 @@ func TestRunExistingInstance(t *testing.T) {
 	logger.Log(t, "Tempdir: ", tempTerraformDir)
 	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir + "/examples/basic",
-		Vars: map[string]interface{}{
+		Vars: map[string]any{
 			"prefix":                prefix,
 			"region":                region,
 			"elasticsearch_version": latestVersion,
@@ -223,7 +226,6 @@ func TestRunExistingInstance(t *testing.T) {
 		terraform.WorkspaceDelete(t, existingTerraformOptions, prefix)
 		logger.Log(t, "END: Destroy (existing resources)")
 	}
-
 }
 
 // Test the DA when using IBM owned encryption keys
@@ -238,7 +240,7 @@ func TestRunStandardSolutionIBMKeys(t *testing.T) {
 		ResourceGroup: resourceGroup,
 	})
 
-	options.TerraformVars = map[string]interface{}{
+	options.TerraformVars = map[string]any{
 		"elasticsearch_version":        "8.12",
 		"provider_visibility":          "public",
 		"resource_group_name":          options.Prefix,
