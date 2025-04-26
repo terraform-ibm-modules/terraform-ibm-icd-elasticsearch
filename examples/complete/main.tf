@@ -95,7 +95,7 @@ module "icd_elasticsearch" {
 module "secrets_manager" {
   count                = var.existing_sm_instance_guid == null ? 1 : 0
   source               = "terraform-ibm-modules/secrets-manager/ibm"
-  version              = "2.1.1"
+  version              = "2.2.0"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
   secrets_manager_name = "${var.prefix}-secrets-manager"
