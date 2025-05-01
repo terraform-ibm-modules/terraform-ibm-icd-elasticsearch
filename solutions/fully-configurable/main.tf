@@ -4,23 +4,8 @@
 
 module "resource_group" {
   source                       = "terraform-ibm-modules/resource-group/ibm"
-  version                      = "1.2.0"
-  resource_group_name          = var.use_existing_resource_group == false ? ((var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.resource_group_name}" : var.resource_group_name) : null
-  existing_resource_group_name = var.use_existing_resource_group == true ? var.resource_group_name : null
-}
-
-#######################################################################################################################
-# KMS related variable validation
-# (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
-#
-# TODO: Replace with terraform cross variable validation: https://github.ibm.com/GoldenEye/issues/issues/10836
-#######################################################################################################################
-
-locals {
-  # tflint-ignore: terraform_unused_declarations
-  validate_kms_1 = var.existing_elasticsearch_instance_crn != null ? true : var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn != null || var.existing_kms_key_crn != null || var.existing_backup_kms_key_crn != null) ? tobool("When setting values for 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn', the 'use_ibm_owned_encryption_key' input must be set to false.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_kms_2 = var.existing_elasticsearch_instance_crn != null ? true : !var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn == null && var.existing_kms_key_crn == null) ? tobool("When 'use_ibm_owned_encryption_key' is false, a value is required for either 'existing_kms_instance_crn' (to create a new key), or 'existing_kms_key_crn' to use an existing key.") : true
+  version                      = "1.1.6"
+  existing_resource_group_name = var.existing_resource_group_name
 }
 
 #######################################################################################################################
@@ -28,7 +13,7 @@ locals {
 #######################################################################################################################
 
 locals {
-  create_new_kms_key          = var.existing_elasticsearch_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? 1 : 0 # no need to create any KMS resources if using existing Elasticsearch, passing an existing key, or using IBM owned keys
+  create_new_kms_key          = var.existing_elasticsearch_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? 1 : 0 # no need to create any KMS resources if encryption not enabled, using existing Elasticsearch, passing an existing key, or using IBM owned keys
   elasticsearch_key_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.elasticsearch_key_name}" : var.elasticsearch_key_name
   elasticsearch_key_ring_name = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
 }
@@ -287,22 +272,23 @@ data "ibm_database_connection" "existing_connection" {
 # Create new instance
 module "elasticsearch" {
   count                             = var.existing_elasticsearch_instance_crn != null ? 0 : 1
-  source                            = "../../modules/fscloud"
+  source                            = "../.."
   depends_on                        = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   resource_group_id                 = module.resource_group.resource_group_id
-  name                              = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.name}" : var.name
+  name                              = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.elasticsearch_name}" : var.elasticsearch_name
   region                            = var.region
   plan                              = var.plan
   skip_iam_authorization_policy     = var.skip_es_kms_auth_policy
   elasticsearch_version             = var.elasticsearch_version
+  service_endpoints                 = var.service_endpoints
   use_ibm_owned_encryption_key      = var.use_ibm_owned_encryption_key
   kms_key_crn                       = local.kms_key_crn
   backup_encryption_key_crn         = local.backup_kms_key_crn
   use_same_kms_key_for_backups      = local.use_same_kms_key_for_backups
   use_default_backup_encryption_key = var.use_default_backup_encryption_key
-  backup_crn                        = var.backup_crn
-  access_tags                       = var.access_tags
-  tags                              = var.tags
+  backup_crn                        = var.elasticsearch_backup_crn
+  access_tags                       = var.elasticsearch_access_tags
+  tags                              = var.elasticsearch_tags
   admin_pass                        = local.admin_pass
   users                             = var.users
   members                           = var.members
@@ -333,14 +319,6 @@ locals {
 #######################################################################################################################
 
 locals {
-  ## Variable validation (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
-  # tflint-ignore: terraform_unused_declarations
-  validate_sm_crn = length(local.service_credential_secrets) > 0 && var.existing_secrets_manager_instance_crn == null ? tobool("`existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret.") : false
-  # tflint-ignore: terraform_unused_declarations
-  validate_sm_sg = var.existing_secrets_manager_instance_crn != null && var.admin_pass_secrets_manager_secret_group == null ? tobool("`admin_pass_secrets_manager_secret_group` is required when `existing_secrets_manager_instance_crn` is set.") : false
-  # tflint-ignore: terraform_unused_declarations
-  validate_sm_sn = var.existing_secrets_manager_instance_crn != null && var.admin_pass_secrets_manager_secret_name == null ? tobool("`admin_pass_secrets_manager_secret_name` is required when `existing_secrets_manager_instance_crn` is set.") : false
-
   create_sm_auth_policy = var.skip_elasticsearch_to_secrets_manager_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
 }
 
