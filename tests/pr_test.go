@@ -96,6 +96,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "elasticsearch_access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
 		{Name: "use_ibm_owned_encryption_key", Value: false, DataType: "bool"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
@@ -132,6 +133,7 @@ func TestRunFullyConfigurableUpgradeSolution(t *testing.T) {
 	options.TerraformVars = map[string]interface{}{
 		"prefix":                       options.Prefix,
 		"elasticsearch_access_tags":    permanentResources["accessTags"],
+		"kms_encryption_enabled":       true,
 		"use_ibm_owned_encryption_key": false,
 		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
 		"kms_endpoint_type":            "public",
@@ -187,6 +189,7 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
 		{Name: "use_ibm_owned_encryption_key", Value: false, DataType: "bool"},
 		{Name: "elasticsearch_access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
@@ -330,6 +333,7 @@ func TestPlanValidation(t *testing.T) {
 
 	// Test the DA when using Elser model
 	var fullyConfigurableSolutionWithElserModelVars = map[string]interface{}{
+		"kms_encryption_enabled":       true,
 		"use_ibm_owned_encryption_key": false,
 		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
 		"enable_elser_model":           true,
@@ -339,6 +343,7 @@ func TestPlanValidation(t *testing.T) {
 	// Test the DA when using Kibana dashboard and existing KMS instance
 	var fullyConfigurableSolutionWithKibanaDashboardVars = map[string]interface{}{
 		"enable_kibana_dashboard":      true,
+		"kms_encryption_enabled":       true,
 		"use_ibm_owned_encryption_key": false,
 		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
 		"plan":                         "enterprise",

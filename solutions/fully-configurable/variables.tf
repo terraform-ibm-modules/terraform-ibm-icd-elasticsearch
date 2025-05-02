@@ -238,6 +238,17 @@ variable "auto_scaling" {
 # Encryption
 ##############################################################
 
+variable "kms_encryption_enabled" {
+  type        = bool
+  description = "Set to true to enable KMS Encryption using customer managed keys. When set to true, a value must be passed for either 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn'."
+  default     = false
+
+  validation {
+    condition     = var.kms_encryption_enabled ? var.existing_kms_instance_crn != null || var.existing_kms_key_crn != null || var.existing_backup_kms_key_crn != null : true
+    error_message = "When variable `kms_encryption_enabled` is true and KMS encryption is enabled, you must provide either an existing KMS instance with variable `existing_kms_instance_crn` or an existing KMS key using variable `existing_kms_key_crn` or `existing_backup_kms_key_crn`"
+  }
+}
+
 variable "use_ibm_owned_encryption_key" {
   type        = bool
   description = "IBM Cloud Databases will secure your deployment's data at rest automatically with an encryption key that IBM hold. Alternatively, you may select your own Key Management System instance and encryption key (Key Protect or Hyper Protect Crypto Services) by setting this to false. If setting to false, a value must be passed for `existing_kms_instance_crn` to create a new key, or `existing_kms_key_crn` and/or `existing_backup_kms_key_crn` to use an existing key."
@@ -276,7 +287,7 @@ variable "use_ibm_owned_encryption_key" {
     condition = (
       var.use_ibm_owned_encryption_key ? length(compact([var.existing_kms_instance_crn, var.existing_kms_key_crn, var.existing_backup_kms_key_crn])) == 0 : true
     )
-    error_message = "When using ibm owned encryption keys by setting variable 'use_ibm_owned_encryption_key' to true, 'existing_kms_instance_crn', 'existing_kms_key_crn' and 'existing_backup_kms_key_crn' must not be set."
+    error_message = "When using ibm owned encryption keys by setting variable 'use_ibm_owned_encryption_key' to true, 'existing_kms_instance_crn', 'existing_kms_key_crn' and 'existing_backup_kms_key_crn' should not be set."
   }
 }
 

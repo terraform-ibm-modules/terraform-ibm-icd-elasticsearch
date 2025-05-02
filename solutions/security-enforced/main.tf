@@ -26,6 +26,7 @@ module "elasticsearch" {
   # Auto Scaling
   auto_scaling = var.auto_scaling
   # Encryption
+  kms_encryption_enabled            = true
   use_ibm_owned_encryption_key      = false
   existing_kms_instance_crn         = var.existing_kms_instance_crn
   existing_kms_key_crn              = var.existing_kms_key_crn
