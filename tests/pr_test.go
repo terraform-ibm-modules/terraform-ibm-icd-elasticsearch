@@ -130,7 +130,7 @@ func TestRunFullyConfigurableUpgradeSolution(t *testing.T) {
 
 	options.TerraformVars = map[string]interface{}{
 		"prefix":                       options.Prefix,
-		"access_tags":                  permanentResources["accessTags"],
+		"elasticsearch_access_tags":    permanentResources["accessTags"],
 		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
 		"kms_endpoint_type":            "public",
 		"existing_resource_group_name": resourceGroup,
@@ -318,11 +318,11 @@ func TestPlanValidation(t *testing.T) {
 	options.TerraformOptions.NoColor = true
 	options.TerraformOptions.Logger = logger.Discard
 	options.TerraformOptions.Vars = map[string]interface{}{
-		"prefix":                options.Prefix,
-		"region":                "us-south",
-		"elasticsearch_version": "8.10",
-		"provider_visibility":   "public",
-		"resource_group_name":   options.Prefix,
+		"prefix":                       options.Prefix,
+		"region":                       "us-south",
+		"elasticsearch_version":        "8.10",
+		"provider_visibility":          "public",
+		"existing_resource_group_name": options.Prefix,
 	}
 
 	// Test the DA when using Elser model
