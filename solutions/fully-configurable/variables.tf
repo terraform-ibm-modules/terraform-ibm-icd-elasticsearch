@@ -234,9 +234,21 @@ variable "use_ibm_owned_encryption_key" {
 
   validation {
     condition = (
-      !var.use_ibm_owned_encryption_key ? length(compact([var.existing_kms_instance_crn, var.existing_kms_key_crn, var.existing_backup_kms_key_crn])) == 1 : true
+      !var.use_ibm_owned_encryption_key ? length(compact([var.existing_kms_instance_crn, var.existing_kms_key_crn, var.existing_backup_kms_key_crn])) > 0 : true
     )
     error_message = "When not using ibm owned encryption keys by setting variable 'use_ibm_owned_encryption_key' to false, 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn' must be set."
+  }
+
+  validation {
+    condition     = !var.use_ibm_owned_encryption_key && var.existing_kms_instance_crn == null ? (var.existing_kms_key_crn != null || var.existing_backup_kms_key_crn != null) : true
+    error_message = "When not using ibm owned encryption, you must provide either an existing KMS instance with variable `existing_kms_instance_crn` or an existing KMS key using variable `existing_kms_key_crn` or `existing_backup_kms_key_crn`"
+  }
+
+  validation {
+    condition = (
+      var.use_ibm_owned_encryption_key ? length(compact([var.existing_kms_instance_crn, var.existing_kms_key_crn, var.existing_backup_kms_key_crn])) == 0 : true
+    )
+    error_message = "When using ibm owned encryption keys by setting variable 'use_ibm_owned_encryption_key' to true, 'existing_kms_instance_crn', 'existing_kms_key_crn' and 'existing_backup_kms_key_crn' must not be set."
   }
 }
 
