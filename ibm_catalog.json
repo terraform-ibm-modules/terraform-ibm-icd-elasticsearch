@@ -318,6 +318,9 @@
               ]
             },
             {
+              "key": "kms_encryption_enabled"
+            },
+            {
               "key": "use_ibm_owned_encryption_key"
             },
             {
