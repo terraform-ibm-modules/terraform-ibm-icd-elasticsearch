@@ -62,16 +62,16 @@ output "kibana_app_endpoint" {
 
 output "cbr_rule_ids" {
   description = "CBR rule ids created to restrict Elasticsearch"
-  value       = module.elasticsearch[0].cbr_rule_ids != null ? module.elasticsearch[0].cbr_rule_ids : null
+  value       = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].cbr_rule_ids
 }
 
 output "adminuser" {
   description = "Database admin user name"
-  value       = module.elasticsearch[0].adminuser != null ? module.elasticsearch[0].adminuser : null
+  value       = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].adminuser
 }
 
 output "certificate_base64" {
   description = "Database connection certificate"
-  value       = module.elasticsearch[0].certificate_base64 != null ? module.elasticsearch[0].certificate_base64 : null
+  value       = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].certificate_base64
   sensitive   = true
 }
