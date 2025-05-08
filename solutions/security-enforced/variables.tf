@@ -8,42 +8,37 @@ variable "ibmcloud_api_key" {
   sensitive   = true
 }
 
-variable "provider_visibility" {
-  description = "Set the visibility value for the IBM terraform provider. Supported values are `public`, `private`, `public-and-private`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/guides/custom-service-endpoints)."
+variable "existing_resource_group_name" {
   type        = string
-  default     = "private"
-
-  validation {
-    condition     = contains(["public", "private", "public-and-private"], var.provider_visibility)
-    error_message = "Invalid visibility option. Allowed values are 'public', 'private', or 'public-and-private'."
-  }
+  description = "The name of an existing resource group to provision the Databases for Elasticsearch in."
+  default     = "Default"
+  nullable    = false
 }
 
 variable "prefix" {
   type        = string
-  description = "Prefix to add to all resources created by this solution. To not use any prefix value, you can set this value to `null` or an empty string."
-  default     = "dev"
+  description = "The prefix to add to all resources that this solution creates (e.g `prod`, `test`, `dev`). To not use any prefix value, you can set this value to `null` or an empty string."
+  nullable    = true
+  validation {
+    condition = (var.prefix == null ? true :
+      alltrue([
+        can(regex("^[a-z]{0,1}[-a-z0-9]{0,14}[a-z0-9]{0,1}$", var.prefix)),
+        length(regexall("^.*--.*", var.prefix)) == 0
+      ])
+    )
+    error_message = "Prefix must begin with a lowercase letter, contain only lowercase letters, numbers, and - characters. Prefixes must end with a lowercase letter or number and be 16 or fewer characters."
+  }
 }
 
 ##############################################################################
 # Input Variables
 ##############################################################################
 
-variable "resource_group_name" {
-  type        = string
-  description = "The name of a new or an existing resource group to provision the Databases for Elasicsearch in. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-}
-
-variable "use_existing_resource_group" {
-  type        = bool
-  description = "Whether to use an existing resource group."
-  default     = false
-}
-
-variable "name" {
+variable "elasticsearch_name" {
   type        = string
   description = "The name of the Databases for Elasticsearch instance. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch"
+  nullable    = false
 }
 
 variable "elasticsearch_version" {
@@ -52,7 +47,7 @@ variable "elasticsearch_version" {
   default     = null
 }
 
-variable "backup_crn" {
+variable "elasticsearch_backup_crn" {
   type        = string
   description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
   default     = null
@@ -62,30 +57,35 @@ variable "region" {
   type        = string
   description = "The region where you want to deploy your instance, or the region in which your existing instance is in."
   default     = "us-south"
+  nullable    = false
 }
 
 variable "plan" {
   type        = string
   description = "The name of the service plan for your Databases for Elasticsearch instance. Possible values: `enterprise`, `platinum`."
   default     = "platinum"
+  nullable    = false
 }
 
 variable "existing_elasticsearch_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
+  nullable    = true
 }
 
 variable "enable_elser_model" {
   type        = bool
   description = "Set it to true to install and start the Elastic's Natural Language Processing model. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-elser-embeddings-elasticsearch)"
   default     = false
+  nullable    = false
 }
 
 variable "elser_model_type" {
   type        = string
   description = "Trained ELSER model to be used for Elastic's Natural Language Processing. Possible values: `.elser_model_1`, `.elser_model_2` and `.elser_model_2_linux-x86_64`. Applies only if also 'plan' is set to 'platinum' and 'enable_elser_model' is enabled. [Learn more](https://www.elastic.co/guide/en/machine-learning/current/ml-nlp-elser.html)"
   default     = ".elser_model_2_linux-x86_64"
+  nullable    = false
   validation {
     condition     = contains([".elser_model_1", ".elser_model_2", ".elser_model_2_linux-x86_64"], var.elser_model_type)
     error_message = "The specified elser_model_type is not a valid selection!"
@@ -147,24 +147,24 @@ variable "users" {
     type     = optional(string)
     role     = optional(string)
   }))
-  description = "The list of users that have access to the database. Multiple blocks are allowed. The user password must be 10-32 characters. In most cases, you can use IAM service credentials (by specifying `service_credential_names`) to control access to the database instance. This block creates native database users. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-types.md)."
+  description = "The list of users that have access to the database. Multiple blocks are allowed. The user password must be 10-32 characters. In most cases, you can use IAM service credentials (by specifying `service_credential_names`) to control access to the database instance. This block creates native database users. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
   default     = []
   sensitive   = true
 }
 
 variable "service_credential_names" {
   type        = map(string)
-  description = "The map of name and role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-types.md)."
+  description = "The map of name and role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
   default     = {}
 }
 
-variable "tags" {
+variable "elasticsearch_tags" {
   type        = list(any)
   description = "The list of tags to be added to the Databases for Elasticsearch instance."
   default     = []
 }
 
-variable "access_tags" {
+variable "elasticsearch_access_tags" {
   type        = list(string)
   description = "A list of access tags to apply to the Databases for Elasticsearch instance created by the solution. [Learn more](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
   default     = []
@@ -197,7 +197,7 @@ variable "auto_scaling" {
       rate_units               = optional(string, "mb")
     })
   })
-  description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-types.md)."
+  description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
   default     = null
 }
 
@@ -205,43 +205,48 @@ variable "auto_scaling" {
 # Encryption
 ##############################################################
 
-variable "use_ibm_owned_encryption_key" {
-  type        = bool
-  description = "IBM Cloud Databases will secure your deployment's data at rest automatically with an encryption key that IBM hold. Alternatively, you may select your own Key Management System instance and encryption key (Key Protect or Hyper Protect Crypto Services) by setting this to false. If setting to false, a value must be passed for `existing_kms_instance_crn` to create a new key, or `existing_kms_key_crn` and/or `existing_backup_kms_key_crn` to use an existing key."
-  default     = false
-}
-
 variable "existing_kms_instance_crn" {
   type        = string
   description = "The CRN of a Key Protect or Hyper Protect Crypto Services instance. Required to create a new encryption key and key ring which will be used to encrypt both deployment data and backups. Applies only if `use_ibm_owned_encryption_key` is false. To use an existing key, pass values for `existing_kms_key_crn` and/or `existing_backup_kms_key_crn`. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
   default     = null
+
+  validation {
+    condition     = var.existing_elasticsearch_instance_crn != null ? var.existing_kms_instance_crn == null : true
+    error_message = "When using an existing elasticsearch instance 'existing_kms_instance_crn' should not be set"
+  }
+
+  validation {
+    condition = (
+      length(compact([var.existing_kms_instance_crn, var.existing_kms_key_crn, var.existing_backup_kms_key_crn])) == 1 ? true : false
+    )
+    error_message = "To enable KMS encryption one of 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn' must be set."
+  }
+
+  validation {
+    condition     = var.existing_kms_instance_crn == null ? var.existing_kms_key_crn != null : true
+    error_message = "When using an existing elasticsearch instance 'existing_kms_instance_crn' should not be set"
+  }
 }
 
 variable "existing_kms_key_crn" {
   type        = string
   description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key to encrypt your data. Applies only if `use_ibm_owned_encryption_key` is false. By default this key is used for both deployment data and backups, but this behaviour can be altered using the optional `existing_backup_kms_key_crn` input. If no value is passed a new key will be created in the instance specified in the `existing_kms_instance_crn` input. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
   default     = null
+
+  validation {
+    condition     = var.existing_elasticsearch_instance_crn != null ? var.existing_kms_key_crn == null : true
+    error_message = "When using an existing elasticsearch instance 'existing_kms_key_crn' should not be set"
+  }
 }
 
 variable "existing_backup_kms_key_crn" {
   type        = string
   description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key that you want to use for encrypting the disk that holds deployment backups. Applies only if `use_ibm_owned_encryption_key` is false. If no value is passed, the value of `existing_kms_key_crn` is used. If no value is passed for `existing_kms_key_crn`, a new key will be created in the instance specified in the `existing_kms_instance_crn` input. Alternatively set `use_default_backup_encryption_key` to true to use the IBM Cloud Databases default encryption. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
   default     = null
-}
 
-variable "use_default_backup_encryption_key" {
-  type        = bool
-  description = "When `use_ibm_owned_encryption_key` is set to false, backups will be encrypted with either the key specified in `existing_kms_key_crn`, in `existing_backup_kms_key_crn`, or with a new key that will be created in the instance specified in the `existing_kms_instance_crn` input. If you do not want to use your own key for backups encryption, you can set this to `true` to use the IBM Cloud Databases default encryption for backups. Alternatively set `use_ibm_owned_encryption_key` to true to use the default encryption for both backups and deployment data."
-  default     = false
-}
-
-variable "kms_endpoint_type" {
-  type        = string
-  description = "The type of endpoint to use for communicating with the Key Protect or Hyper Protect Crypto Services instance. Possible values: `public`, `private`."
-  default     = "private"
   validation {
-    condition     = can(regex("public|private", var.kms_endpoint_type))
-    error_message = "The kms_endpoint_type value must be 'public' or 'private'."
+    condition     = var.existing_elasticsearch_instance_crn != null ? var.existing_backup_kms_key_crn == null : true
+    error_message = "When using an existing elasticsearch instance 'existing_backup_kms_key_crn' should not be set"
   }
 }
 
@@ -278,15 +283,15 @@ variable "existing_secrets_manager_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of existing secrets manager to use to create service credential secrets for Databases for Elasticsearch instance."
-}
 
-variable "existing_secrets_manager_endpoint_type" {
-  type        = string
-  description = "The endpoint type to use if `existing_secrets_manager_instance_crn` is specified. Possible values: public, private."
-  default     = "private"
   validation {
-    condition     = contains(["public", "private"], var.existing_secrets_manager_endpoint_type)
-    error_message = "Only \"public\" and \"private\" are allowed values for 'existing_secrets_endpoint_type'."
+    condition     = var.existing_secrets_manager_instance_crn != null ? var.admin_pass_secrets_manager_secret_group != null : true
+    error_message = "`admin_pass_secrets_manager_secret_group` is required when `existing_secrets_manager_instance_crn` is set."
+  }
+
+  validation {
+    condition     = var.existing_secrets_manager_instance_crn != null ? var.admin_pass_secrets_manager_secret_name != null : true
+    error_message = "`admin_pass_secrets_manager_secret_name` is required when `existing_secrets_manager_instance_crn` is set."
   }
 }
 
@@ -308,7 +313,7 @@ variable "service_credential_secrets" {
     }))
   }))
   default     = []
-  description = "Service credential secrets configuration for Databases for Elasticsearch. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/standard/DA-types.md#service-credential-secrets)."
+  description = "Service credential secrets configuration for Databases for Elasticsearch. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/fully-configurable/DA-types.md#service-credential-secrets)."
 
   validation {
     # Service roles CRNs can be found at https://cloud.ibm.com/iam/roles, select the IBM Cloud Database and select the role
@@ -319,6 +324,11 @@ variable "service_credential_secrets" {
       ])
     ])
     error_message = "service_credentials_source_service_role_crn must be a serviceRole CRN. See https://cloud.ibm.com/iam/roles"
+  }
+
+  validation {
+    condition     = length(var.service_credential_secrets) > 0 ? var.existing_secrets_manager_instance_crn != null : true
+    error_message = "existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret."
   }
 }
 
@@ -397,16 +407,6 @@ variable "kibana_image_port" {
   default     = 5601
 }
 
-variable "kibana_visibility" {
-  description = "Specify the visibility of Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/standard/DA-types.md#options-for-kibana_visibility)."
-  type        = string
-  default     = "local_private"
-  validation {
-    condition     = can(regex("local_public|local_private|local", var.kibana_visibility))
-    error_message = "Valid values are 'local_public', 'local_private', or 'local'."
-  }
-}
-
 ##############################################################
 # Context-based restriction (CBR)
 ##############################################################
@@ -427,6 +427,6 @@ variable "cbr_rules" {
       }))
     })))
   }))
-  description = "(Optional, list) List of context-based restrictions rules to create. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-cbr_rules.md)"
+  description = "(Optional, list) List of context-based restrictions rules to create. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-cbr_rules.md)"
   default     = []
 }
