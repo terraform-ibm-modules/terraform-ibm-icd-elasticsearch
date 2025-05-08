@@ -31,7 +31,7 @@ module "elasticsearch" {
   existing_kms_instance_crn         = var.existing_kms_instance_crn
   existing_kms_key_crn              = var.existing_kms_key_crn
   existing_backup_kms_key_crn       = var.existing_backup_kms_key_crn
-  use_default_backup_encryption_key = var.use_default_backup_encryption_key
+  use_default_backup_encryption_key = false
   kms_endpoint_type                 = "private"
   skip_es_kms_auth_policy           = var.skip_es_kms_auth_policy
   elasticsearch_key_ring_name       = var.elasticsearch_key_ring_name

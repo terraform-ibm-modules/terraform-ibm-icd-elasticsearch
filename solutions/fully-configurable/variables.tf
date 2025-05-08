@@ -244,8 +244,15 @@ variable "kms_encryption_enabled" {
   default     = false
 
   validation {
-    condition     = var.kms_encryption_enabled ? var.existing_kms_instance_crn != null || var.existing_kms_key_crn != null || var.existing_backup_kms_key_crn != null : true
-    error_message = "When variable `kms_encryption_enabled` is true and KMS encryption is enabled, you must provide either an existing KMS instance with variable `existing_kms_instance_crn` or an existing KMS key using variable `existing_kms_key_crn` or `existing_backup_kms_key_crn`"
+    condition = (
+      var.existing_elasticsearch_instance_crn != null ||
+      (var.kms_encryption_enabled && (
+        var.existing_kms_instance_crn != null ||
+        var.existing_kms_key_crn != null ||
+        var.existing_backup_kms_key_crn != null
+      ))
+    )
+    error_message = "When setting values for 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn', the 'kms_encryption_enabled' input must be set to true."
   }
 }
 
