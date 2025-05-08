@@ -13,9 +13,10 @@ module "resource_group" {
 #######################################################################################################################
 
 locals {
+  prefix                      = (var.prefix != null && trimspace(var.prefix) != "" ? "${var.prefix}-" : "")
   create_new_kms_key          = var.existing_elasticsearch_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? 1 : 0 # no need to create any KMS resources if encryption not enabled, using existing Elasticsearch, passing an existing key, or using IBM owned keys
-  elasticsearch_key_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.elasticsearch_key_name}" : var.elasticsearch_key_name
-  elasticsearch_key_ring_name = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.elasticsearch_key_ring_name}" : var.elasticsearch_key_ring_name
+  elasticsearch_key_name      = "${local.prefix}${var.elasticsearch_key_name}"
+  elasticsearch_key_ring_name = "${local.prefix}${var.elasticsearch_key_ring_name}"
 }
 
 
@@ -271,7 +272,7 @@ module "elasticsearch" {
   source                            = "../.."
   depends_on                        = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   resource_group_id                 = module.resource_group.resource_group_id
-  name                              = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.elasticsearch_name}" : var.elasticsearch_name
+  name                              = "${local.prefix}${var.elasticsearch_name}"
   region                            = var.region
   plan                              = var.plan
   skip_iam_authorization_policy     = var.skip_es_kms_auth_policy
@@ -371,10 +372,10 @@ locals {
 
   # Build the structure of the arbitrary credential type secret for admin password
   admin_pass_secret = [{
-    secret_group_name     = (var.prefix != null && var.prefix != "") && var.admin_pass_secrets_manager_secret_group != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_group}" : var.admin_pass_secrets_manager_secret_group
+    secret_group_name     = "${local.prefix}${var.admin_pass_secrets_manager_secret_group}"
     existing_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
     secrets = [{
-      secret_name             = (var.prefix != null && var.prefix != "") && var.admin_pass_secrets_manager_secret_name != null ? "${var.prefix}-${var.admin_pass_secrets_manager_secret_name}" : var.admin_pass_secrets_manager_secret_name
+      secret_name             = "${local.prefix}${var.admin_pass_secrets_manager_secret_name}"
       secret_type             = "arbitrary"
       secret_payload_password = local.admin_pass
       }
@@ -406,8 +407,8 @@ module "secrets_manager_service_credentials" {
 
 locals {
   code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
-  code_engine_project_name = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
-  code_engine_app_name     = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
+  code_engine_project_name = local.code_engine_project_id != null ? null : "${local.prefix}${var.kibana_code_engine_new_project_name}"
+  code_engine_app_name     = "${local.prefix}${var.kibana_code_engine_new_app_name}"
   kibana_version           = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
 }
 
