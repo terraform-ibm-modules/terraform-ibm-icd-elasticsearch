@@ -397,6 +397,12 @@ variable "kibana_image_port" {
   default     = 5601
 }
 
+variable "image_secret" {
+  description = "The name of the image registry access secret."
+  type        = string
+  default     = null
+}
+
 variable "kibana_visibility" {
   description = "Specify the visibility of Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/standard/DA-types.md#options-for-kibana_visibility)."
   type        = string

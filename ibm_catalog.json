@@ -369,6 +369,9 @@
               "key": "kibana_image_port"
             },
             {
+              "key": "image_secret"
+            },
+            {
               "key": "kibana_visibility",
               "options": [
                 {
