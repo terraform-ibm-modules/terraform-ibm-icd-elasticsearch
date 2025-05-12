@@ -221,11 +221,6 @@ variable "existing_kms_instance_crn" {
     )
     error_message = "To enable KMS encryption one of 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn' must be set."
   }
-
-  validation {
-    condition     = var.existing_kms_instance_crn == null ? var.existing_kms_key_crn != null : true
-    error_message = "When using an existing elasticsearch instance 'existing_kms_instance_crn' should not be set"
-  }
 }
 
 variable "existing_kms_key_crn" {
