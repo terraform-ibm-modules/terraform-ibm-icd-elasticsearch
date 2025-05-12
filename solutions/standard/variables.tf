@@ -380,6 +380,12 @@ variable "kibana_registry_namespace_image" {
   default     = "docker.elastic.co/kibana/kibana"
 }
 
+variable "kibana_registry_server" {
+  type        = string
+  description = "The server URL of the container registry used to pull the Kibana image."
+  default     = "https://index.docker.io/v1/"
+}
+
 variable "kibana_image_digest" {
   type        = string
   description = "When `enable_kibana_dashboard` is set to true, Kibana is deployed using an image tag compatible with the Elasticsearch version. Alternatively, an image digest in the format `sha256:xxxxx...` can also be specified but it must correspond to a version compatible with the Elasticsearch instance."
@@ -391,13 +397,14 @@ variable "kibana_image_digest" {
 
 
 }
+
 variable "kibana_image_port" {
   description = "Specify the port number used to connect to the Kibana service exposed by the container image. Default port is 5601 and it is only applicable if `enable_kibana_dashboard` is true"
   type        = number
   default     = 5601
 }
 
-variable "image_secret" {
+variable "kibana_image_secret" {
   description = "The name of the image registry access secret."
   type        = string
   default     = null
@@ -411,6 +418,17 @@ variable "kibana_visibility" {
     condition     = can(regex("local_public|local_private|local", var.kibana_visibility))
     error_message = "Valid values are 'local_public', 'local_private', or 'local'."
   }
+}
+
+variable "kibana_registry_username" {
+  description = "Username for the for the container registry."
+  type        = string
+}
+
+variable "kibana_registry_personal_access_token" {
+  description = "Pesonal access token for the container registry."
+  type        = string
+  sensitive   = true
 }
 
 ##############################################################
