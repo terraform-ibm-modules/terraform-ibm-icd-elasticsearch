@@ -244,15 +244,18 @@ variable "kms_encryption_enabled" {
   default     = false
 
   validation {
-    condition = (
-      var.existing_elasticsearch_instance_crn != null ||
-      (var.kms_encryption_enabled && (
-        var.existing_kms_instance_crn != null ||
-        var.existing_kms_key_crn != null ||
-        var.existing_backup_kms_key_crn != null
-      ))
-    )
-    error_message = "When setting values for 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn', the 'kms_encryption_enabled' input must be set to true."
+    condition     = var.existing_elasticsearch_instance_crn != null ? var.kms_encryption_enabled == false : true
+    error_message = "When using an existing elasticsearch instance 'kms_encryption_enabled' should not be enabled"
+  }
+
+  validation {
+    condition     = var.kms_encryption_enabled == true ? (var.existing_kms_instance_crn != null || var.existing_kms_key_crn != null || var.existing_backup_kms_key_crn != null) : true
+    error_message = "You must provide at least one of 'existing_kms_instance_crn', 'existing_kms_root_key_crn' or 'existing_backup_kms_key_crn' inputs if 'kms_encryption_enabled' is set to true."
+  }
+
+  validation {
+    condition     = var.kms_encryption_enabled == false ? (var.existing_kms_key_crn == null && var.existing_kms_instance_crn == null && var.existing_backup_kms_key_crn == null) : true
+    error_message = "If 'kms_encryption_enabled' is set to false, you should not pass values for 'existing_kms_instance_crn', 'existing_kms_root_key_crn' or 'existing_backup_kms_key_crn'. inputs"
   }
 }
 
