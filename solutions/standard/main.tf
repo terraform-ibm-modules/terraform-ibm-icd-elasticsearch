@@ -501,3 +501,72 @@ module "code_engine_kibana" {
     }
   }
 }
+module "cbr_kibana_zone" {
+  count            = var.enable_kibana_dashboard ? 1 : 0
+  source           = "terraform-ibm-modules/cbr/ibm//modules/cbr-zone-module"
+  version          = "1.31.0"
+  name             = "${var.prefix}-code-engine-network-zone"
+  zone_description = "CBR code engine Kibana application network zone"
+  account_id       = data.ibm_iam_account_settings.iam_account_settings.account_id
+  addresses = [{
+    type = "serviceRef",
+    ref = {
+      account_id   = data.ibm_iam_account_settings.iam_account_settings.account_id
+      service_name = "codeengine"
+      location     = null
+    }
+  }]
+}
+
+locals {
+  rule_contexts = [{
+    attributes = [
+      {
+        "name" : "endpointType",
+        "value" : "private"
+      },
+      {
+        name  = "networkZoneId"
+        value = module.cbr_kibana_zone[0].zone_id
+    }]
+  }]
+
+  rule_resources = [{
+    attributes = [
+      {
+        name     = "accountId"
+        value    = data.ibm_iam_account_settings.iam_account_settings.account_id
+        operator = "stringEquals"
+      },
+      {
+        name     = "serviceInstance"
+        value    = local.elasticsearch_guid
+        operator = "stringEquals"
+      },
+      {
+        name     = "serviceName"
+        value    = "databases-for-elasticsearch"
+        operator = "stringEquals"
+      }
+    ],
+  }]
+
+  default_operations = [{
+    api_types = [
+      {
+        "api_type_id" : "crn:v1:bluemix:public:context-based-restrictions::::api-type:data-plane"
+      }
+    ]
+  }]
+}
+
+module "cbr_rule" {
+  count            = var.enable_kibana_dashboard ? 1 : 0
+  source           = "terraform-ibm-modules/cbr/ibm//modules/cbr-rule-module"
+  version          = "1.31.0"
+  rule_description = "${var.prefix}-elasticsearch access only from Kibana code engine application"
+  enforcement_mode = "enabled"
+  rule_contexts    = local.rule_contexts
+  resources        = local.rule_resources
+  operations = local.default_operations
+}
