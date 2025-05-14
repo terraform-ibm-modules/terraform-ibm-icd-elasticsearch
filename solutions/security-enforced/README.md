@@ -1,8 +1,10 @@
-# IBM Cloud Databases for Elasticsearch
+# IBM Cloud Databases for Elasticsearch (Security Enforced)
+
+## Prerequisites
+- An existing resource group
 
 This architecture creates an instance of IBM Cloud Databases for Elasticsearch and supports provisioning of the following resources:
 
-- A resource group, if one is not passed in.
 - A KMS root key, if one is not passed in.
 - An IBM Cloud Databases for Elasticsearch instance with KMS encryption.
 - Autoscaling rules for the database instance, if provided.
@@ -10,8 +12,6 @@ This architecture creates an instance of IBM Cloud Databases for Elasticsearch a
 - Kibana dashboard for Elasticsearch, if enabled.
 
 **Note on accessing Kibana:** If Kibana is enabled, you can access the Kibana application over a IBM private network using the method outlined [here](https://cloud.ibm.com/docs/codeengine?topic=codeengine-vpe).
-
-**Note on setting kibana_visibility:** When the Kibana application visibility is changed from private to public using kibana_visibility variable, it will become accessible from the public Internet. However, access via the IBM Cloud private network will no longer be available. This change takes effect immediately, potentially impacting active users or integrations. It is important to consider the associated security implications before proceeding.
 
 ![fscloud-elastic-search](../../reference-architecture/deployable-architecture-elasticsearch.svg)
 
