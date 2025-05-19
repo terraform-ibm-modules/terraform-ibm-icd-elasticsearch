@@ -314,14 +314,22 @@ variable "enable_elser_model" {
   default     = false
 
   validation {
-    condition     = var.enable_elser_model && var.plan != "platinum" ? false : true
+    condition     = !(var.enable_elser_model && var.plan != "platinum")
     error_message = "When 'enable_elser_model' is set to true, the 'plan' must be set to 'platinum' in order to enable ELSER model."
   }
 
   validation {
-    condition     = var.enable_elser_model && !((length(var.service_credential_names) > 0 && length([for k, v in var.service_credential_names : k if v == "Administrator"]) > 0) || var.admin_pass != null) ? false : true
+    condition = !(
+      var.enable_elser_model &&
+      !(
+        (length(var.service_credential_names) > 0 &&
+        length([for k, v in var.service_credential_names : k if v == "Administrator"]) > 0) ||
+        var.admin_pass != null
+      )
+    )
     error_message = "When 'enable_elser_model' is set to true, an Administrator role user must be created using the 'service_credential_names' input, or by passing a value for the 'admin_pass' input."
   }
+
 }
 
 variable "elser_model_type" {
