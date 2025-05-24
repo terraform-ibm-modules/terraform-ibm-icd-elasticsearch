@@ -454,7 +454,7 @@ locals {
   # Kibana setup bash script data
   deployment_id             = urlencode(local.elasticsearch_id)
   kibana_system_password    = random_password.kibana_system_password[0].result
-  kibana_app_login_username = "kibana_user"
+  kibana_app_login_username = var.kibana_app_login_username
   kibana_app_login_password = random_password.kibana_app_user_password[0].result
 }
 
@@ -471,6 +471,7 @@ module "code_engine_kibana" {
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
+  cbr_rules           = var.cbr_code_engine_kibana_rules
   secrets = {
     "es-secret" = {
       format = "generic"

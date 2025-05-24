@@ -22,10 +22,10 @@ HEADERS=(-H "Authorization: $IAM_TOKEN" -H "Content-Type: application/json")
 handle_response() {
      response="$1"
      action="$2"
-    
+
      http_status=$(echo "$response" | tail -n1 | sed 's/HTTP_STATUS://')
      response_body=$(echo "$response" | sed '$d')
-    
+
     case "$http_status" in
         202)
             echo "SUCCESS: $action task created successfully"
@@ -55,11 +55,11 @@ make_api_call() {
      method="$1"
      url="$2"
      payload="$3"
-    
+
     curl -s -w "\nHTTP_STATUS:%{http_code}" -X "$method" "$url" "${HEADERS[@]}" -d "$payload"
 }
 
-echo "Setting password for built-in `kibana_system` user"
+echo "Setting password for built-in kibana_system user"
 
 # Update Elasticsearch built-in `kibana_system` password for the Code Engine Kibana to access Elasticsearch instance as a limited access
 response=$(make_api_call "PATCH" "${BASE_URL}/kibana_system" "{\"user\": {\"password\": \"$PASSWORD\"}}")

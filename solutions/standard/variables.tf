@@ -362,6 +362,12 @@ variable "kibana_code_engine_new_app_name" {
   default     = "ce-kibana-app"
 }
 
+variable "kibana_app_login_username" {
+  type        = string
+  description = "Kibana dashboard login username."
+  default     = "kibana_user"
+}
+
 variable "existing_code_engine_project_id" {
   type        = string
   description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."
@@ -388,9 +394,8 @@ variable "kibana_image_digest" {
     condition     = var.kibana_image_digest == null || can(regex("^sha256:", var.kibana_image_digest))
     error_message = "If provided, the value of kibana_image_digest must start with 'sha256:'."
   }
-
-
 }
+
 variable "kibana_image_port" {
   description = "Specify the port number used to connect to the Kibana service exposed by the container image. Default port is 5601 and it is only applicable if `enable_kibana_dashboard` is true"
   type        = number
@@ -412,6 +417,26 @@ variable "kibana_visibility" {
 ##############################################################
 
 variable "cbr_rules" {
+  type = list(object({
+    description = string
+    account_id  = string
+    rule_contexts = list(object({
+      attributes = optional(list(object({
+        name  = string
+        value = string
+    }))) }))
+    enforcement_mode = string
+    operations = optional(list(object({
+      api_types = list(object({
+        api_type_id = string
+      }))
+    })))
+  }))
+  description = "(Optional, list) List of context-based restrictions rules to create. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-cbr_rules.md)"
+  default     = []
+}
+
+variable "cbr_code_engine_kibana_rules" {
   type = list(object({
     description = string
     account_id  = string
