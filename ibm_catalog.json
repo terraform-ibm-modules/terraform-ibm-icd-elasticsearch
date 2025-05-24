@@ -368,6 +368,12 @@
               "key": "kibana_image_port"
             },
             {
+              "key": "kibana_app_login_username"
+            },
+            {
+              "key": "cbr_code_engine_kibana_rules"
+            },
+            {
               "key": "kibana_visibility",
               "options": [
                 {

@@ -411,11 +411,32 @@ module "secrets_manager_service_credentials" {
 # Code Engine Kibana Dashboard instance
 ########################################################################################################################
 
+resource "random_password" "kibana_system_password" {
+  count            = var.enable_kibana_dashboard ? 1 : 0
+  length           = 32
+  special          = true
+  override_special = "-_"
+  min_numeric      = 1
+}
+
+resource "random_password" "kibana_app_user_password" {
+  count            = var.enable_kibana_dashboard ? 1 : 0
+  length           = 32
+  special          = true
+  override_special = "-_"
+  min_numeric      = 1
+}
+
 locals {
   code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
   code_engine_project_name = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
   code_engine_app_name     = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
   kibana_version           = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
+  # Kibana setup bash script data
+  deployment_id             = urlencode(local.elasticsearch_id)
+  kibana_system_password    = var.enable_kibana_dashboard ? random_password.kibana_system_password[0].result : null
+  kibana_app_login_username = var.kibana_app_login_username
+  kibana_app_login_password = var.enable_kibana_dashboard ? random_password.kibana_app_user_password[0].result : null
 }
 
 data "http" "es_metadata" {
@@ -431,11 +452,12 @@ module "code_engine_kibana" {
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
+  cbr_rules           = var.cbr_code_engine_kibana_rules
   secrets = {
     "es-secret" = {
       format = "generic"
       data = {
-        "ELASTICSEARCH_PASSWORD" = local.admin_pass
+        "ELASTICSEARCH_PASSWORD" = local.kibana_system_password
       }
     }
   }
@@ -452,7 +474,7 @@ module "code_engine_kibana" {
         {
           type  = "literal"
           name  = "ELASTICSEARCH_USERNAME"
-          value = local.elasticsearch_username
+          value = "kibana_system"
         },
         {
           type      = "secret_key_reference"
@@ -479,6 +501,21 @@ module "code_engine_kibana" {
       scale_min_instances     = 1
       scale_max_instances     = 3
       managed_domain_mappings = var.kibana_visibility
+    }
+  }
+}
+
+data "ibm_iam_auth_token" "update_kibana_system_user" {
+}
+
+resource "null_resource" "kibana_system_setup" {
+  count      = var.enable_kibana_dashboard ? 1 : 0
+  depends_on = [module.elasticsearch]
+  provisioner "local-exec" {
+    command     = "${path.module}/scripts/kibana_system_setup.sh ${var.region} ${local.deployment_id} ${local.kibana_system_password} ${local.kibana_app_login_username}  ${local.kibana_app_login_password}"
+    interpreter = ["/bin/bash", "-c"]
+    environment = {
+      IAM_TOKEN = data.ibm_iam_auth_token.update_kibana_system_user.iam_access_token
     }
   }
 }
