@@ -434,9 +434,9 @@ locals {
   kibana_version           = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
   # Kibana setup bash script data
   deployment_id             = urlencode(local.elasticsearch_id)
-  kibana_system_password    = random_password.kibana_system_password[0].result
+  kibana_system_password    = var.enable_kibana_dashboard ? random_password.kibana_system_password[0].result : null
   kibana_app_login_username = var.kibana_app_login_username
-  kibana_app_login_password = random_password.kibana_app_user_password[0].result
+  kibana_app_login_password = var.enable_kibana_dashboard ? random_password.kibana_app_user_password[0].result : null
 }
 
 data "http" "es_metadata" {
