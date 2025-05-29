@@ -423,12 +423,6 @@ variable "kibana_code_engine_new_app_name" {
   default     = "ce-kibana-app"
 }
 
-variable "kibana_app_login_username" {
-  type        = string
-  description = "Kibana dashboard login username."
-  default     = "kibana_user"
-}
-
 variable "existing_code_engine_project_id" {
   type        = string
   description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."

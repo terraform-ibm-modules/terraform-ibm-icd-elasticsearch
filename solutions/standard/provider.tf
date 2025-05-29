@@ -10,3 +10,13 @@ provider "ibm" {
   region           = local.kms_region
   visibility       = var.provider_visibility
 }
+
+data "ibm_iam_auth_token" "auth_token" {}
+provider "restapi" {
+  uri = "https://api.${var.region}.databases.cloud.ibm.com"
+  headers = {
+    Authorization = data.ibm_iam_auth_token.auth_token.iam_access_token
+    Content-Type  = "application/json"
+  }
+  write_returns_object = true
+}

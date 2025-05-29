@@ -293,7 +293,6 @@ module "elasticsearch" {
   access_tags                       = var.access_tags
   tags                              = var.tags
   admin_pass                        = local.admin_pass
-  users                             = var.users
   members                           = var.members
   member_host_flavor                = var.member_host_flavor
   member_memory_mb                  = var.member_memory_mb
@@ -304,6 +303,13 @@ module "elasticsearch" {
   enable_elser_model                = var.enable_elser_model
   elser_model_type                  = var.elser_model_type
   cbr_rules                         = var.cbr_rules
+  users = var.enable_kibana_dashboard && local.kibana_app_login_password != null ? [
+    {
+      "name" : "kibana_user",
+      "password" : local.kibana_app_login_password,
+      "type" : "database",
+    }
+  ] : var.users
 }
 
 locals {
@@ -419,7 +425,7 @@ resource "random_password" "kibana_system_password" {
   min_numeric      = 1
 }
 
-resource "random_password" "kibana_app_user_password" {
+resource "random_password" "kibana_app_login_password" {
   count            = var.enable_kibana_dashboard ? 1 : 0
   length           = 32
   special          = true
@@ -428,15 +434,13 @@ resource "random_password" "kibana_app_user_password" {
 }
 
 locals {
-  code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
-  code_engine_project_name = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
-  code_engine_app_name     = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
-  kibana_version           = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
-  # Kibana setup bash script data
+  code_engine_project_id    = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
+  code_engine_project_name  = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
+  code_engine_app_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
+  kibana_version            = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
   deployment_id             = urlencode(local.elasticsearch_id)
   kibana_system_password    = var.enable_kibana_dashboard ? random_password.kibana_system_password[0].result : null
-  kibana_app_login_username = var.kibana_app_login_username
-  kibana_app_login_password = var.enable_kibana_dashboard ? random_password.kibana_app_user_password[0].result : null
+  kibana_app_login_password = var.enable_kibana_dashboard ? random_password.kibana_app_login_password[0].result : null
 }
 
 data "http" "es_metadata" {
@@ -505,17 +509,17 @@ module "code_engine_kibana" {
   }
 }
 
-data "ibm_iam_auth_token" "update_kibana_system_user" {
-}
-
-resource "null_resource" "kibana_system_setup" {
-  count      = var.enable_kibana_dashboard ? 1 : 0
-  depends_on = [module.elasticsearch]
-  provisioner "local-exec" {
-    command     = "${path.module}/scripts/kibana_system_setup.sh ${var.region} ${local.deployment_id} ${local.kibana_system_password} ${local.kibana_app_login_username}  ${local.kibana_app_login_password}"
-    interpreter = ["/bin/bash", "-c"]
-    environment = {
-      IAM_TOKEN = data.ibm_iam_auth_token.update_kibana_system_user.iam_access_token
+# Set Elasticsearch built-in kibana_user password
+resource "restapi_object" "set_kibana_system_user_password" {
+  count          = var.enable_kibana_dashboard ? 1 : 0
+  path           = "/v5/ibm/deployments/${local.deployment_id}/users/database/kibana_system"
+  create_method  = "PATCH"
+  update_method  = "PATCH"
+  destroy_method = "PATCH"
+  object_id      = "kibana_system"
+  data = jsonencode({
+    user = {
+      password = local.kibana_system_password
     }
-  }
+  })
 }

@@ -55,18 +55,16 @@ output "admin_pass" {
   sensitive   = true
 }
 
-output "kibana_app_login_username" {
-  description = "Kibana dashboard login username"
-  value       = local.kibana_app_login_username
-}
-
-output "kibana_app_login_password" {
-  description = "Kibana dashboard login password"
-  value       = local.kibana_app_login_password
-  sensitive   = true
-}
-
 output "kibana_app_endpoint" {
   description = "Code Engine Kibana endpoint URL"
   value       = var.enable_kibana_dashboard ? module.code_engine_kibana[0].app[local.code_engine_app_name].endpoint : null
+}
+
+output "kibana_user_credentials" {
+  description = "Kibana user credentials for Elasticsearch"
+  value = var.enable_kibana_dashboard ? {
+    for user in module.elasticsearch[0].users_credentials : user.name => user.password
+    if user.type == "database"
+  } : null
+  sensitive = true
 }
