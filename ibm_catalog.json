@@ -368,6 +368,9 @@
               "key": "kibana_image_port"
             },
             {
+              "key": "cbr_code_engine_kibana_rules"
+            },
+            {
               "key": "kibana_visibility",
               "options": [
                 {

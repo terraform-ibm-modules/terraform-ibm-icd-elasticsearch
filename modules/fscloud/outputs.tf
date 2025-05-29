@@ -59,3 +59,9 @@ output "certificate_base64" {
   value       = module.elasticsearch.certificate_base64
   sensitive   = true
 }
+
+output "users_credentials" {
+  description = "Database user credentials"
+  value       = module.elasticsearch.users_credentials
+  sensitive   = true
+}
