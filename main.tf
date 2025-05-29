@@ -5,21 +5,6 @@
 # TODO: Replace with terraform cross variable validation: https://github.ibm.com/GoldenEye/issues/issues/10836
 ########################################################################################################################
 
-locals {
-  # tflint-ignore: terraform_unused_declarations
-  validate_kms_values = var.use_ibm_owned_encryption_key && (var.kms_key_crn != null || var.backup_encryption_key_crn != null) ? tobool("When passing values for 'kms_key_crn' or 'backup_encryption_key_crn', you must set 'use_ibm_owned_encryption_key' to false. Otherwise unset them to use default encryption.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_kms_vars = !var.use_ibm_owned_encryption_key && var.kms_key_crn == null ? tobool("When setting 'use_ibm_owned_encryption_key' to false, a value must be passed for 'kms_key_crn'.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_backup_key = !var.use_ibm_owned_encryption_key && var.backup_encryption_key_crn != null && (var.use_default_backup_encryption_key || var.use_same_kms_key_for_backups) ? tobool("When passing a value for 'backup_encryption_key_crn' you cannot set 'use_default_backup_encryption_key' to true or 'use_ibm_owned_encryption_key' to false.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_backup_key_2 = !var.use_ibm_owned_encryption_key && var.backup_encryption_key_crn == null && !var.use_same_kms_key_for_backups ? tobool("When 'use_same_kms_key_for_backups' is set to false, a value needs to be passed for 'backup_encryption_key_crn'.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_plan = var.enable_elser_model && var.plan != "platinum" ? tobool("When 'enable_elser_model' is set to true, the 'plan' must be set to 'platinum' in order to enable ELSER model.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_es_user = var.enable_elser_model && !((length(var.service_credential_names) > 0 && length([for k, v in var.service_credential_names : k if v == "Administrator"]) > 0) || var.admin_pass != null) ? tobool("When 'enable_elser_model' is set to true, an Administrator role user must be created using the 'service_credential_names' input, or by passing a value for the 'admin_pass' input.") : true
-}
-
 ########################################################################################################################
 # Locals
 ########################################################################################################################
