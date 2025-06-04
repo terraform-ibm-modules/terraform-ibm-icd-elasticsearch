@@ -457,7 +457,7 @@ module "code_engine_kibana" {
     (local.code_engine_app_name) = {
       image_reference = var.kibana_image_digest != null ? "${var.kibana_registry_namespace_image}@${var.kibana_image_digest}" : "${var.kibana_registry_namespace_image}:${local.kibana_version}"
       image_port      = var.kibana_image_port
-      image_secret    = var.kibana_image_secret
+      image_secret    = var.use_existing_registry_secret ? var.kibana_image_secret : ibm_code_engine_secret.image_registry_secret[0].name
       run_env_variables = [{
         type  = "literal"
         name  = "ELASTICSEARCH_HOSTS"
