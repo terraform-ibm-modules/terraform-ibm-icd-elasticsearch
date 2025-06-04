@@ -346,6 +346,12 @@ variable "admin_pass_secrets_manager_secret_name" {
   default     = "elasticsearch-admin-password"
 }
 
+variable "use_existing_registry_secret" {
+  description = "Set to true to use an existing image registry secret instead of creating a new one."
+  type        = bool
+  default     = false
+}
+
 ##############################################################
 # Kibana Configuration
 ##############################################################
@@ -408,6 +414,10 @@ variable "kibana_image_secret" {
   description = "The name of the image registry access secret."
   type        = string
   default     = null
+  validation {
+    condition     = !var.enable_kibana_dashboard || var.use_existing_registry_secret || (var.kibana_image_secret != null && var.kibana_image_secret != "")
+    error_message = "You must provide a valid secret name for Kibana image registry access."
+  }
 }
 
 variable "kibana_visibility" {
@@ -423,11 +433,13 @@ variable "kibana_visibility" {
 variable "kibana_registry_username" {
   description = "Username for the for the container registry."
   type        = string
+  default     = null
 }
 
 variable "kibana_registry_personal_access_token" {
   description = "Pesonal access token for the container registry."
   type        = string
+  default     = null
   sensitive   = true
 }
 

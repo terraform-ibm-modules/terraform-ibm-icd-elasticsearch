@@ -444,6 +444,7 @@ data "http" "es_metadata" {
 }
 
 resource "ibm_code_engine_secret" "image_registry_secret" {
+  count      = var.enable_kibana_dashboard && !var.use_existing_registry_secret ? 1 : 0
   name       = var.kibana_image_secret
   project_id = var.existing_code_engine_project_id
   format     = "registry"
