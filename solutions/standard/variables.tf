@@ -475,10 +475,10 @@ variable "kibana_image_secret" {
   description = "The name of the image registry access secret."
   type        = string
   default     = null
-  validation {
-    condition     = !var.enable_kibana_dashboard || var.use_existing_registry_secret || (var.kibana_image_secret != null && var.kibana_image_secret != "")
-    error_message = "You must provide a valid secret name for Kibana image registry access."
-  }
+  # validation {
+  #   condition     = !var.enable_kibana_dashboard || var.use_existing_registry_secret || (var.kibana_image_secret != null && length(var.kibana_image_secret)>0 )
+  #   error_message = "You must provide a valid secret name for Kibana image registry access."
+  # }
 }
 
 variable "kibana_visibility" {
