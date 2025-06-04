@@ -16,13 +16,6 @@ module "resource_group" {
 # TODO: Replace with terraform cross variable validation: https://github.ibm.com/GoldenEye/issues/issues/10836
 #######################################################################################################################
 
-locals {
-  # tflint-ignore: terraform_unused_declarations
-  validate_kms_1 = var.existing_elasticsearch_instance_crn != null ? true : var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn != null || var.existing_kms_key_crn != null || var.existing_backup_kms_key_crn != null) ? tobool("When setting values for 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn', the 'use_ibm_owned_encryption_key' input must be set to false.") : true
-  # tflint-ignore: terraform_unused_declarations
-  validate_kms_2 = var.existing_elasticsearch_instance_crn != null ? true : !var.use_ibm_owned_encryption_key && (var.existing_kms_instance_crn == null && var.existing_kms_key_crn == null) ? tobool("When 'use_ibm_owned_encryption_key' is false, a value is required for either 'existing_kms_instance_crn' (to create a new key), or 'existing_kms_key_crn' to use an existing key.") : true
-}
-
 #######################################################################################################################
 # KMS encryption key
 #######################################################################################################################
@@ -40,7 +33,7 @@ module "kms" {
   }
   count                       = local.create_new_kms_key
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version                     = "5.1.2"
+  version                     = "5.1.7"
   create_key_protect_instance = false
   region                      = local.kms_region
   existing_kms_instance_crn   = var.existing_kms_instance_crn
@@ -254,10 +247,6 @@ module "es_instance_crn_parser" {
 locals {
   existing_elasticsearch_guid   = var.existing_elasticsearch_instance_crn != null ? module.es_instance_crn_parser[0].service_instance : null
   existing_elasticsearch_region = var.existing_elasticsearch_instance_crn != null ? module.es_instance_crn_parser[0].region : null
-
-  # Validate the region input matches region detected in existing instance CRN (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
-  # tflint-ignore: terraform_unused_declarations
-  validate_existing_instance_region = var.existing_elasticsearch_instance_crn != null && var.region != local.existing_elasticsearch_region ? tobool("The region detected in the 'existing_elasticsearch_instance_crn' value must match the value of the 'region' input variable when passing an existing instance.") : true
 }
 
 # Do a data lookup on the resource GUID to get more info that is needed for the 'ibm_database' data lookup below
@@ -333,14 +322,6 @@ locals {
 #######################################################################################################################
 
 locals {
-  ## Variable validation (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
-  # tflint-ignore: terraform_unused_declarations
-  validate_sm_crn = length(local.service_credential_secrets) > 0 && var.existing_secrets_manager_instance_crn == null ? tobool("`existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret.") : false
-  # tflint-ignore: terraform_unused_declarations
-  validate_sm_sg = var.existing_secrets_manager_instance_crn != null && var.admin_pass_secrets_manager_secret_group == null ? tobool("`admin_pass_secrets_manager_secret_group` is required when `existing_secrets_manager_instance_crn` is set.") : false
-  # tflint-ignore: terraform_unused_declarations
-  validate_sm_sn = var.existing_secrets_manager_instance_crn != null && var.admin_pass_secrets_manager_secret_name == null ? tobool("`admin_pass_secrets_manager_secret_name` is required when `existing_secrets_manager_instance_crn` is set.") : false
-
   create_sm_auth_policy = var.skip_elasticsearch_to_secrets_manager_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
 }
 
@@ -419,7 +400,7 @@ module "secrets_manager_service_credentials" {
   count                       = var.existing_secrets_manager_instance_crn == null ? 0 : 1
   depends_on                  = [time_sleep.wait_for_es_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version                     = "2.2.6"
+  version                     = "2.3.1"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.existing_secrets_manager_instance_region
   endpoint_type               = var.existing_secrets_manager_endpoint_type
@@ -459,7 +440,7 @@ resource "ibm_code_engine_secret" "image_registry_secret" {
 module "code_engine_kibana" {
   count               = var.enable_kibana_dashboard ? 1 : 0
   source              = "terraform-ibm-modules/code-engine/ibm"
-  version             = "4.2.3"
+  version             = "4.2.4"
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
