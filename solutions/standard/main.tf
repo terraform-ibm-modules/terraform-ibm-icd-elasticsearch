@@ -424,7 +424,7 @@ data "http" "es_metadata" {
   ca_cert_pem = base64decode(local.elasticsearch_cert)
 }
 
-module "image_registry_secret" {
+module "secret" {
   count   = var.enable_kibana_dashboard && !var.use_existing_registry_secret ? 1 : 0
   source  = "terraform-ibm-modules/code-engine/ibm//modules/secret"
   version = "4.2.4"
@@ -461,7 +461,7 @@ module "code_engine_kibana" {
     (local.code_engine_app_name) = {
       image_reference = var.kibana_image_digest != null ? "${var.kibana_registry_namespace_image}@${var.kibana_image_digest}" : "${var.kibana_registry_namespace_image}:${local.kibana_version}"
       image_port      = var.kibana_image_port
-      image_secret    = var.use_existing_registry_secret ? var.kibana_image_secret : module.image_registry_secret[0].name
+      image_secret    = var.use_existing_registry_secret ? var.kibana_image_secret : module.secret[0].name
       run_env_variables = [{
         type  = "literal"
         name  = "ELASTICSEARCH_HOSTS"
