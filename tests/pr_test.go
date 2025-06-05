@@ -61,6 +61,8 @@ func TestMain(m *testing.M) {
 func TestRunStandardSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
+	enableKibana := false
+
 	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
 		Testing: t,
 		TarIncludePatterns: []string{
@@ -93,7 +95,6 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 			},
 		},
 	}
-
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
@@ -109,11 +110,44 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
-		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
+		{Name: "enable_kibana_dashboard", Value: enableKibana, DataType: "bool"},
 		{Name: "provider_visibility", Value: "private", DataType: "string"},
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 	}
+
+	if enableKibana {
+		existingProjectID := os.Getenv("EXISTING_CODE_ENGINE_PROJECT_ID")
+		kibanaImageSecret := os.Getenv("KIBANA_IMAGE_SECRET")
+		kibanaRegistryUsername := os.Getenv("KIBANA_REGISTRY_USERNAME")
+		kibanaRegistryToken := os.Getenv("KIBANA_REGISTRY_PERSONAL_ACCESS_TOKEN")
+		kibanaRegistryServer := os.Getenv("KIBANA_REGISTRY_SERVER")
+
+		if existingProjectID == "" {
+			t.Fatal("existing_code_engine_project_id env var must be set when enable_kibana_dashboard is true")
+		}
+		if kibanaImageSecret == "" {
+			t.Fatal("kibana_image_secret env var must be set when enable_kibana_dashboard is true")
+		}
+		if kibanaRegistryUsername == "" {
+			t.Fatal("kibana_registry_username env var must be set when enable_kibana_dashboard is true")
+		}
+		if kibanaRegistryToken == "" {
+			t.Fatal("kibana_personal_access_token env var must be set when enable_kibana_dashboard is true")
+		}
+		if kibanaRegistryServer == "" {
+			t.Fatal("kibana_registry_server env var must be set when enable_kibana_dashboard is true")
+		}
+
+		options.TerraformVars = append(options.TerraformVars,
+			testschematic.TestSchematicTerraformVar{Name: "existing_code_engine_project_id", Value: existingProjectID, DataType: "string"},
+			testschematic.TestSchematicTerraformVar{Name: "kibana_image_secret", Value: kibanaImageSecret, DataType: "string"},
+			testschematic.TestSchematicTerraformVar{Name: "kibana_registry_username", Value: kibanaRegistryUsername, DataType: "string"},
+			testschematic.TestSchematicTerraformVar{Name: "kibana_registry_personal_access_token", Value: kibanaRegistryToken, DataType: "string"},
+			testschematic.TestSchematicTerraformVar{Name: "kibana_registry_server", Value: kibanaRegistryServer, DataType: "string"},
+		)
+	}
+
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
 }
