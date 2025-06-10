@@ -491,7 +491,7 @@ variable "cbr_rules" {
   default     = []
 }
 
-variable "cbr_code_engine_kibana_rules" {
+variable "cbr_code_engine_kibana_project_rules" {
   type = list(object({
     description = string
     account_id  = string
@@ -507,6 +507,6 @@ variable "cbr_code_engine_kibana_rules" {
       }))
     })))
   }))
-  description = "(Optional, list) List of context-based restrictions rules to create for the Kibana dashboard. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-cbr_rules.md)"
+  description = "(Optional, list) List of context-based restrictions rules to create for the Kibana dashboard and it is only applicable if `enable_kibana_dashboard` is true. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/standard/DA-cbr_rules.md)"
   default     = []
 }

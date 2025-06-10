@@ -303,7 +303,7 @@ module "elasticsearch" {
   enable_elser_model                = var.enable_elser_model
   elser_model_type                  = var.elser_model_type
   cbr_rules                         = var.cbr_rules
-  users = var.enable_kibana_dashboard && local.kibana_app_login_password != null ? [
+  users = local.kibana_app_login_password != null ? [
     {
       "name" : "kibana_user",
       "password" : local.kibana_app_login_password,
@@ -456,7 +456,7 @@ module "code_engine_kibana" {
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
-  cbr_rules           = var.cbr_code_engine_kibana_rules
+  cbr_rules           = var.cbr_code_engine_kibana_project_rules
   secrets = {
     "es-secret" = {
       format = "generic"
