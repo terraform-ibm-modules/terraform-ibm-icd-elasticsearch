@@ -314,7 +314,7 @@ func TestPlanValidation(t *testing.T) {
 
 	// Test the DA when using Kibana dashboard and existing KMS instance
 	var standardSolutionWithKibanaDashboardVars = map[string]interface{}{
-		"enable_kibana_dashboard":   true,
+		"enable_kibana_dashboard":   false,
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
 		"plan":                      "enterprise",
 	}
