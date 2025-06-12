@@ -133,6 +133,7 @@ You need the following permissions to run this module.
 | <a name="output_port"></a> [port](#output\_port) | Database connection port |
 | <a name="output_service_credentials_json"></a> [service\_credentials\_json](#output\_service\_credentials\_json) | Service credentials json map |
 | <a name="output_service_credentials_object"></a> [service\_credentials\_object](#output\_service\_credentials\_object) | Service credentials object |
+| <a name="output_users_credentials"></a> [users\_credentials](#output\_users\_credentials) | Database user credentials |
 | <a name="output_version"></a> [version](#output\_version) | Elasticsearch version |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 

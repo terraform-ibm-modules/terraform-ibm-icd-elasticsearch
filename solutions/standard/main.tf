@@ -293,7 +293,6 @@ module "elasticsearch" {
   access_tags                       = var.access_tags
   tags                              = var.tags
   admin_pass                        = local.admin_pass
-  users                             = var.users
   members                           = var.members
   member_host_flavor                = var.member_host_flavor
   member_memory_mb                  = var.member_memory_mb
@@ -304,6 +303,13 @@ module "elasticsearch" {
   enable_elser_model                = var.enable_elser_model
   elser_model_type                  = var.elser_model_type
   cbr_rules                         = var.cbr_rules
+  users = local.kibana_app_login_password != null ? [
+    {
+      "name" : "kibana_user",
+      "password" : local.kibana_app_login_password,
+      "type" : "database",
+    }
+  ] : var.users
 }
 
 locals {
@@ -411,11 +417,30 @@ module "secrets_manager_service_credentials" {
 # Code Engine Kibana Dashboard instance
 ########################################################################################################################
 
+resource "random_password" "kibana_system_password" {
+  count            = var.enable_kibana_dashboard ? 1 : 0
+  length           = 32
+  special          = true
+  override_special = "-_"
+  min_numeric      = 1
+}
+
+resource "random_password" "kibana_app_login_password" {
+  count            = var.enable_kibana_dashboard ? 1 : 0
+  length           = 32
+  special          = true
+  override_special = "-_"
+  min_numeric      = 1
+}
+
 locals {
-  code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
-  code_engine_project_name = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
-  code_engine_app_name     = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
-  kibana_version           = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
+  code_engine_project_id    = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
+  code_engine_project_name  = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
+  code_engine_app_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
+  kibana_version            = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
+  deployment_id             = urlencode(local.elasticsearch_id)
+  kibana_system_password    = var.enable_kibana_dashboard ? random_password.kibana_system_password[0].result : null
+  kibana_app_login_password = var.enable_kibana_dashboard ? random_password.kibana_app_login_password[0].result : null
 }
 
 data "http" "es_metadata" {
@@ -431,11 +456,12 @@ module "code_engine_kibana" {
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
+  cbr_rules           = var.cbr_code_engine_kibana_project_rules
   secrets = {
     "es-secret" = {
       format = "generic"
       data = {
-        "ELASTICSEARCH_PASSWORD" = local.admin_pass
+        "ELASTICSEARCH_PASSWORD" = local.kibana_system_password
       }
     }
   }
@@ -452,7 +478,7 @@ module "code_engine_kibana" {
         {
           type  = "literal"
           name  = "ELASTICSEARCH_USERNAME"
-          value = local.elasticsearch_username
+          value = "kibana_system"
         },
         {
           type      = "secret_key_reference"
@@ -481,4 +507,19 @@ module "code_engine_kibana" {
       managed_domain_mappings = var.kibana_visibility
     }
   }
+}
+
+# Set Elasticsearch built-in kibana_user password
+resource "restapi_object" "set_kibana_system_user_password" {
+  count          = var.enable_kibana_dashboard ? 1 : 0
+  path           = "/v5/ibm/deployments/${local.deployment_id}/users/database/kibana_system"
+  create_method  = "PATCH"
+  update_method  = "PATCH"
+  destroy_method = "PATCH"
+  object_id      = "kibana_system"
+  data = jsonencode({
+    user = {
+      password = local.kibana_system_password
+    }
+  })
 }
