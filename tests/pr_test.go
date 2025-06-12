@@ -313,10 +313,38 @@ func TestPlanValidation(t *testing.T) {
 	}
 
 	// Test the DA when using Kibana dashboard and existing KMS instance
-	var standardSolutionWithKibanaDashboardVars = map[string]interface{}{
-		"enable_kibana_dashboard":   false,
-		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
-		"plan":                      "enterprise",
+
+	tfVarsMap := map[string]map[string]interface{}{}
+
+	if os.Getenv("ENABLE_KIBANA_DASHBOARD") == "true" {
+		tfVarsMap["standardSolutionWithKibanaDashboardVars"] = map[string]interface{}{
+			"existing_kms_instance_crn":             permanentResources["hpcs_south_crn"],
+			"kibana_image_secret":                   os.Getenv("KIBANA_IMAGE_SECRET"),
+			"kibana_registry_username":              os.Getenv("KIBANA_REGISTRY_USERNAME"),
+			"kibana_registry_personal_access_token": os.Getenv("KIBANA_REGISTRY_PERSONAL_ACCESS_TOKEN"),
+			"kibana_registry_server":                os.Getenv("KIBANA_REGISTRY_SERVER"),
+			"existingProjectID":                     os.Getenv("EXISTING_CODE_ENGINE_PROJECT_ID"),
+			"plan":                                  "enterprise",
+		}
+	}
+
+	for name, tfVars := range tfVarsMap {
+		t.Run(name, func(t *testing.T) {
+			for key, value := range tfVars {
+				options.TerraformOptions.Vars[key] = value
+			}
+
+			_, err := terraform.InitE(t, options.TerraformOptions)
+			require.NoError(t, err)
+
+			output, err := terraform.PlanE(t, options.TerraformOptions)
+			assert.Nil(t, err)
+			assert.NotNil(t, output)
+
+			for key := range tfVars {
+				delete(options.TerraformOptions.Vars, key)
+			}
+		})
 	}
 
 	// Test the DA when using IBM owned encryption key
@@ -325,10 +353,9 @@ func TestPlanValidation(t *testing.T) {
 	}
 
 	// Create a map of the variables
-	tfVarsMap := map[string]map[string]interface{}{
-		"standardSolutionWithElserModelVars":      standardSolutionWithElserModelVars,
-		"standardSolutionWithKibanaDashboardVars": standardSolutionWithKibanaDashboardVars,
-		"standardSolutionWithUseIbmOwnedEncKey":   standardSolutionWithUseIbmOwnedEncKey,
+	tfVarsMap = map[string]map[string]interface{}{
+		"standardSolutionWithElserModelVars":    standardSolutionWithElserModelVars,
+		"standardSolutionWithUseIbmOwnedEncKey": standardSolutionWithUseIbmOwnedEncKey,
 	}
 
 	_, initErr := terraform.InitE(t, options.TerraformOptions)
