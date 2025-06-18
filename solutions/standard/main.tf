@@ -273,6 +273,16 @@ data "ibm_database_connection" "existing_connection" {
   user_type     = "database"
 }
 
+locals {
+  kibana_user = [{
+    name     = "kibana_user"
+    password = local.kibana_app_login_password
+    type     = "database"
+  }]
+
+  all_users = local.kibana_app_login_password != null ? concat(var.users, local.kibana_user) : var.users
+}
+
 # Create new instance
 module "elasticsearch" {
   count                             = var.existing_elasticsearch_instance_crn != null ? 0 : 1
@@ -303,13 +313,7 @@ module "elasticsearch" {
   enable_elser_model                = var.enable_elser_model
   elser_model_type                  = var.elser_model_type
   cbr_rules                         = var.cbr_rules
-  users = local.kibana_app_login_password != null ? [
-    {
-      "name" : "kibana_user",
-      "password" : local.kibana_app_login_password,
-      "type" : "database",
-    }
-  ] : var.users
+  users                             = local.all_users
 }
 
 locals {
