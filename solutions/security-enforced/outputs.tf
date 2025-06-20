@@ -7,14 +7,14 @@ output "id" {
   value       = module.elasticsearch.id
 }
 
-output "guid" {
-  description = "Elasticsearch instance guid"
-  value       = module.elasticsearch.guid
-}
-
 output "version" {
   description = "Elasticsearch instance version"
   value       = module.elasticsearch.version
+}
+
+output "guid" {
+  description = "Elasticsearch instance guid"
+  value       = module.elasticsearch.guid
 }
 
 output "crn" {

@@ -2,43 +2,42 @@ module "elasticsearch" {
   source                              = "../fully-configurable"
   ibmcloud_api_key                    = var.ibmcloud_api_key
   existing_resource_group_name        = var.existing_resource_group_name
-  provider_visibility                 = "private"
   prefix                              = var.prefix
   elasticsearch_name                  = var.elasticsearch_name
+  provider_visibility                 = "private"
+  region                              = var.region
+  existing_elasticsearch_instance_crn = var.existing_elasticsearch_instance_crn
   elasticsearch_version               = var.elasticsearch_version
   elasticsearch_backup_crn            = var.elasticsearch_backup_crn
-  region                              = var.region
   plan                                = var.plan
-  existing_elasticsearch_instance_crn = var.existing_elasticsearch_instance_crn
   enable_elser_model                  = var.enable_elser_model
   elser_model_type                    = var.elser_model_type
   # ICD hosting model properties
-  members                   = var.members
-  member_cpu_count          = var.member_cpu_count
-  member_disk_mb            = var.member_disk_mb
-  member_host_flavor        = var.member_host_flavor
-  member_memory_mb          = var.member_memory_mb
-  admin_pass                = var.admin_pass
-  users                     = var.users
-  service_credential_names  = var.service_credential_names
-  elasticsearch_tags        = var.elasticsearch_tags
-  elasticsearch_access_tags = var.elasticsearch_access_tags
+  members                     = var.members
+  member_memory_mb            = var.member_memory_mb
+  member_cpu_count            = var.member_cpu_count
+  member_disk_mb              = var.member_disk_mb
+  member_host_flavor          = var.member_host_flavor
+  service_credential_names    = var.service_credential_names
+  admin_pass                  = var.admin_pass
+  users                       = var.users
+  elasticsearch_resource_tags = var.elasticsearch_resource_tags
+  elasticsearch_access_tags   = var.elasticsearch_access_tags
+  # Encryption
+  kms_encryption_enabled             = true
+  use_ibm_owned_encryption_key       = false
+  existing_kms_instance_crn          = var.existing_kms_instance_crn
+  existing_kms_key_crn               = var.existing_kms_key_crn
+  kms_endpoint_type                  = "private"
+  skip_elasticsearch_kms_auth_policy = var.skip_elasticsearch_kms_auth_policy
+  ibmcloud_kms_api_key               = var.ibmcloud_kms_api_key
+  key_ring_name                      = var.key_ring_name
+  key_name                           = var.key_name
+  existing_backup_kms_key_crn        = var.existing_backup_kms_key_crn
+  use_default_backup_encryption_key  = false
   # Auto Scaling
   auto_scaling = var.auto_scaling
-  # Encryption
-  kms_encryption_enabled            = true
-  use_ibm_owned_encryption_key      = false
-  existing_kms_instance_crn         = var.existing_kms_instance_crn
-  existing_kms_key_crn              = var.existing_kms_key_crn
-  existing_backup_kms_key_crn       = var.existing_backup_kms_key_crn
-  use_default_backup_encryption_key = false
-  kms_endpoint_type                 = "private"
-  skip_es_kms_auth_policy           = var.skip_es_kms_auth_policy
-  elasticsearch_key_ring_name       = var.elasticsearch_key_ring_name
-  elasticsearch_key_name            = var.elasticsearch_key_name
-  ibmcloud_kms_api_key              = var.ibmcloud_kms_api_key
   # Secrets Manager Service Credentials
-  service_endpoints                                    = "private"
   existing_secrets_manager_instance_crn                = var.existing_secrets_manager_instance_crn
   existing_secrets_manager_endpoint_type               = "private"
   service_credential_secrets                           = var.service_credential_secrets
@@ -46,6 +45,7 @@ module "elasticsearch" {
   admin_pass_secrets_manager_secret_group              = var.admin_pass_secrets_manager_secret_group
   use_existing_admin_pass_secrets_manager_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
   admin_pass_secrets_manager_secret_name               = var.admin_pass_secrets_manager_secret_name
+  service_endpoints                                    = "private"
   # Kibana Configuration
   kibana_code_engine_new_project_name = var.kibana_code_engine_new_project_name
   kibana_code_engine_new_app_name     = var.kibana_code_engine_new_app_name

@@ -10,20 +10,9 @@ variable "ibmcloud_api_key" {
 
 variable "existing_resource_group_name" {
   type        = string
-  description = "The name of an existing resource group to provision the Databases for Elasticsearch in."
+  description = "The name of an existing resource group to provision resources in."
   default     = "Default"
   nullable    = false
-}
-
-variable "provider_visibility" {
-  description = "Set the visibility value for the IBM terraform provider. Supported values are `public`, `private`, `public-and-private`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/guides/custom-service-endpoints)."
-  type        = string
-  default     = "private"
-  nullable    = false
-  validation {
-    condition     = contains(["public", "private", "public-and-private"], var.provider_visibility)
-    error_message = "Invalid visibility option. Allowed values are 'public', 'private', or 'public-and-private'."
-  }
 }
 
 variable "prefix" {
@@ -41,6 +30,17 @@ variable "prefix" {
   }
 }
 
+variable "provider_visibility" {
+  description = "Set the visibility value for the IBM terraform provider. Supported values are `public`, `private`, `public-and-private`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/guides/custom-service-endpoints)."
+  type        = string
+  default     = "private"
+  nullable    = false
+  validation {
+    condition     = contains(["public", "private", "public-and-private"], var.provider_visibility)
+    error_message = "Invalid visibility option. Allowed values are 'public', 'private', or 'public-and-private'."
+  }
+}
+
 ##############################################################################
 # Input Variables
 ##############################################################################
@@ -50,6 +50,23 @@ variable "elasticsearch_name" {
   description = "The name of the Databases for Elasticsearch instance. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch"
   nullable    = false
+}
+
+variable "region" {
+  type        = string
+  description = "The region where you want to deploy your instance, or the region in which your existing instance is in."
+  default     = "us-south"
+  validation {
+    condition     = var.existing_elasticsearch_instance_crn != null && var.region != local.existing_elasticsearch_region ? false : true
+    error_message = "The region detected in the 'existing_elasticsearch_instance_crn' value must match the value of the 'region' input variable when passing an existing instance."
+  }
+}
+
+variable "existing_elasticsearch_instance_crn" {
+  type        = string
+  default     = null
+  description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
+  nullable    = true
 }
 
 variable "elasticsearch_version" {
@@ -72,39 +89,11 @@ variable "elasticsearch_backup_crn" {
   }
 }
 
-variable "region" {
-  type        = string
-  description = "The region where you want to deploy your instance, or the region in which your existing instance is in."
-  default     = "us-south"
-  validation {
-    condition     = var.existing_elasticsearch_instance_crn != null && var.region != local.existing_elasticsearch_region ? false : true
-    error_message = "The region detected in the 'existing_elasticsearch_instance_crn' value must match the value of the 'region' input variable when passing an existing instance."
-  }
-}
-
 variable "plan" {
   type        = string
   description = "The name of the service plan for your Databases for Elasticsearch instance. Possible values: `enterprise`, `platinum`."
   default     = "platinum"
   nullable    = false
-}
-
-variable "service_endpoints" {
-  type        = string
-  description = "Specify whether you want to enable public, or both public and private service endpoints. Possible values: `public`, `public-and-private`"
-  default     = "private"
-  nullable    = false
-  validation {
-    condition     = contains(["public", "private"], var.service_endpoints)
-    error_message = "The specified service endpoint is not supported. The following endpoint options are supported: `public`, `private`"
-  }
-}
-
-variable "existing_elasticsearch_instance_crn" {
-  type        = string
-  default     = null
-  description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
-  nullable    = true
 }
 
 variable "enable_elser_model" {
@@ -129,11 +118,27 @@ variable "elser_model_type" {
 # ICD hosting model properties
 ##############################################################################
 
+variable "service_endpoints" {
+  type        = string
+  description = "Specify whether you want to enable public, or both public and private service endpoints. Possible values: `public`, `public-and-private`"
+  default     = "private"
+  nullable    = false
+  validation {
+    condition     = contains(["public", "private"], var.service_endpoints)
+    error_message = "The specified service endpoint is not supported. The following endpoint options are supported: `public`, `private`"
+  }
+}
 
 variable "members" {
   type        = number
   description = "The number of members that are allocated. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
   default     = 3
+}
+
+variable "member_memory_mb" {
+  type        = number
+  description = "The memory per member that is allocated. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
+  default     = 4096
 }
 
 variable "member_cpu_count" {
@@ -160,10 +165,10 @@ variable "member_host_flavor" {
   }
 }
 
-variable "member_memory_mb" {
-  type        = number
-  description = "The memory per member that is allocated. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
-  default     = 4096
+variable "service_credential_names" {
+  type        = map(string)
+  description = "The map of name and role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
+  default     = {}
 }
 
 variable "admin_pass" {
@@ -185,15 +190,9 @@ variable "users" {
   sensitive   = true
 }
 
-variable "service_credential_names" {
-  type        = map(string)
-  description = "The map of name and role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
-  default     = {}
-}
-
-variable "elasticsearch_tags" {
+variable "elasticsearch_resource_tags" {
   type        = list(any)
-  description = "The list of tags to be added to the Databases for Elasticsearch instance."
+  description = "The list of resource tags to be added to the Databases for Elasticsearch instance."
   default     = []
 }
 
@@ -204,37 +203,6 @@ variable "elasticsearch_access_tags" {
 }
 
 ##############################################################
-# Auto Scaling
-##############################################################
-
-variable "auto_scaling" {
-  type = object({
-    disk = object({
-      capacity_enabled             = optional(bool, false)
-      free_space_less_than_percent = optional(number, 10)
-      io_above_percent             = optional(number, 90)
-      io_enabled                   = optional(bool, false)
-      io_over_period               = optional(string, "15m")
-      rate_increase_percent        = optional(number, 10)
-      rate_limit_mb_per_member     = optional(number, 3670016)
-      rate_period_seconds          = optional(number, 900)
-      rate_units                   = optional(string, "mb")
-    })
-    memory = object({
-      io_above_percent         = optional(number, 90)
-      io_enabled               = optional(bool, false)
-      io_over_period           = optional(string, "15m")
-      rate_increase_percent    = optional(number, 10)
-      rate_limit_mb_per_member = optional(number, 114688)
-      rate_period_seconds      = optional(number, 900)
-      rate_units               = optional(string, "mb")
-    })
-  })
-  description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
-  default     = null
-}
-
-##############################################################
 # Encryption
 ##############################################################
 
@@ -242,21 +210,6 @@ variable "kms_encryption_enabled" {
   type        = bool
   description = "Set to true to enable KMS Encryption using customer managed keys. When set to true, a value must be passed for either 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn'."
   default     = false
-
-  validation {
-    condition     = var.existing_elasticsearch_instance_crn != null ? var.kms_encryption_enabled == false : true
-    error_message = "When using an existing elasticsearch instance 'kms_encryption_enabled' should not be enabled"
-  }
-
-  validation {
-    condition     = var.kms_encryption_enabled == true ? (var.existing_kms_instance_crn != null || var.existing_kms_key_crn != null || var.existing_backup_kms_key_crn != null) : true
-    error_message = "You must provide at least one of 'existing_kms_instance_crn', 'existing_kms_root_key_crn' or 'existing_backup_kms_key_crn' inputs if 'kms_encryption_enabled' is set to true."
-  }
-
-  validation {
-    condition     = var.kms_encryption_enabled == false ? (var.existing_kms_key_crn == null && var.existing_kms_instance_crn == null && var.existing_backup_kms_key_crn == null) : true
-    error_message = "If 'kms_encryption_enabled' is set to false, you should not pass values for 'existing_kms_instance_crn', 'existing_kms_root_key_crn' or 'existing_backup_kms_key_crn'. inputs"
-  }
 }
 
 variable "use_ibm_owned_encryption_key" {
@@ -323,6 +276,34 @@ variable "existing_kms_key_crn" {
   }
 }
 
+variable "kms_endpoint_type" {
+  type        = string
+  description = "The type of endpoint to use for communicating with the Key Protect or Hyper Protect Crypto Services instance. Possible values: `public`, `private`."
+  default     = "private"
+  validation {
+    condition     = can(regex("public|private", var.kms_endpoint_type))
+    error_message = "The kms_endpoint_type value must be 'public' or 'private'."
+  }
+}
+
+variable "skip_elasticsearch_kms_auth_policy" {
+  type        = bool
+  description = "Set to true to skip the creation of IAM authorization policies that permits all Databases for Elasticsearch instances in the given resource group 'Reader' access to the Key Protect or Hyper Protect Crypto Services key. This policy is required in order to enable KMS encryption, so only skip creation if there is one already present in your account. No policy is created if `use_ibm_owned_encryption_key` is true."
+  default     = false
+}
+
+variable "key_ring_name" {
+  type        = string
+  default     = "elasticsearch-key-ring"
+  description = "The name for the key ring created for the ElasticSearch key. Applies only if not specifying an existing key or using IBM owned keys. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+}
+
+variable "key_name" {
+  type        = string
+  default     = "elasticsearch-key"
+  description = "The name for the key created for the ElasticSearch key. Applies only if not specifying an existing key or using IBM owned keys. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+}
+
 variable "existing_backup_kms_key_crn" {
   type        = string
   description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key that you want to use for encrypting the disk that holds deployment backups. Applies only if `use_ibm_owned_encryption_key` is false. If no value is passed, the value of `existing_kms_key_crn` is used. If no value is passed for `existing_kms_key_crn`, a new key will be created in the instance specified in the `existing_kms_instance_crn` input. Alternatively set `use_default_backup_encryption_key` to true to use the IBM Cloud Databases default encryption. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
@@ -340,34 +321,6 @@ variable "use_default_backup_encryption_key" {
   default     = false
 }
 
-variable "kms_endpoint_type" {
-  type        = string
-  description = "The type of endpoint to use for communicating with the Key Protect or Hyper Protect Crypto Services instance. Possible values: `public`, `private`."
-  default     = "private"
-  validation {
-    condition     = can(regex("public|private", var.kms_endpoint_type))
-    error_message = "The kms_endpoint_type value must be 'public' or 'private'."
-  }
-}
-
-variable "skip_es_kms_auth_policy" {
-  type        = bool
-  description = "Set to true to skip the creation of IAM authorization policies that permits all Databases for Elasticsearch instances in the given resource group 'Reader' access to the Key Protect or Hyper Protect Crypto Services key. This policy is required in order to enable KMS encryption, so only skip creation if there is one already present in your account. No policy is created if `use_ibm_owned_encryption_key` is true."
-  default     = false
-}
-
-variable "elasticsearch_key_ring_name" {
-  type        = string
-  default     = "elasticsearch-key-ring"
-  description = "The name for the key ring created for the ElasticSearch key. Applies only if not specifying an existing key or using IBM owned keys. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-}
-
-variable "elasticsearch_key_name" {
-  type        = string
-  default     = "elasticsearch-key"
-  description = "The name for the key created for the ElasticSearch key. Applies only if not specifying an existing key or using IBM owned keys. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-}
-
 variable "ibmcloud_kms_api_key" {
   type        = string
   description = "The IBM Cloud API key that can create a root key and key ring in the key management service (KMS) instance. If not specified, the 'ibmcloud_api_key' variable is used. Specify this key if the instance in `existing_kms_instance_crn` is in an account that's different from the Elastic Search instance. Leave this input empty if the same account owns both instances."
@@ -375,24 +328,47 @@ variable "ibmcloud_kms_api_key" {
   default     = null
 }
 
-##############################################################################
-## Secrets Manager Service Credentials
-##############################################################################
+
+##############################################################
+# Auto Scaling
+##############################################################
+
+variable "auto_scaling" {
+  type = object({
+    disk = object({
+      capacity_enabled             = optional(bool, false)
+      free_space_less_than_percent = optional(number, 10)
+      io_above_percent             = optional(number, 90)
+      io_enabled                   = optional(bool, false)
+      io_over_period               = optional(string, "15m")
+      rate_increase_percent        = optional(number, 10)
+      rate_limit_mb_per_member     = optional(number, 3670016)
+      rate_period_seconds          = optional(number, 900)
+      rate_units                   = optional(string, "mb")
+    })
+    memory = object({
+      io_above_percent         = optional(number, 90)
+      io_enabled               = optional(bool, false)
+      io_over_period           = optional(string, "15m")
+      rate_increase_percent    = optional(number, 10)
+      rate_limit_mb_per_member = optional(number, 114688)
+      rate_period_seconds      = optional(number, 900)
+      rate_units               = optional(string, "mb")
+    })
+  })
+  description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
+  default     = null
+}
+
+
+#############################################################################
+# Secrets Manager Service Credentials
+#############################################################################
 
 variable "existing_secrets_manager_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of existing secrets manager to use to create service credential secrets for Databases for Elasticsearch instance."
-
-  validation {
-    condition     = var.existing_secrets_manager_instance_crn != null ? var.admin_pass_secrets_manager_secret_group != null : true
-    error_message = "`admin_pass_secrets_manager_secret_group` is required when `existing_secrets_manager_instance_crn` is set."
-  }
-
-  validation {
-    condition     = var.existing_secrets_manager_instance_crn != null ? var.admin_pass_secrets_manager_secret_name != null : true
-    error_message = "`admin_pass_secrets_manager_secret_name` is required when `existing_secrets_manager_instance_crn` is set."
-  }
 }
 
 variable "existing_secrets_manager_endpoint_type" {

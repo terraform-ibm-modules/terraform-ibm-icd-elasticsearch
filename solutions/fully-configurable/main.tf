@@ -13,10 +13,15 @@ module "resource_group" {
 #######################################################################################################################
 
 locals {
-  prefix                      = (var.prefix != null && trimspace(var.prefix) != "" ? "${var.prefix}-" : "")
-  create_new_kms_key          = var.existing_elasticsearch_instance_crn == null && !var.use_ibm_owned_encryption_key && var.existing_kms_key_crn == null ? 1 : 0 # no need to create any KMS resources if encryption not enabled, using existing Elasticsearch, passing an existing key, or using IBM owned keys
-  elasticsearch_key_name      = "${local.prefix}${var.elasticsearch_key_name}"
-  elasticsearch_key_ring_name = "${local.prefix}${var.elasticsearch_key_ring_name}"
+  prefix = (var.prefix != null && trimspace(var.prefix) != "" ? "${var.prefix}-" : "")
+  create_new_kms_key = (
+    var.kms_encryption_enabled &&
+    var.existing_elasticsearch_instance_crn == null &&
+    !var.use_ibm_owned_encryption_key &&
+    var.existing_kms_key_crn == null
+  )
+  elasticsearch_key_name      = "${local.prefix}${var.key_name}"
+  elasticsearch_key_ring_name = "${local.prefix}${var.key_ring_name}"
 }
 
 
@@ -24,7 +29,7 @@ module "kms" {
   providers = {
     ibm = ibm.kms
   }
-  count                       = local.create_new_kms_key
+  count                       = local.create_new_kms_key ? 1 : 0
   source                      = "terraform-ibm-modules/kms-all-inclusive/ibm"
   version                     = "5.1.7"
   create_key_protect_instance = false
@@ -42,7 +47,7 @@ module "kms" {
           standard_key             = false
           rotation_interval_month  = 3
           dual_auth_delete_enabled = false
-          force_delete             = true
+          force_delete             = true # Force delete must be set to true, or the terraform destroy will fail since the service does not de-register itself from the key until the reclamation period has expired.
         }
       ]
     }
@@ -86,16 +91,16 @@ data "ibm_iam_account_settings" "iam_account_settings" {
 
 locals {
   account_id                                  = data.ibm_iam_account_settings.iam_account_settings.account_id
-  create_cross_account_kms_auth_policy        = var.existing_elasticsearch_instance_crn == null && !var.skip_es_kms_auth_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key
-  create_cross_account_backup_kms_auth_policy = var.existing_elasticsearch_instance_crn == null && !var.skip_es_kms_auth_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key && var.existing_backup_kms_key_crn != null
+  create_cross_account_kms_auth_policy        = var.kms_encryption_enabled && !var.skip_elasticsearch_kms_auth_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key
+  create_cross_account_backup_kms_auth_policy = var.kms_encryption_enabled && !var.skip_elasticsearch_kms_auth_policy && var.ibmcloud_kms_api_key != null && !var.use_ibm_owned_encryption_key && var.existing_backup_kms_key_crn != null
 
   # If KMS encryption enabled (and existing ES instance is not being passed), parse details from the existing key if being passed, otherwise get it from the key that the DA creates
-  kms_account_id    = var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].account_id : module.kms_instance_crn_parser[0].account_id
-  kms_service       = var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_name : module.kms_instance_crn_parser[0].service_name
-  kms_instance_guid = var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_instance : module.kms_instance_crn_parser[0].service_instance
-  kms_key_crn       = var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn
-  kms_key_id        = var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].resource : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].key_id
-  kms_region        = var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].region : module.kms_instance_crn_parser[0].region
+  kms_account_id    = !var.kms_encryption_enabled || var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].account_id : module.kms_instance_crn_parser[0].account_id
+  kms_service       = !var.kms_encryption_enabled || var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_name : module.kms_instance_crn_parser[0].service_name
+  kms_instance_guid = !var.kms_encryption_enabled || var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].service_instance : module.kms_instance_crn_parser[0].service_instance
+  kms_key_crn       = !var.kms_encryption_enabled || var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? var.existing_kms_key_crn : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].crn
+  kms_key_id        = !var.kms_encryption_enabled || var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].resource : module.kms[0].keys[format("%s.%s", local.elasticsearch_key_ring_name, local.elasticsearch_key_name)].key_id
+  kms_region        = !var.kms_encryption_enabled || var.existing_elasticsearch_instance_crn != null || var.use_ibm_owned_encryption_key ? null : var.existing_kms_key_crn != null ? module.kms_key_crn_parser[0].region : module.kms_instance_crn_parser[0].region
 
   # If creating KMS cross account policy for backups, parse backup key details from passed in key CRN
   backup_kms_account_id    = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].account_id : local.kms_account_id
@@ -221,7 +226,9 @@ locals {
   # if - replace first char with J
   # elseif _ replace first char with K
   # else use asis
-  admin_pass = var.admin_pass == null ? (startswith(random_password.admin_password[0].result, "-") ? "J${substr(random_password.admin_password[0].result, 1, -1)}" : startswith(random_password.admin_password[0].result, "_") ? "K${substr(random_password.admin_password[0].result, 1, -1)}" : random_password.admin_password[0].result) : var.admin_pass
+  generated_admin_password = (length(random_password.admin_password) > 0 ? (startswith(random_password.admin_password[0].result, "-") ? "J${substr(random_password.admin_password[0].result, 1, -1)}" : startswith(random_password.admin_password[0].result, "_") ? "K${substr(random_password.admin_password[0].result, 1, -1)}" : random_password.admin_password[0].result) : null)
+  # admin password to use
+  admin_pass = var.admin_pass == null ? local.generated_admin_password : var.admin_pass
 }
 
 #######################################################################################################################
@@ -275,7 +282,7 @@ module "elasticsearch" {
   name                              = "${local.prefix}${var.elasticsearch_name}"
   region                            = var.region
   plan                              = var.plan
-  skip_iam_authorization_policy     = var.skip_es_kms_auth_policy
+  skip_iam_authorization_policy     = var.kms_encryption_enabled ? var.skip_elasticsearch_kms_auth_policy : true
   elasticsearch_version             = var.elasticsearch_version
   service_endpoints                 = var.service_endpoints
   use_ibm_owned_encryption_key      = var.use_ibm_owned_encryption_key
@@ -284,8 +291,9 @@ module "elasticsearch" {
   use_same_kms_key_for_backups      = local.use_same_kms_key_for_backups
   use_default_backup_encryption_key = var.use_default_backup_encryption_key
   backup_crn                        = var.elasticsearch_backup_crn
+  kms_encryption_enabled            = var.kms_encryption_enabled
   access_tags                       = var.elasticsearch_access_tags
-  tags                              = var.elasticsearch_tags
+  tags                              = var.elasticsearch_resource_tags
   admin_pass                        = local.admin_pass
   users                             = var.users
   members                           = var.members
