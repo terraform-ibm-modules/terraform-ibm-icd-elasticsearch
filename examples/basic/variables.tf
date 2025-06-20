@@ -50,6 +50,7 @@ variable "service_endpoints" {
     error_message = "Valid values for service_endpoints are 'public', 'public-and-private', and 'private'"
   }
 }
+
 variable "member_host_flavor" {
   type        = string
   description = "The host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."

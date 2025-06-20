@@ -59,3 +59,19 @@ output "kibana_app_endpoint" {
   description = "Code Engine Kibana endpoint URL"
   value       = var.enable_kibana_dashboard ? module.code_engine_kibana[0].app[local.code_engine_app_name].endpoint : null
 }
+
+output "cbr_rule_ids" {
+  description = "CBR rule ids created to restrict Elasticsearch"
+  value       = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].cbr_rule_ids
+}
+
+output "adminuser" {
+  description = "Database admin user name"
+  value       = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].adminuser
+}
+
+output "certificate_base64" {
+  description = "Database connection certificate"
+  value       = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].certificate_base64
+  sensitive   = true
+}
