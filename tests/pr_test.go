@@ -118,12 +118,12 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 	assert.Nil(t, err, "This should not have errored")
 }
 
-func TestRunFullyConfigurableUpgradeSolution(t *testing.T) {
+func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:                    t,
-		TerraformDir:               fullyConfigurableSolutionTerraformDir,
+		TerraformDir:               securityEnforcedSolutionTerraformDir,
 		BestRegionYAMLPath:         regionSelectionPath,
 		Prefix:                     "els-st-da-upg",
 		ResourceGroup:              resourceGroup,
@@ -133,12 +133,8 @@ func TestRunFullyConfigurableUpgradeSolution(t *testing.T) {
 	options.TerraformVars = map[string]interface{}{
 		"prefix":                       options.Prefix,
 		"elasticsearch_access_tags":    permanentResources["accessTags"],
-		"kms_encryption_enabled":       true,
-		"use_ibm_owned_encryption_key": false,
 		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
-		"kms_endpoint_type":            "public",
 		"existing_resource_group_name": resourceGroup,
-		"provider_visibility":          "public",
 		// Currently, we can not have upgrade test for elser model, because test provision private endpoint for ES (fscloud profile), and script can not connect to private ES API without schematics
 		// "plan":                      "platinum",
 		// "enable_elser_model":        true,

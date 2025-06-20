@@ -33,20 +33,20 @@
           "description": "Creates and configures an IBM Cloud Databases for Elasticsearch instance."
         },
         {
-          "title": "Supports KMS encryption",
-          "description": "Provides KMS encryption for the data that you store in the database."
+          "title": "KMS encryption",
+          "description": "Provides [KMS encryption](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-key-protect&interface=ui) for the data that you store in the database, enhancing data security."
         },
         {
-          "title": "Supports autoscaling",
-          "description": "Provides the autoscaling to allow the database to increase resources in response to usage."
+          "title": "Autoscaling",
+          "description": "Provides the [autoscaling](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling&interface=ui) to allow the database to increase resources in response to usage."
         },
         {
-          "title": "Attaches access tags",
+          "title": "Access tags",
           "description": "Attaches access tags to the Elasticsearch instance."
         },
         {
-          "title": "Supports backup restoration",
-          "description": "Provides database restoration using a backup created by a deployment with the same service ID."
+          "title": "Backup restoration",
+          "description": "Provides [database restoration](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-dashboard-backups&interface=ui) using a backup created by a deployment with the same service ID."
         }
       ],
       "flavors": [
@@ -67,9 +67,29 @@
           "iam_permissions": [
             {
               "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Administrator"
+              ],
+              "service_name": "all-account-management-services"
+            },
+            {
+              "role_crns": [
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
               "service_name": "databases-for-elasticsearch"
+            },
+            {
+              "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Editor"
+              ],
+              "service_name": "kms",
+              "notes": "[Optional] Editor access is required to create keys. It is required only if KMS encryption is enabled."
+            },
+            {
+              "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Editor"
+              ],
+              "service_name": "hs-crypto",
+              "notes": "[Optional] Editor access is required to create keys in HPCS. It is required only if KMS encryption is enabled."
             }
           ],
           "architecture": {
@@ -238,7 +258,7 @@
               ]
             },
             {
-              "key": "elasticsearch_tags"
+              "key": "elasticsearch_resource_tags"
             },
             {
               "key": "elasticsearch_access_tags"
@@ -336,13 +356,13 @@
               "key": "use_default_backup_encryption_key"
             },
             {
-              "key": "elasticsearch_key_ring_name"
+              "key": "key_ring_name"
             },
             {
-              "key": "elasticsearch_key_name"
+              "key": "key_name"
             },
             {
-              "key": "skip_es_kms_auth_policy"
+              "key": "skip_elasticsearch_kms_auth_policy"
             },
             {
               "key": "elasticsearch_backup_crn"
@@ -569,7 +589,7 @@
               ]
             },
             {
-              "key": "elasticsearch_tags"
+              "key": "elasticsearch_resource_tags"
             },
             {
               "key": "elasticsearch_access_tags"
@@ -632,13 +652,13 @@
               "key": "existing_backup_kms_key_crn"
             },
             {
-              "key": "elasticsearch_key_ring_name"
+              "key": "key_ring_name"
             },
             {
-              "key": "elasticsearch_key_name"
+              "key": "key_name"
             },
             {
-              "key": "skip_es_kms_auth_policy"
+              "key": "skip_elasticsearch_kms_auth_policy"
             },
             {
               "key": "elasticsearch_backup_crn"

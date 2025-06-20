@@ -10,7 +10,7 @@ variable "ibmcloud_api_key" {
 
 variable "existing_resource_group_name" {
   type        = string
-  description = "The name of an existing resource group to provision the Databases for Elasticsearch in."
+  description = "The name of an existing resource group to provision resources in."
   default     = "Default"
   nullable    = false
 }
@@ -30,15 +30,25 @@ variable "prefix" {
   }
 }
 
-##############################################################################
-# Input Variables
-##############################################################################
-
 variable "elasticsearch_name" {
   type        = string
   description = "The name of the Databases for Elasticsearch instance. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch"
   nullable    = false
+}
+
+variable "region" {
+  type        = string
+  description = "The region where you want to deploy your instance, or the region in which your existing instance is in."
+  default     = "us-south"
+  nullable    = false
+}
+
+variable "existing_elasticsearch_instance_crn" {
+  type        = string
+  default     = null
+  description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
+  nullable    = true
 }
 
 variable "elasticsearch_version" {
@@ -53,25 +63,11 @@ variable "elasticsearch_backup_crn" {
   default     = null
 }
 
-variable "region" {
-  type        = string
-  description = "The region where you want to deploy your instance, or the region in which your existing instance is in."
-  default     = "us-south"
-  nullable    = false
-}
-
 variable "plan" {
   type        = string
   description = "The name of the service plan for your Databases for Elasticsearch instance. Possible values: `enterprise`, `platinum`."
   default     = "platinum"
   nullable    = false
-}
-
-variable "existing_elasticsearch_instance_crn" {
-  type        = string
-  default     = null
-  description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
-  nullable    = true
 }
 
 variable "enable_elser_model" {
@@ -96,11 +92,16 @@ variable "elser_model_type" {
 # ICD hosting model properties
 ##############################################################################
 
-
 variable "members" {
   type        = number
   description = "The number of members that are allocated. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
   default     = 3
+}
+
+variable "member_memory_mb" {
+  type        = number
+  description = "The memory per member that is allocated. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
+  default     = 4096
 }
 
 variable "member_cpu_count" {
@@ -127,10 +128,10 @@ variable "member_host_flavor" {
   }
 }
 
-variable "member_memory_mb" {
-  type        = number
-  description = "The memory per member that is allocated. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
-  default     = 4096
+variable "service_credential_names" {
+  type        = map(string)
+  description = "The map of name and role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
+  default     = {}
 }
 
 variable "admin_pass" {
@@ -152,13 +153,7 @@ variable "users" {
   sensitive   = true
 }
 
-variable "service_credential_names" {
-  type        = map(string)
-  description = "The map of name and role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
-  default     = {}
-}
-
-variable "elasticsearch_tags" {
+variable "elasticsearch_resource_tags" {
   type        = list(any)
   description = "The list of tags to be added to the Databases for Elasticsearch instance."
   default     = []
@@ -168,6 +163,59 @@ variable "elasticsearch_access_tags" {
   type        = list(string)
   description = "A list of access tags to apply to the Databases for Elasticsearch instance created by the solution. [Learn more](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
   default     = []
+}
+
+##############################################################
+# Encryption
+##############################################################
+
+variable "existing_kms_instance_crn" {
+  type        = string
+  description = "The CRN of a Key Protect or Hyper Protect Crypto Services instance. Required to create a new encryption key and key ring which will be used to encrypt both deployment data and backups. Applies only if `use_ibm_owned_encryption_key` is false. To use an existing key, pass values for `existing_kms_key_crn` and/or `existing_backup_kms_key_crn`. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
+  default     = null
+}
+
+variable "existing_kms_key_crn" {
+  type        = string
+  description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key to encrypt your data. Applies only if `use_ibm_owned_encryption_key` is false. By default this key is used for both deployment data and backups, but this behaviour can be altered using the optional `existing_backup_kms_key_crn` input. If no value is passed a new key will be created in the instance specified in the `existing_kms_instance_crn` input. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
+  default     = null
+}
+
+variable "skip_elasticsearch_kms_auth_policy" {
+  type        = bool
+  description = "Set to true to skip the creation of IAM authorization policies that permits all Databases for Elasticsearch instances in the given resource group 'Reader' access to the Key Protect or Hyper Protect Crypto Services key. This policy is required in order to enable KMS encryption, so only skip creation if there is one already present in your account. No policy is created if `use_ibm_owned_encryption_key` is true."
+  default     = false
+}
+
+variable "ibmcloud_kms_api_key" {
+  type        = string
+  description = "The IBM Cloud API key that can create a root key and key ring in the key management service (KMS) instance. If not specified, the 'ibmcloud_api_key' variable is used. Specify this key if the instance in `existing_kms_instance_crn` is in an account that's different from the Elastic Search instance. Leave this input empty if the same account owns both instances."
+  sensitive   = true
+  default     = null
+}
+
+
+variable "key_ring_name" {
+  type        = string
+  default     = "elasticsearch-key-ring"
+  description = "The name for the key ring created for the ElasticSearch key. Applies only if not specifying an existing key or using IBM owned keys. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+}
+
+variable "key_name" {
+  type        = string
+  default     = "elasticsearch-key"
+  description = "The name for the key created for the ElasticSearch key. Applies only if not specifying an existing key or using IBM owned keys. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+}
+
+variable "existing_backup_kms_key_crn" {
+  type        = string
+  description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key that you want to use for encrypting the disk that holds deployment backups. Applies only if `use_ibm_owned_encryption_key` is false. If no value is passed, the value of `existing_kms_key_crn` is used. If no value is passed for `existing_kms_key_crn`, a new key will be created in the instance specified in the `existing_kms_instance_crn` input. Alternatively set `use_default_backup_encryption_key` to true to use the IBM Cloud Databases default encryption. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
+  default     = null
+
+  validation {
+    condition     = var.existing_elasticsearch_instance_crn != null ? var.existing_backup_kms_key_crn == null : true
+    error_message = "When using an existing elasticsearch instance 'existing_backup_kms_key_crn' should not be set"
+  }
 }
 
 ##############################################################
@@ -201,93 +249,14 @@ variable "auto_scaling" {
   default     = null
 }
 
-##############################################################
-# Encryption
-##############################################################
-
-variable "existing_kms_instance_crn" {
-  type        = string
-  description = "The CRN of a Key Protect or Hyper Protect Crypto Services instance. Required to create a new encryption key and key ring which will be used to encrypt both deployment data and backups. Applies only if `use_ibm_owned_encryption_key` is false. To use an existing key, pass values for `existing_kms_key_crn` and/or `existing_backup_kms_key_crn`. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
-  default     = null
-
-  validation {
-    condition     = var.existing_elasticsearch_instance_crn != null ? var.existing_kms_instance_crn == null : true
-    error_message = "When using an existing elasticsearch instance 'existing_kms_instance_crn' should not be set"
-  }
-
-  validation {
-    condition = (
-      length(compact([var.existing_kms_instance_crn, var.existing_kms_key_crn, var.existing_backup_kms_key_crn])) == 1 ? true : false
-    )
-    error_message = "To enable KMS encryption one of 'existing_kms_instance_crn', 'existing_kms_key_crn' or 'existing_backup_kms_key_crn' must be set."
-  }
-}
-
-variable "existing_kms_key_crn" {
-  type        = string
-  description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key to encrypt your data. Applies only if `use_ibm_owned_encryption_key` is false. By default this key is used for both deployment data and backups, but this behaviour can be altered using the optional `existing_backup_kms_key_crn` input. If no value is passed a new key will be created in the instance specified in the `existing_kms_instance_crn` input. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
-  default     = null
-
-  validation {
-    condition     = var.existing_elasticsearch_instance_crn != null ? var.existing_kms_key_crn == null : true
-    error_message = "When using an existing elasticsearch instance 'existing_kms_key_crn' should not be set"
-  }
-}
-
-variable "existing_backup_kms_key_crn" {
-  type        = string
-  description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key that you want to use for encrypting the disk that holds deployment backups. Applies only if `use_ibm_owned_encryption_key` is false. If no value is passed, the value of `existing_kms_key_crn` is used. If no value is passed for `existing_kms_key_crn`, a new key will be created in the instance specified in the `existing_kms_instance_crn` input. Alternatively set `use_default_backup_encryption_key` to true to use the IBM Cloud Databases default encryption. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
-  default     = null
-
-  validation {
-    condition     = var.existing_elasticsearch_instance_crn != null ? var.existing_backup_kms_key_crn == null : true
-    error_message = "When using an existing elasticsearch instance 'existing_backup_kms_key_crn' should not be set"
-  }
-}
-
-variable "skip_es_kms_auth_policy" {
-  type        = bool
-  description = "Set to true to skip the creation of IAM authorization policies that permits all Databases for Elasticsearch instances in the given resource group 'Reader' access to the Key Protect or Hyper Protect Crypto Services key. This policy is required in order to enable KMS encryption, so only skip creation if there is one already present in your account. No policy is created if `use_ibm_owned_encryption_key` is true."
-  default     = false
-}
-
-variable "elasticsearch_key_ring_name" {
-  type        = string
-  default     = "elasticsearch-key-ring"
-  description = "The name for the key ring created for the ElasticSearch key. Applies only if not specifying an existing key or using IBM owned keys. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-}
-
-variable "elasticsearch_key_name" {
-  type        = string
-  default     = "elasticsearch-key"
-  description = "The name for the key created for the ElasticSearch key. Applies only if not specifying an existing key or using IBM owned keys. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
-}
-
-variable "ibmcloud_kms_api_key" {
-  type        = string
-  description = "The IBM Cloud API key that can create a root key and key ring in the key management service (KMS) instance. If not specified, the 'ibmcloud_api_key' variable is used. Specify this key if the instance in `existing_kms_instance_crn` is in an account that's different from the Elastic Search instance. Leave this input empty if the same account owns both instances."
-  sensitive   = true
-  default     = null
-}
-
-##############################################################################
-## Secrets Manager Service Credentials
-##############################################################################
+#############################################################################
+# Secrets Manager Service Credentials
+#############################################################################
 
 variable "existing_secrets_manager_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of existing secrets manager to use to create service credential secrets for Databases for Elasticsearch instance."
-
-  validation {
-    condition     = var.existing_secrets_manager_instance_crn != null ? var.admin_pass_secrets_manager_secret_group != null : true
-    error_message = "`admin_pass_secrets_manager_secret_group` is required when `existing_secrets_manager_instance_crn` is set."
-  }
-
-  validation {
-    condition     = var.existing_secrets_manager_instance_crn != null ? var.admin_pass_secrets_manager_secret_name != null : true
-    error_message = "`admin_pass_secrets_manager_secret_name` is required when `existing_secrets_manager_instance_crn` is set."
-  }
 }
 
 variable "service_credential_secrets" {
@@ -337,6 +306,14 @@ variable "admin_pass_secrets_manager_secret_group" {
   type        = string
   description = "The name of a new or existing secrets manager secret group for admin password. To use existing secret group, `use_existing_admin_pass_secrets_manager_secret_group` must be set to `true`. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch-secrets"
+
+  validation {
+    condition = (
+      var.existing_secrets_manager_instance_crn == null ||
+      var.admin_pass_secrets_manager_secret_group != null
+    )
+    error_message = "`admin_pass_secrets_manager_secret_group` is required when `existing_secrets_manager_instance_crn` is set."
+  }
 }
 
 variable "use_existing_admin_pass_secrets_manager_secret_group" {
@@ -349,6 +326,14 @@ variable "admin_pass_secrets_manager_secret_name" {
   type        = string
   description = "The name of a new elasticsearch administrator secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch-admin-password"
+
+  validation {
+    condition = (
+      var.existing_secrets_manager_instance_crn == null ||
+      var.admin_pass_secrets_manager_secret_name != null
+    )
+    error_message = "`admin_pass_secrets_manager_secret_name` is required when `existing_secrets_manager_instance_crn` is set."
+  }
 }
 
 ##############################################################
