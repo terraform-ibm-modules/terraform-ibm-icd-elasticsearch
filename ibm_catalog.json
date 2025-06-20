@@ -360,6 +360,9 @@
               "key": "existing_code_engine_project_id"
             },
             {
+              "key": "use_existing_registry_secret"
+            },
+            {
               "key": "kibana_registry_namespace_image"
             },
             {
@@ -367,6 +370,18 @@
             },
             {
               "key": "kibana_image_port"
+            },
+            {
+              "key": "kibana_image_secret"
+            },
+            {
+              "key": "kibana_registry_personal_access_token"
+            },
+            {
+              "key": "kibana_registry_server"
+            },
+            {
+              "key": "kibana_registry_username"
             },
             {
               "key": "kibana_visibility",
