@@ -384,6 +384,9 @@
               "key": "kibana_registry_username"
             },
             {
+              "key": "use_private_registry"
+            },
+            {
               "key": "kibana_visibility",
               "options": [
                 {

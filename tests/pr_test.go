@@ -61,8 +61,6 @@ func TestMain(m *testing.M) {
 func TestRunStandardSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
-	enableKibana := false
-
 	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
 		Testing: t,
 		TarIncludePatterns: []string{
@@ -110,42 +108,10 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
-		{Name: "enable_kibana_dashboard", Value: enableKibana, DataType: "bool"},
+		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
 		{Name: "provider_visibility", Value: "private", DataType: "string"},
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
-	}
-
-	if enableKibana {
-		existingProjectID := os.Getenv("EXISTING_CODE_ENGINE_PROJECT_ID")
-		kibanaImageSecret := os.Getenv("KIBANA_IMAGE_SECRET")
-		kibanaRegistryUsername := os.Getenv("KIBANA_REGISTRY_USERNAME")
-		kibanaRegistryToken := os.Getenv("KIBANA_REGISTRY_PERSONAL_ACCESS_TOKEN")
-		kibanaRegistryServer := os.Getenv("KIBANA_REGISTRY_SERVER")
-
-		if existingProjectID == "" {
-			t.Fatal("existing_code_engine_project_id env var must be set when enable_kibana_dashboard is true")
-		}
-		if kibanaImageSecret == "" {
-			t.Fatal("kibana_image_secret env var must be set when enable_kibana_dashboard is true")
-		}
-		if kibanaRegistryUsername == "" {
-			t.Fatal("kibana_registry_username env var must be set when enable_kibana_dashboard is true")
-		}
-		if kibanaRegistryToken == "" {
-			t.Fatal("kibana_personal_access_token env var must be set when enable_kibana_dashboard is true")
-		}
-		if kibanaRegistryServer == "" {
-			t.Fatal("kibana_registry_server env var must be set when enable_kibana_dashboard is true")
-		}
-
-		options.TerraformVars = append(options.TerraformVars,
-			testschematic.TestSchematicTerraformVar{Name: "existing_code_engine_project_id", Value: existingProjectID, DataType: "string"},
-			testschematic.TestSchematicTerraformVar{Name: "kibana_image_secret", Value: kibanaImageSecret, DataType: "string"},
-			testschematic.TestSchematicTerraformVar{Name: "kibana_registry_username", Value: kibanaRegistryUsername, DataType: "string"},
-			testschematic.TestSchematicTerraformVar{Name: "kibana_registry_personal_access_token", Value: kibanaRegistryToken, DataType: "string"},
-			testschematic.TestSchematicTerraformVar{Name: "kibana_registry_server", Value: kibanaRegistryServer, DataType: "string"},
-		)
 	}
 
 	err := options.RunSchematicTest()
@@ -313,38 +279,10 @@ func TestPlanValidation(t *testing.T) {
 	}
 
 	// Test the DA when using Kibana dashboard and existing KMS instance
-
-	tfVarsMap := map[string]map[string]interface{}{}
-
-	if os.Getenv("ENABLE_KIBANA_DASHBOARD") == "true" {
-		tfVarsMap["standardSolutionWithKibanaDashboardVars"] = map[string]interface{}{
-			"existing_kms_instance_crn":             permanentResources["hpcs_south_crn"],
-			"kibana_image_secret":                   os.Getenv("KIBANA_IMAGE_SECRET"),
-			"kibana_registry_username":              os.Getenv("KIBANA_REGISTRY_USERNAME"),
-			"kibana_registry_personal_access_token": os.Getenv("KIBANA_REGISTRY_PERSONAL_ACCESS_TOKEN"),
-			"kibana_registry_server":                os.Getenv("KIBANA_REGISTRY_SERVER"),
-			"existingProjectID":                     os.Getenv("EXISTING_CODE_ENGINE_PROJECT_ID"),
-			"plan":                                  "enterprise",
-		}
-	}
-
-	for name, tfVars := range tfVarsMap {
-		t.Run(name, func(t *testing.T) {
-			for key, value := range tfVars {
-				options.TerraformOptions.Vars[key] = value
-			}
-
-			_, err := terraform.InitE(t, options.TerraformOptions)
-			require.NoError(t, err)
-
-			output, err := terraform.PlanE(t, options.TerraformOptions)
-			assert.Nil(t, err)
-			assert.NotNil(t, output)
-
-			for key := range tfVars {
-				delete(options.TerraformOptions.Vars, key)
-			}
-		})
+	var standardSolutionWithKibanaDashboardVars = map[string]interface{}{
+		"enable_kibana_dashboard":   true,
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"plan":                      "enterprise",
 	}
 
 	// Test the DA when using IBM owned encryption key
@@ -353,9 +291,10 @@ func TestPlanValidation(t *testing.T) {
 	}
 
 	// Create a map of the variables
-	tfVarsMap = map[string]map[string]interface{}{
-		"standardSolutionWithElserModelVars":    standardSolutionWithElserModelVars,
-		"standardSolutionWithUseIbmOwnedEncKey": standardSolutionWithUseIbmOwnedEncKey,
+	tfVarsMap := map[string]map[string]interface{}{
+		"standardSolutionWithElserModelVars":      standardSolutionWithElserModelVars,
+		"standardSolutionWithKibanaDashboardVars": standardSolutionWithKibanaDashboardVars,
+		"standardSolutionWithUseIbmOwnedEncKey":   standardSolutionWithUseIbmOwnedEncKey,
 	}
 
 	_, initErr := terraform.InitE(t, options.TerraformOptions)
