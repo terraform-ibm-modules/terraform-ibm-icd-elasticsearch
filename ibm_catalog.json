@@ -29,10 +29,6 @@
       "support_details": "This product is in the community registry, as such support is handled through the originated repo. If you experience issues please open an issue in the repository [https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/issues](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/issues). Please note this product is not supported via the IBM Cloud Support Center.",
       "features": [
         {
-          "title": "Creates an instance of Databases for Elasticsearch",
-          "description": "Creates and configures an IBM Cloud Databases for Elasticsearch instance."
-        },
-        {
           "title": "KMS encryption",
           "description": "Provides [KMS encryption](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-key-protect&interface=ui) for the data that you store in the database, enhancing data security."
         },

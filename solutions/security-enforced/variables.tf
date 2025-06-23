@@ -39,7 +39,7 @@ variable "elasticsearch_name" {
 
 variable "region" {
   type        = string
-  description = "The region where you want to deploy your instance, or the region in which your existing instance is in."
+  description = "The region to provision all resources in. [Learn more](https://terraform-ibm-modules.github.io/documentation/#/region) about how to select different regions for different services."
   default     = "us-south"
   nullable    = false
 }
