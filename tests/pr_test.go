@@ -93,7 +93,6 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 			},
 		},
 	}
-
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
@@ -114,6 +113,7 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 	}
+
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
 }
