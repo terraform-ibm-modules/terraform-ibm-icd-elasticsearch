@@ -17,8 +17,8 @@ variable "existing_resource_group_name" {
 
 variable "prefix" {
   type        = string
-  description = "The prefix to add to all resources that this solution creates (e.g `prod`, `test`, `dev`). To not use any prefix value, you can set this value to `null` or an empty string."
   nullable    = true
+  description = "The prefix to add to all resources that this solution creates (e.g `prod`, `test`, `dev`). To not use any prefix value, you can set this value to `null` or an empty string."
   validation {
     condition = (var.prefix == null ? true :
       alltrue([
@@ -30,7 +30,7 @@ variable "prefix" {
   }
 }
 
-variable "elasticsearch_name" {
+variable "name" {
   type        = string
   description = "The name of the Databases for Elasticsearch instance. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch"
@@ -38,8 +38,8 @@ variable "elasticsearch_name" {
 }
 
 variable "region" {
-  type        = string
   description = "The region to provision all resources in. [Learn more](https://terraform-ibm-modules.github.io/documentation/#/region) about how to select different regions for different services."
+  type        = string
   default     = "us-south"
   nullable    = false
 }
@@ -54,12 +54,6 @@ variable "existing_elasticsearch_instance_crn" {
 variable "elasticsearch_version" {
   type        = string
   description = "The version of the Databases for Elasticsearch instance. If no value is specified, the current preferred version of Databases for Elasticsearch is used."
-  default     = null
-}
-
-variable "elasticsearch_backup_crn" {
-  type        = string
-  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
   default     = null
 }
 
@@ -148,9 +142,9 @@ variable "users" {
     type     = optional(string)
     role     = optional(string)
   }))
-  description = "The list of users that have access to the database. Multiple blocks are allowed. The user password must be 10-32 characters. In most cases, you can use IAM service credentials (by specifying `service_credential_names`) to control access to the database instance. This block creates native database users. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
   default     = []
   sensitive   = true
+  description = "The list of users that have access to the database. Multiple blocks are allowed. The user password must be 10-32 characters. In most cases, you can use IAM service credentials (by specifying `service_credential_names`) to control access to the database instance. This block creates native database users. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
 }
 
 variable "elasticsearch_resource_tags" {
@@ -194,7 +188,6 @@ variable "ibmcloud_kms_api_key" {
   default     = null
 }
 
-
 variable "key_ring_name" {
   type        = string
   default     = "elasticsearch-key-ring"
@@ -216,6 +209,12 @@ variable "existing_backup_kms_key_crn" {
     condition     = var.existing_elasticsearch_instance_crn != null ? var.existing_backup_kms_key_crn == null : true
     error_message = "When using an existing elasticsearch instance 'existing_backup_kms_key_crn' should not be set"
   }
+}
+
+variable "elasticsearch_backup_crn" {
+  type        = string
+  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
+  default     = null
 }
 
 ##############################################################

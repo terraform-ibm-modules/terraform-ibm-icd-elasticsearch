@@ -9,6 +9,7 @@
         "target_terraform",
         "terraform",
         "data_management",
+        "database",
         "solution"
       ],
       "keywords": [
@@ -92,20 +93,8 @@
           "architecture": {
             "features": [
               {
-                "title": "KMS encryption",
-                "description": "Provides [KMS encryption](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-key-protect&interface=ui) for the data that you store in the database, enhancing data security."
-              },
-              {
-                "title": "Autoscaling",
-                "description": "Provides the [autoscaling](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling&interface=ui) to allow the database to increase resources in response to usage."
-              },
-              {
-                "title": "Access tags",
-                "description": "Attaches access tags to the Elasticsearch instance."
-              },
-              {
-                "title": "Backup restoration",
-                "description": "Provides [database restoration](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-dashboard-backups&interface=ui) using a backup created by a deployment with the same service ID."
+                "title": " ",
+                "description": "Configured to use IBM secure by default standards, but can be edited to fit your use case."
               }
             ],
             "diagrams": [
@@ -212,38 +201,6 @@
               ]
             },
             {
-              "key": "elasticsearch_name"
-            },
-            {
-              "key": "existing_elasticsearch_instance_crn"
-            },
-            {
-              "key": "plan",
-              "options": [
-                {
-                  "displayname": "enterprise",
-                  "value": "enterprise"
-                },
-                {
-                  "displayname": "platinum",
-                  "value": "platinum"
-                }
-              ]
-            },
-            {
-              "key": "service_endpoints",
-              "options": [
-                {
-                  "displayname": "private",
-                  "value": "private"
-                },
-                {
-                  "displayname": "public",
-                  "value": "public"
-                }
-              ]
-            },
-            {
               "key": "elasticsearch_version",
               "required": false,
               "default_value": "__NULL__",
@@ -263,6 +220,22 @@
                 {
                   "displayname": "8.10",
                   "value": "8.10"
+                }
+              ]
+            },
+            {
+              "key": "name"
+            },
+            {
+              "key": "plan",
+              "options": [
+                {
+                  "displayname": "enterprise",
+                  "value": "enterprise"
+                },
+                {
+                  "displayname": "platinum",
+                  "value": "platinum"
                 }
               ]
             },
@@ -289,9 +262,6 @@
               }
             },
             {
-              "key": "auto_scaling"
-            },
-            {
               "key": "members"
             },
             {
@@ -307,35 +277,23 @@
               "key": "member_host_flavor"
             },
             {
-              "key": "admin_pass"
+              "key": "auto_scaling"
             },
             {
-              "key": "users",
-              "type": "array",
-              "custom_config": {
-                "type": "textarea",
-                "grouping": "deployment",
-                "original_grouping": "deployment"
-              }
-            },
-            {
-              "key": "service_credential_names"
-            },
-            {
-              "key": "existing_secrets_manager_instance_crn"
-            },
-            {
-              "key": "existing_secrets_manager_endpoint_type",
+              "key": "service_endpoints",
               "options": [
-                {
-                  "displayname": "public",
-                  "value": "public"
-                },
                 {
                   "displayname": "private",
                   "value": "private"
+                },
+                {
+                  "displayname": "public",
+                  "value": "public"
                 }
               ]
+            },
+            {
+              "key": "service_credential_names"
             },
             {
               "key": "service_credential_secrets",
@@ -347,22 +305,14 @@
               }
             },
             {
-              "key": "use_existing_admin_pass_secrets_manager_secret_group"
+              "key": "admin_pass"
             },
             {
-              "key": "admin_pass_secrets_manager_secret_name"
+              "key": "existing_secrets_manager_instance_crn"
             },
             {
-              "key": "admin_pass_secrets_manager_secret_group"
-            },
-            {
-              "key": "skip_elasticsearch_to_secrets_manager_auth_policy"
-            },
-            {
-              "key": "ibmcloud_kms_api_key"
-            },
-            {
-              "key": "kms_endpoint_type",
+              "key": "existing_secrets_manager_endpoint_type",
+              "hidden": true,
               "options": [
                 {
                   "displayname": "public",
@@ -375,6 +325,30 @@
               ]
             },
             {
+              "key": "skip_elasticsearch_to_secrets_manager_auth_policy"
+            },
+            {
+              "key": "admin_pass_secrets_manager_secret_group"
+            },
+            {
+              "key": "admin_pass_secrets_manager_secret_name"
+            },
+            {
+              "key": "use_existing_admin_pass_secrets_manager_secret_group"
+            },
+            {
+              "key": "users",
+              "type": "array",
+              "custom_config": {
+                "type": "textarea",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
+            },
+            {
+              "key": "ibmcloud_kms_api_key"
+            },
+            {
               "key": "kms_encryption_enabled"
             },
             {
@@ -384,10 +358,18 @@
               "key": "existing_kms_key_crn"
             },
             {
-              "key": "existing_backup_kms_key_crn"
-            },
-            {
-              "key": "use_default_backup_encryption_key"
+              "key": "kms_endpoint_type",
+              "hidden": true,
+              "options": [
+                {
+                  "displayname": "public",
+                  "value": "public"
+                },
+                {
+                  "displayname": "private",
+                  "value": "private"
+                }
+              ]
             },
             {
               "key": "key_ring_name"
@@ -396,10 +378,19 @@
               "key": "key_name"
             },
             {
+              "key": "elasticsearch_backup_crn"
+            },
+            {
+              "key": "existing_backup_kms_key_crn"
+            },
+            {
+              "key": "use_default_backup_encryption_key"
+            },
+            {
               "key": "skip_elasticsearch_kms_auth_policy"
             },
             {
-              "key": "elasticsearch_backup_crn"
+              "key": "existing_elasticsearch_instance_crn"
             },
             {
               "key": "enable_elser_model"
@@ -484,15 +475,28 @@
               "role_crns": [
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
-              "service_name": "databases-for-elasticsearch"
+              "service_name": "databases-for-redis"
+            },
+            {
+              "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Editor"
+              ],
+              "service_name": "kms",
+              "notes": "[Optional] Editor access is required to create keys. It is required only if KMS encryption is enabled."
+            },
+            {
+              "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Editor"
+              ],
+              "service_name": "hs-crypto",
+              "notes": "[Optional] Editor access is required to create keys in HPCS. It is required only if KMS encryption is enabled."
             }
           ],
           "architecture": {
-            "descriptions": "This architecture creates an instance of IBM Cloud Databases for Elasticsearch instance with KMS encryption. Supports autoscaling.",
             "features": [
               {
-                "title": " Creates an instance of Databases for Elasticsearch",
-                "description": "This architecture creates an instance of IBM Cloud Databases for Elasticsearch with KMS encryption. It accepts or creates a resource group, and provides autoscaling rules."
+                "title": " ",
+                "description": "Configured to use IBM secure by default standards that can't be changed."
               }
             ],
             "diagrams": [
@@ -581,13 +585,7 @@
                 }
               ]
             },
-            {
-              "key": "elasticsearch_name"
-            },
-            {
-              "key": "existing_elasticsearch_instance_crn"
-            },
-            {
+{
               "key": "plan",
               "options": [
                 {
@@ -624,6 +622,9 @@
               ]
             },
             {
+              "key": "name"
+            },
+            {
               "key": "elasticsearch_resource_tags",
               "type": "array",
               "custom_config": {
@@ -646,9 +647,6 @@
               }
             },
             {
-              "key": "auto_scaling"
-            },
-            {
               "key": "members"
             },
             {
@@ -664,22 +662,10 @@
               "key": "member_host_flavor"
             },
             {
-              "key": "admin_pass"
-            },
-            {
-              "key": "users",
-              "type": "array",
-              "custom_config": {
-                "type": "textarea",
-                "grouping": "deployment",
-                "original_grouping": "deployment"
-              }
+              "key": "auto_scaling"
             },
             {
               "key": "service_credential_names"
-            },
-            {
-              "key": "existing_secrets_manager_instance_crn"
             },
             {
               "key": "service_credential_secrets",
@@ -691,16 +677,31 @@
               }
             },
             {
-              "key": "use_existing_admin_pass_secrets_manager_secret_group"
+              "key": "admin_pass"
             },
             {
-              "key": "admin_pass_secrets_manager_secret_name"
+              "key": "existing_secrets_manager_instance_crn"
+            },
+            {
+              "key": "skip_elasticsearch_to_secrets_manager_auth_policy"
             },
             {
               "key": "admin_pass_secrets_manager_secret_group"
             },
             {
-              "key": "skip_elasticsearch_to_secrets_manager_auth_policy"
+              "key": "admin_pass_secrets_manager_secret_name"
+            },
+            {
+              "key": "use_existing_admin_pass_secrets_manager_secret_group"
+            },
+            {
+              "key": "users",
+              "type": "array",
+              "custom_config": {
+                "type": "textarea",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "ibmcloud_kms_api_key"
@@ -712,19 +713,22 @@
               "key": "existing_kms_key_crn"
             },
             {
-              "key": "existing_backup_kms_key_crn"
-            },
-            {
               "key": "key_ring_name"
             },
             {
               "key": "key_name"
             },
             {
+              "key": "elasticsearch_backup_crn"
+            },
+            {
+              "key": "existing_backup_kms_key_crn"
+            },
+            {
               "key": "skip_elasticsearch_kms_auth_policy"
             },
             {
-              "key": "elasticsearch_backup_crn"
+              "key": "existing_elasticsearch_instance_crn"
             },
             {
               "key": "enable_elser_model"

@@ -3,7 +3,7 @@ module "elasticsearch" {
   ibmcloud_api_key                    = var.ibmcloud_api_key
   existing_resource_group_name        = var.existing_resource_group_name
   prefix                              = var.prefix
-  elasticsearch_name                  = var.elasticsearch_name
+  name                                = var.name
   provider_visibility                 = "private"
   region                              = var.region
   existing_elasticsearch_instance_crn = var.existing_elasticsearch_instance_crn

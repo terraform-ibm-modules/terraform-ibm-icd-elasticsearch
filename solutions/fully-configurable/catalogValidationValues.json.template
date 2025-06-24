@@ -2,7 +2,7 @@
   "ibmcloud_api_key": $VALIDATION_APIKEY,
   "region": "us-south",
   "elasticsearch_resource_tags": $TAGS,
-  "elasticsearch_name": $PREFIX,
+  "name": $PREFIX,
   "existing_resource_group_name": "geretain-test-permanent",
   "kms_encryption_enabled": true,
   "existing_kms_instance_crn": $HPCS_US_SOUTH_CRN
