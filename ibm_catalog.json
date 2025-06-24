@@ -49,6 +49,7 @@
         {
           "label": "Fully configurable",
           "name": "fully-configurable",
+          "index": 1,
           "install_type": "fullstack",
           "working_directory": "solutions/fully-configurable",
           "compliance": {
@@ -91,8 +92,20 @@
           "architecture": {
             "features": [
               {
-                "title": " Creates an instance of Databases for Elasticsearch",
-                "description": "This architecture creates an instance of IBM Cloud Databases for Elasticsearch with KMS encryption. It accepts or creates a resource group, and provides autoscaling rules."
+                "title": "KMS encryption",
+                "description": "Provides [KMS encryption](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-key-protect&interface=ui) for the data that you store in the database, enhancing data security."
+              },
+              {
+                "title": "Autoscaling",
+                "description": "Provides the [autoscaling](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling&interface=ui) to allow the database to increase resources in response to usage."
+              },
+              {
+                "title": "Access tags",
+                "description": "Attaches access tags to the Elasticsearch instance."
+              },
+              {
+                "title": "Backup restoration",
+                "description": "Provides [database restoration](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-dashboard-backups&interface=ui) using a backup created by a deployment with the same service ID."
               }
             ],
             "diagrams": [
@@ -254,10 +267,26 @@
               ]
             },
             {
-              "key": "elasticsearch_resource_tags"
+              "key": "elasticsearch_resource_tags",
+              "type": "array",
+              "custom_config": {
+                "grouping": "deployment",
+                "original_grouping": "deployment",
+                "config_constraints": {
+                  "type": "string"
+                }
+              }
             },
             {
-              "key": "elasticsearch_access_tags"
+              "key": "elasticsearch_access_tags",
+              "type": "array",
+              "custom_config": {
+                "grouping": "deployment",
+                "original_grouping": "deployment",
+                "config_constraints": {
+                  "type": "string"
+                }
+              }
             },
             {
               "key": "auto_scaling"
@@ -281,7 +310,13 @@
               "key": "admin_pass"
             },
             {
-              "key": "users"
+              "key": "users",
+              "type": "array",
+              "custom_config": {
+                "type": "textarea",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "service_credential_names"
@@ -303,7 +338,13 @@
               ]
             },
             {
-              "key": "service_credential_secrets"
+              "key": "service_credential_secrets",
+              "type": "array",
+              "custom_config": {
+                "type": "textarea",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "use_existing_admin_pass_secrets_manager_secret_group"
@@ -335,9 +376,6 @@
             },
             {
               "key": "kms_encryption_enabled"
-            },
-            {
-              "key": "use_ibm_owned_encryption_key"
             },
             {
               "key": "existing_kms_instance_crn"
@@ -429,6 +467,7 @@
         {
           "label": "Security Enforced",
           "name": "security-enforced",
+          "index": 2,
           "install_type": "fullstack",
           "working_directory": "solutions/security-enforced",
           "compliance": {
@@ -585,10 +624,26 @@
               ]
             },
             {
-              "key": "elasticsearch_resource_tags"
+              "key": "elasticsearch_resource_tags",
+              "type": "array",
+              "custom_config": {
+                "grouping": "deployment",
+                "original_grouping": "deployment",
+                "config_constraints": {
+                  "type": "string"
+                }
+              }
             },
             {
-              "key": "elasticsearch_access_tags"
+              "key": "elasticsearch_access_tags",
+              "type": "array",
+              "custom_config": {
+                "grouping": "deployment",
+                "original_grouping": "deployment",
+                "config_constraints": {
+                  "type": "string"
+                }
+              }
             },
             {
               "key": "auto_scaling"
@@ -612,7 +667,13 @@
               "key": "admin_pass"
             },
             {
-              "key": "users"
+              "key": "users",
+              "type": "array",
+              "custom_config": {
+                "type": "textarea",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "service_credential_names"
@@ -621,7 +682,13 @@
               "key": "existing_secrets_manager_instance_crn"
             },
             {
-              "key": "service_credential_secrets"
+              "key": "service_credential_secrets",
+              "type": "array",
+              "custom_config": {
+                "type": "textarea",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "use_existing_admin_pass_secrets_manager_secret_group"
