@@ -23,7 +23,7 @@
         "nosql"
       ],
       "short_description": "Creates and configures an instance of IBM Cloud Databases for Elasticsearch.",
-      "long_description": "This architecture supports creating and configuring an instance of [Databases for Elasticsearch](https://www.ibm.com/products/databases-for-elasticsearch), with optional KMS encryption. This Terraform-based automation is part of a broader suite of IBM-maintained Infrastructure as Code (IaC) asset collection, each following the naming pattern \"Cloud automation for *servicename*\" and focusing on single IBM Cloud service. These single-service deployable architectures can be used on their own to streamline and automate service deployments through an [IaC approach](https://cloud.ibm.com/docs/secure-enterprise?topic=secure-enterprise-understanding-projects), or assembled together into a broader [automated IaC stack](https://cloud.ibm.com/docs/secure-enterprise?topic=secure-enterprise-config-stack) to automate the deployment of an end-to-end solution architecture.",
+      "long_description": "This architecture supports creating and configuring an instance of [Databases for Elasticsearch](https://www.ibm.com/products/databases-for-elasticsearch), with optional KMS encryption.\n\nℹ️ This Terraform-based automation is part of a broader suite of IBM-maintained Infrastructure as Code (IaC) assets, each following the naming pattern \"Cloud automation for *servicename*\" and focusing on single IBM Cloud service. These single-service deployable architectures can be used on their own to streamline and automate service deployments through an [IaC approach](https://cloud.ibm.com/docs/secure-enterprise?topic=secure-enterprise-understanding-projects), or assembled together into a broader [automated IaC stack](https://cloud.ibm.com/docs/secure-enterprise?topic=secure-enterprise-config-stack) to automate the deployment of an end-to-end solution architecture.",
       "offering_docs_url": "https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/README.md",
       "offering_icon_url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/main/images/elasticsearch_icon.svg",
       "provider_name": "IBM",
@@ -58,7 +58,7 @@
             "profiles": [
               {
                 "profile_name": "IBM Cloud Framework for Financial Services",
-                "profile_version": "1.6.0"
+                "profile_version": "1.7.0"
               }
             ]
           },
@@ -81,14 +81,14 @@
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
               "service_name": "kms",
-              "notes": "[Optional] Editor access is required to create keys. It is required only if KMS encryption is enabled."
+              "notes": "[Optional] Editor access is required to create keys. It is only required when using Key Protect for encryption."
             },
             {
               "role_crns": [
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
               "service_name": "hs-crypto",
-              "notes": "[Optional] Editor access is required to create keys in HPCS. It is required only if KMS encryption is enabled."
+              "notes": "[Optional] Editor access is required to create keys in HPCS. It is only required when using HPCS for encryption."
             }
           ],
           "architecture": {
@@ -240,7 +240,7 @@
               ]
             },
             {
-              "key": "elasticsearch_resource_tags",
+              "key": "resource_tags",
               "type": "array",
               "custom_config": {
                 "grouping": "deployment",
@@ -251,7 +251,7 @@
               }
             },
             {
-              "key": "elasticsearch_access_tags",
+              "key": "access_tags",
               "type": "array",
               "custom_config": {
                 "grouping": "deployment",
@@ -289,6 +289,10 @@
                 {
                   "displayname": "public",
                   "value": "public"
+                },
+                {
+                  "displayname": "public-and-private",
+                  "value": "public-and-private"
                 }
               ]
             },
@@ -378,7 +382,7 @@
               "key": "key_name"
             },
             {
-              "key": "elasticsearch_backup_crn"
+              "key": "backup_crn"
             },
             {
               "key": "existing_backup_kms_key_crn"
@@ -456,7 +460,7 @@
           ]
         },
         {
-          "label": "Security Enforced",
+          "label": "Security-enforced",
           "name": "security-enforced",
           "index": 2,
           "install_type": "fullstack",
@@ -466,7 +470,7 @@
             "profiles": [
               {
                 "profile_name": "IBM Cloud Framework for Financial Services",
-                "profile_version": "1.6.0"
+                "profile_version": "1.7.0"
               }
             ]
           },
@@ -630,7 +634,7 @@
               "key": "name"
             },
             {
-              "key": "elasticsearch_resource_tags",
+              "key": "resource_tags",
               "type": "array",
               "custom_config": {
                 "grouping": "deployment",
@@ -641,7 +645,7 @@
               }
             },
             {
-              "key": "elasticsearch_access_tags",
+              "key": "access_tags",
               "type": "array",
               "custom_config": {
                 "grouping": "deployment",
@@ -725,7 +729,7 @@
               "key": "key_name"
             },
             {
-              "key": "elasticsearch_backup_crn"
+              "key": "backup_crn"
             },
             {
               "key": "existing_backup_kms_key_crn"

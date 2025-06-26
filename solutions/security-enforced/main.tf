@@ -8,21 +8,21 @@ module "elasticsearch" {
   region                              = var.region
   existing_elasticsearch_instance_crn = var.existing_elasticsearch_instance_crn
   elasticsearch_version               = var.elasticsearch_version
-  elasticsearch_backup_crn            = var.elasticsearch_backup_crn
+  backup_crn                          = var.backup_crn
   plan                                = var.plan
   enable_elser_model                  = var.enable_elser_model
   elser_model_type                    = var.elser_model_type
   # ICD hosting model properties
-  members                     = var.members
-  member_memory_mb            = var.member_memory_mb
-  member_cpu_count            = var.member_cpu_count
-  member_disk_mb              = var.member_disk_mb
-  member_host_flavor          = var.member_host_flavor
-  service_credential_names    = var.service_credential_names
-  admin_pass                  = var.admin_pass
-  users                       = var.users
-  elasticsearch_resource_tags = var.elasticsearch_resource_tags
-  elasticsearch_access_tags   = var.elasticsearch_access_tags
+  members                  = var.members
+  member_memory_mb         = var.member_memory_mb
+  member_cpu_count         = var.member_cpu_count
+  member_disk_mb           = var.member_disk_mb
+  member_host_flavor       = var.member_host_flavor
+  service_credential_names = var.service_credential_names
+  admin_pass               = var.admin_pass
+  users                    = var.users
+  resource_tags            = var.resource_tags
+  access_tags              = var.access_tags
   # Encryption
   kms_encryption_enabled             = true
   existing_kms_instance_crn          = var.existing_kms_instance_crn

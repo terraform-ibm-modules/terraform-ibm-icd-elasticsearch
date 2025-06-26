@@ -7,14 +7,14 @@ output "id" {
   value       = local.elasticsearch_id
 }
 
-output "guid" {
-  description = "Elasticsearch instance guid"
-  value       = local.elasticsearch_guid
-}
-
 output "version" {
   description = "Elasticsearch instance version"
   value       = local.elasticsearch_version
+}
+
+output "guid" {
+  description = "Elasticsearch instance guid"
+  value       = local.elasticsearch_guid
 }
 
 output "crn" {

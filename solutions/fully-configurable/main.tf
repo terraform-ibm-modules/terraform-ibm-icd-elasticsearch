@@ -1,6 +1,9 @@
 #######################################################################################################################
 # Resource Group
 #######################################################################################################################
+locals {
+  prefix = var.prefix != null ? trimspace(var.prefix) != "" ? "${var.prefix}-" : "" : ""
+}
 
 module "resource_group" {
   source                       = "terraform-ibm-modules/resource-group/ibm"
@@ -13,7 +16,7 @@ module "resource_group" {
 #######################################################################################################################
 
 locals {
-  prefix = (var.prefix != null && trimspace(var.prefix) != "" ? "${var.prefix}-" : "")
+  use_ibm_owned_encryption_key = !var.kms_encryption_enabled
   create_new_kms_key = (
     var.kms_encryption_enabled &&
     var.existing_elasticsearch_instance_crn == null &&
@@ -22,7 +25,6 @@ locals {
   elasticsearch_key_name      = "${local.prefix}${var.key_name}"
   elasticsearch_key_ring_name = "${local.prefix}${var.key_ring_name}"
 }
-
 
 module "kms" {
   providers = {
@@ -106,8 +108,7 @@ locals {
   backup_kms_service       = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].service_name : local.kms_service
   backup_kms_instance_guid = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].service_instance : local.kms_instance_guid
   backup_kms_key_id        = local.create_cross_account_backup_kms_auth_policy ? module.kms_backup_key_crn_parser[0].resource : local.kms_key_id
-
-  backup_kms_key_crn = var.existing_elasticsearch_instance_crn != null || !var.kms_encryption_enabled ? null : var.existing_backup_kms_key_crn
+  backup_kms_key_crn       = var.existing_elasticsearch_instance_crn != null || !var.kms_encryption_enabled ? null : var.existing_backup_kms_key_crn
   # Always use same key for backups unless user explicially passed a value for 'existing_backup_kms_key_crn'
   use_same_kms_key_for_backups = var.existing_backup_kms_key_crn == null ? true : false
 }
@@ -120,7 +121,7 @@ resource "ibm_iam_authorization_policy" "kms_policy" {
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = module.resource_group.resource_group_id
   roles                    = ["Reader"]
-  description              = "Allow all Elastic Search instances in the resource group ${module.resource_group.resource_group_id} in the account ${local.account_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.kms_instance_guid}"
+  description              = "Allow all Elasticsearch instances in the resource group ${module.resource_group.resource_group_id} in the account ${local.account_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.kms_instance_guid}"
   resource_attributes {
     name     = "serviceName"
     operator = "stringEquals"
@@ -168,7 +169,7 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy" {
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = module.resource_group.resource_group_id
   roles                    = ["Reader"]
-  description              = "Allow all Elastic Search instances in the resource group ${module.resource_group.resource_group_id} in the account ${local.account_id} to read the ${local.backup_kms_service} key ${local.backup_kms_key_id} from the instance GUID ${local.backup_kms_instance_guid}"
+  description              = "Allow all Elasticsearch instances in the resource group ${module.resource_group.resource_group_id} in the account ${local.account_id} to read the ${local.backup_kms_service} key ${local.backup_kms_key_id} from the instance GUID ${local.backup_kms_instance_guid}"
   resource_attributes {
     name     = "serviceName"
     operator = "stringEquals"
@@ -281,27 +282,26 @@ module "elasticsearch" {
   name                              = "${local.prefix}${var.name}"
   region                            = var.region
   plan                              = var.plan
-  skip_iam_authorization_policy     = var.kms_encryption_enabled ? var.skip_elasticsearch_kms_auth_policy : true
   elasticsearch_version             = var.elasticsearch_version
-  service_endpoints                 = var.service_endpoints
-  use_ibm_owned_encryption_key      = !var.kms_encryption_enabled
+  skip_iam_authorization_policy     = var.kms_encryption_enabled ? var.skip_elasticsearch_kms_auth_policy : true
+  use_ibm_owned_encryption_key      = local.use_ibm_owned_encryption_key
   kms_key_crn                       = local.kms_key_crn
   backup_encryption_key_crn         = local.backup_kms_key_crn
   use_same_kms_key_for_backups      = local.use_same_kms_key_for_backups
   use_default_backup_encryption_key = var.use_default_backup_encryption_key
-  backup_crn                        = var.elasticsearch_backup_crn
-  kms_encryption_enabled            = var.kms_encryption_enabled
-  access_tags                       = var.elasticsearch_access_tags
-  tags                              = var.elasticsearch_resource_tags
+  access_tags                       = var.access_tags
+  tags                              = var.resource_tags
   admin_pass                        = local.admin_pass
   users                             = var.users
   members                           = var.members
   member_host_flavor                = var.member_host_flavor
-  member_memory_mb                  = var.member_memory_mb
-  member_disk_mb                    = var.member_disk_mb
-  member_cpu_count                  = var.member_cpu_count
+  memory_mb                         = var.member_memory_mb
+  disk_mb                           = var.member_disk_mb
+  cpu_count                         = var.member_cpu_count
   auto_scaling                      = var.auto_scaling
   service_credential_names          = var.service_credential_names
+  backup_crn                        = var.backup_crn
+  service_endpoints                 = var.service_endpoints
   enable_elser_model                = var.enable_elser_model
   elser_model_type                  = var.elser_model_type
   cbr_rules                         = var.cbr_rules
@@ -323,7 +323,7 @@ locals {
 #######################################################################################################################
 
 locals {
-  create_sm_auth_policy = var.skip_elasticsearch_to_secrets_manager_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
+  create_secrets_manager_auth_policy = var.skip_elasticsearch_to_secrets_manager_auth_policy || var.existing_secrets_manager_instance_crn == null ? 0 : 1
 }
 
 # Parse the Secrets Manager CRN
@@ -334,10 +334,9 @@ module "sm_instance_crn_parser" {
   crn     = var.existing_secrets_manager_instance_crn
 }
 
-# create a service authorization between Secrets Manager and the target service (Elastic Search)
+# create a service authorization between Secrets Manager and the target service (Elasticsearch)
 resource "ibm_iam_authorization_policy" "secrets_manager_key_manager" {
-  count                       = local.create_sm_auth_policy
-  depends_on                  = [module.elasticsearch]
+  count                       = local.create_secrets_manager_auth_policy
   source_service_name         = "secrets-manager"
   source_resource_instance_id = local.existing_secrets_manager_instance_guid
   target_service_name         = "databases-for-elasticsearch"
@@ -347,14 +346,13 @@ resource "ibm_iam_authorization_policy" "secrets_manager_key_manager" {
 }
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
-resource "time_sleep" "wait_for_es_authorization_policy" {
-  count           = local.create_sm_auth_policy
+resource "time_sleep" "wait_for_elasticsearch_authorization_policy" {
+  count           = local.create_secrets_manager_auth_policy
   depends_on      = [ibm_iam_authorization_policy.secrets_manager_key_manager]
   create_duration = "30s"
 }
 
 locals {
-  # Build the structure of the service credential type secret
   service_credential_secrets = [
     for service_credentials in var.service_credential_secrets : {
       secret_group_name        = service_credentials.secret_group_name
@@ -396,10 +394,9 @@ locals {
   existing_secrets_manager_instance_region = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].region : null
 }
 
-# Create secret(s)
 module "secrets_manager_service_credentials" {
-  count                       = var.existing_secrets_manager_instance_crn == null ? 0 : 1
-  depends_on                  = [time_sleep.wait_for_es_authorization_policy]
+  count                       = length(local.service_credential_secrets) > 0 ? 1 : 0
+  depends_on                  = [time_sleep.wait_for_elasticsearch_authorization_policy]
   source                      = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
   version                     = "2.3.1"
   existing_sm_instance_guid   = local.existing_secrets_manager_instance_guid

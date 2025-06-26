@@ -1,5 +1,5 @@
 ##############################################################################
-# DA extra
+# Input Variables
 ##############################################################################
 
 variable "ibmcloud_api_key" {
@@ -10,7 +10,7 @@ variable "ibmcloud_api_key" {
 
 variable "existing_resource_group_name" {
   type        = string
-  description = "The name of an existing resource group to provision resources in."
+  description = "The name of an existing resource group to provision resource in."
   default     = "Default"
   nullable    = false
 }
@@ -18,15 +18,27 @@ variable "existing_resource_group_name" {
 variable "prefix" {
   type        = string
   nullable    = true
-  description = "The prefix to add to all resources that this solution creates (e.g `prod`, `test`, `dev`). To not use any prefix value, you can set this value to `null` or an empty string."
+  description = "The prefix to be added to all resources created by this solution. To skip using a prefix, set this value to null or an empty string. The prefix must begin with a lowercase letter and may contain only lowercase letters, digits, and hyphens '-'. It should not exceed 16 characters, must not end with a hyphen('-'), and can not contain consecutive hyphens ('--'). Example: prod-0205-cos. [Learn more](https://terraform-ibm-modules.github.io/documentation/#/prefix.md)."
+
   validation {
-    condition = (var.prefix == null ? true :
+    # - null and empty string is allowed
+    # - Must not contain consecutive hyphens (--): length(regexall("--", var.prefix)) == 0
+    # - Starts with a lowercase letter: [a-z]
+    # - Contains only lowercase letters (a–z), digits (0–9), and hyphens (-)
+    # - Must not end with a hyphen (-): [a-z0-9]
+    condition = (var.prefix == null || var.prefix == "" ? true :
       alltrue([
-        can(regex("^[a-z]{0,1}[-a-z0-9]{0,14}[a-z0-9]{0,1}$", var.prefix)),
-        length(regexall("^.*--.*", var.prefix)) == 0
+        can(regex("^[a-z][-a-z0-9]*[a-z0-9]$", var.prefix)),
+        length(regexall("--", var.prefix)) == 0
       ])
     )
-    error_message = "Prefix must begin with a lowercase letter, contain only lowercase letters, numbers, and - characters. Prefixes must end with a lowercase letter or number and be 16 or fewer characters."
+    error_message = "Prefix must begin with a lowercase letter and may contain only lowercase letters, digits, and hyphens '-'. It must not end with a hyphen('-'), and cannot contain consecutive hyphens ('--')."
+  }
+
+  validation {
+    # must not exceed 16 characters in length
+    condition     = length(var.prefix) <= 16
+    error_message = "Prefix must not exceed 16 characters."
   }
 }
 
@@ -34,26 +46,23 @@ variable "name" {
   type        = string
   description = "The name of the Databases for Elasticsearch instance. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
   default     = "elasticsearch"
-  nullable    = false
 }
 
 variable "region" {
-  description = "The region to provision all resources in. [Learn more](https://terraform-ibm-modules.github.io/documentation/#/region) about how to select different regions for different services."
+  description = "The region where you want to deploy your instance."
   type        = string
   default     = "us-south"
-  nullable    = false
 }
 
 variable "existing_elasticsearch_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of an existing Databases for Elasticsearch instance. If no value is specified, a new instance is created."
-  nullable    = true
 }
 
 variable "elasticsearch_version" {
-  type        = string
   description = "The version of the Databases for Elasticsearch instance. If no value is specified, the current preferred version of Databases for Elasticsearch is used."
+  type        = string
   default     = null
 }
 
@@ -123,14 +132,14 @@ variable "member_host_flavor" {
 }
 
 variable "service_credential_names" {
+  description = "Map of name, role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/fully-configurable/DA-types.md#svc-credential-name)"
   type        = map(string)
-  description = "The map of name and role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
   default     = {}
 }
 
 variable "admin_pass" {
   type        = string
-  description = "The password for the database administrator. If the admin password is null, then it is created automatically. You must set 'existing_secrets_manager_instance_crn' to store admin pass into secrets manager. You can specify more users in a user block."
+  description = "The password for the database administrator. If no admin password is provided (i.e., it is null), one will be generated automatically. Additional users can be added using a user block."
   default     = null
   sensitive   = true
 }
@@ -139,21 +148,21 @@ variable "users" {
   type = list(object({
     name     = string
     password = string # pragma: allowlist secret
-    type     = optional(string)
+    type     = string # "type" is required to generate the connection string for the outputs.
     role     = optional(string)
   }))
   default     = []
   sensitive   = true
-  description = "The list of users that have access to the database. Multiple blocks are allowed. The user password must be 10-32 characters. In most cases, you can use IAM service credentials (by specifying `service_credential_names`) to control access to the database instance. This block creates native database users. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
+  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be 10-32 characters. In most cases, you can use IAM service credentials (by specifying `service_credential_names`) to control access to the database instance. This block creates native database users. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
 }
 
-variable "elasticsearch_resource_tags" {
-  type        = list(any)
-  description = "The list of tags to be added to the Databases for Elasticsearch instance."
+variable "resource_tags" {
+  type        = list(string)
+  description = "The list of resource tags to be added to the Databases for Elasticsearch instance."
   default     = []
 }
 
-variable "elasticsearch_access_tags" {
+variable "access_tags" {
   type        = list(string)
   description = "A list of access tags to apply to the Databases for Elasticsearch instance created by the solution. [Learn more](https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial)."
   default     = []
@@ -173,6 +182,15 @@ variable "existing_kms_key_crn" {
   type        = string
   description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key to encrypt your data. By default this key is used for both deployment data and backups, but this behaviour can be altered using the optional `existing_backup_kms_key_crn` input. If no value is passed a new key will be created in the instance specified in the `existing_kms_instance_crn` input. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
   default     = null
+
+
+  validation {
+    condition = (
+      (var.existing_kms_key_crn != null && var.existing_kms_instance_crn == null) ||
+      (var.existing_kms_key_crn == null && var.existing_kms_instance_crn != null)
+    )
+    error_message = "Either existing_kms_key_crn or existing_kms_instance_crn must be set, but not both."
+  }
 }
 
 variable "skip_elasticsearch_kms_auth_policy" {
@@ -191,30 +209,33 @@ variable "ibmcloud_kms_api_key" {
 variable "key_ring_name" {
   type        = string
   default     = "elasticsearch-key-ring"
-  description = "The name for the key ring created for the ElasticSearch key. Applies only if not specifying an existing key or using IBM owned keys. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  description = "The name for the key ring created for the Databases for ElasticSearch key. Applies only if not specifying an existing key. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
 }
 
 variable "key_name" {
   type        = string
   default     = "elasticsearch-key"
-  description = "The name for the key created for the ElasticSearch key. Applies only if not specifying an existing key or using IBM owned keys. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  description = "The name for the key created for the Databases for ElasticSearch key. Applies only if not specifying an existing key. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
 }
 
 variable "existing_backup_kms_key_crn" {
   type        = string
-  description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key that you want to use for encrypting the disk that holds deployment backups. Applies only if `use_ibm_owned_encryption_key` is false. If no value is passed, the value of `existing_kms_key_crn` is used. If no value is passed for `existing_kms_key_crn`, a new key will be created in the instance specified in the `existing_kms_instance_crn` input. Alternatively set `use_default_backup_encryption_key` to true to use the IBM Cloud Databases default encryption. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
+  description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key that you want to use for encrypting the disk that holds deployment backups. If no value is passed, the value of `existing_kms_key_crn` is used. If no value is passed for `existing_kms_key_crn`, a new key will be created in the instance specified in the `existing_kms_instance_crn` input."
   default     = null
-
-  validation {
-    condition     = var.existing_elasticsearch_instance_crn != null ? var.existing_backup_kms_key_crn == null : true
-    error_message = "When using an existing elasticsearch instance 'existing_backup_kms_key_crn' should not be set"
-  }
 }
 
-variable "elasticsearch_backup_crn" {
+variable "backup_crn" {
   type        = string
   description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
   default     = null
+
+  validation {
+    condition = anytrue([
+      var.backup_crn == null,
+      can(regex("^crn:.*:backup:", var.backup_crn))
+    ])
+    error_message = "backup_crn must be null OR starts with 'crn:' and contains ':backup:'"
+  }
 }
 
 ##############################################################
@@ -244,7 +265,7 @@ variable "auto_scaling" {
       rate_units               = optional(string, "mb")
     })
   })
-  description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
+  description = "Optional rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable/DA-types.md)."
   default     = null
 }
 
@@ -290,15 +311,18 @@ variable "service_credential_secrets" {
   }
 
   validation {
-    condition     = length(var.service_credential_secrets) > 0 ? var.existing_secrets_manager_instance_crn != null : true
-    error_message = "existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret."
+    condition = (
+      length(var.service_credential_secrets) == 0 ||
+      var.existing_secrets_manager_instance_crn != null
+    )
+    error_message = "`existing_secrets_manager_instance_crn` is required when adding service credentials to a secrets manager secret."
   }
 }
 
 variable "skip_elasticsearch_to_secrets_manager_auth_policy" {
   type        = bool
   default     = false
-  description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for Elasticsearch. Set to `true` to use an existing policy."
+  description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for Elasticsearch. If set to false, the Secrets Manager instance passed by the user is granted the Key Manager access to the Elasticsearch instance created by the Deployable Architecture. Set to `true` to use an existing policy. The value of this is ignored if any value for 'existing_secrets_manager_instance_crn' is not passed."
 }
 
 variable "admin_pass_secrets_manager_secret_group" {

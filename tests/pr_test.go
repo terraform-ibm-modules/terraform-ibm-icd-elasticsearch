@@ -95,7 +95,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
-		{Name: "elasticsearch_access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
@@ -131,7 +131,7 @@ func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
 
 	options.TerraformVars = map[string]interface{}{
 		"prefix":                       options.Prefix,
-		"elasticsearch_access_tags":    permanentResources["accessTags"],
+		"access_tags":                  permanentResources["accessTags"],
 		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
 		"existing_resource_group_name": resourceGroup,
 		// Currently, we can not have upgrade test for elser model, because test provision private endpoint for ES (fscloud profile), and script can not connect to private ES API without schematics
@@ -185,7 +185,7 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
-		{Name: "elasticsearch_access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 		{Name: "plan", Value: "platinum", DataType: "string"},
