@@ -80,7 +80,7 @@ module "icd_elasticsearch" {
   tags                     = var.resource_tags
   auto_scaling             = var.auto_scaling
   member_host_flavor       = "multitenant"
-  member_memory_mb         = 4096
+  memory_mb                = 4096
 
   # Example of how to use different KMS keys for data and backups
   use_ibm_owned_encryption_key = false
