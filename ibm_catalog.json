@@ -202,13 +202,8 @@
             },
             {
               "key": "elasticsearch_version",
-              "required": false,
-              "default_value": "__NULL__",
+              "required": true,
               "options": [
-                {
-                  "displayname": "preferred",
-                  "value": "__NULL__"
-                },
                 {
                   "displayname": "8.15",
                   "value": "8.15"
@@ -609,13 +604,8 @@
             },
             {
               "key": "elasticsearch_version",
-              "required": false,
-              "default_value": "__NULL__",
+              "required": true,
               "options": [
-                {
-                  "displayname": "preferred",
-                  "value": "__NULL__"
-                },
                 {
                   "displayname": "8.15",
                   "value": "8.15"
