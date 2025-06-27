@@ -25,7 +25,8 @@ import (
 
 const completeExampleTerraformDir = "examples/complete"
 const fscloudExampleTerraformDir = "examples/fscloud"
-const standardSolutionTerraformDir = "solutions/standard"
+const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
+const securityEnforcedSolutionTerraformDir = "solutions/security-enforced"
 const latestVersion = "8.15"
 
 // Use existing resource group
@@ -58,27 +59,25 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestRunStandardSolutionSchematics(t *testing.T) {
+func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
 	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
 		Testing: t,
 		TarIncludePatterns: []string{
 			"*.tf",
-			fmt.Sprintf("%s/*.tf", standardSolutionTerraformDir),
-			fmt.Sprintf("%s/*.tf", fscloudExampleTerraformDir),
-			fmt.Sprintf("%s/*.tf", "modules/fscloud"),
+			fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
 			fmt.Sprintf("%s/*.sh", "scripts"),
 		},
-		TemplateFolder:         standardSolutionTerraformDir,
+		TemplateFolder:         fullyConfigurableSolutionTerraformDir,
 		BestRegionYAMLPath:     regionSelectionPath,
-		Prefix:                 "els-sr-da",
+		Prefix:                 "els-fc-da",
 		ResourceGroup:          resourceGroup,
 		DeleteWorkspaceOnFail:  false,
 		WaitJobCompleteMinutes: 60,
 	})
 
-	serviceCredentialSecrets := []map[string]any{
+	serviceCredentialSecrets := []map[string]interface{}{
 		{
 			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
 			"service_credentials": []map[string]string{
@@ -96,16 +95,16 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
-		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
-		{Name: "resource_group_name", Value: options.Prefix, DataType: "string"},
+		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
 		{Name: "plan", Value: "platinum", DataType: "string"},
 		{Name: "enable_elser_model", Value: true, DataType: "bool"},
 		{Name: "service_credential_names", Value: "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}", DataType: "map(string)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
-		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
+		{Name: "service_endpoints", Value: "private", DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
@@ -118,24 +117,23 @@ func TestRunStandardSolutionSchematics(t *testing.T) {
 	assert.Nil(t, err, "This should not have errored")
 }
 
-func TestRunStandardUpgradeSolution(t *testing.T) {
+func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:                    t,
-		TerraformDir:               standardSolutionTerraformDir,
+		TerraformDir:               securityEnforcedSolutionTerraformDir,
 		BestRegionYAMLPath:         regionSelectionPath,
 		Prefix:                     "els-st-da-upg",
 		ResourceGroup:              resourceGroup,
 		CheckApplyResultForUpgrade: true,
 	})
 
-	options.TerraformVars = map[string]any{
-		"access_tags":               permanentResources["accessTags"],
-		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
-		"kms_endpoint_type":         "public",
-		"resource_group_name":       options.Prefix,
-		"provider_visibility":       "public",
+	options.TerraformVars = map[string]interface{}{
+		"prefix":                       options.Prefix,
+		"access_tags":                  permanentResources["accessTags"],
+		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
+		"existing_resource_group_name": resourceGroup,
 		// Currently, we can not have upgrade test for elser model, because test provision private endpoint for ES (fscloud profile), and script can not connect to private ES API without schematics
 		// "plan":                      "platinum",
 		// "enable_elser_model":        true,
@@ -147,6 +145,61 @@ func TestRunStandardUpgradeSolution(t *testing.T) {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
 	}
+}
+
+func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
+	t.Parallel()
+
+	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
+		Testing: t,
+		TarIncludePatterns: []string{
+			"*.tf",
+			fmt.Sprintf("%s/*.tf", securityEnforcedSolutionTerraformDir),
+			fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
+			fmt.Sprintf("%s/*.sh", "scripts"),
+		},
+		TemplateFolder:         securityEnforcedSolutionTerraformDir,
+		BestRegionYAMLPath:     regionSelectionPath,
+		Prefix:                 "els-se-da",
+		ResourceGroup:          resourceGroup,
+		DeleteWorkspaceOnFail:  false,
+		WaitJobCompleteMinutes: 60,
+	})
+
+	serviceCredentialSecrets := []map[string]interface{}{
+		{
+			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
+			"service_credentials": []map[string]string{
+				{
+					"secret_name": fmt.Sprintf("%s-cred-reader", options.Prefix),
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Viewer",
+				},
+				{
+					"secret_name": fmt.Sprintf("%s-cred-writer", options.Prefix),
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Editor",
+				},
+			},
+		},
+	}
+
+	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
+		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
+		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
+		{Name: "plan", Value: "platinum", DataType: "string"},
+		{Name: "enable_elser_model", Value: true, DataType: "bool"},
+		{Name: "service_credential_names", Value: "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}", DataType: "map(string)"},
+		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
+		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
+		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
+		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+	}
+	err := options.RunSchematicTest()
+	assert.Nil(t, err, "This should not have errored")
 }
 
 func TestRunExistingInstance(t *testing.T) {
@@ -191,12 +244,12 @@ func TestRunExistingInstance(t *testing.T) {
 			Testing: t,
 			TarIncludePatterns: []string{
 				"*.tf",
-				fmt.Sprintf("%s/*.tf", standardSolutionTerraformDir),
+				fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
 				fmt.Sprintf("%s/*.tf", fscloudExampleTerraformDir),
 				fmt.Sprintf("%s/*.tf", "modules/fscloud"),
 				fmt.Sprintf("%s/*.sh", "scripts"),
 			},
-			TemplateFolder:         standardSolutionTerraformDir,
+			TemplateFolder:         fullyConfigurableSolutionTerraformDir,
 			BestRegionYAMLPath:     regionSelectionPath,
 			Prefix:                 "els-sr-da",
 			ResourceGroup:          resourceGroup,
@@ -205,11 +258,11 @@ func TestRunExistingInstance(t *testing.T) {
 		})
 
 		options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+			{Name: "prefix", Value: options.Prefix, DataType: "string"},
 			{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 			{Name: "existing_elasticsearch_instance_crn", Value: terraform.Output(t, existingTerraformOptions, "elasticsearch_crn"), DataType: "string"},
-			{Name: "resource_group_name", Value: fmt.Sprintf("%s-resource-group", prefix), DataType: "string"},
+			{Name: "existing_resource_group_name", Value: fmt.Sprintf("%s-resource-group", prefix), DataType: "string"},
 			{Name: "region", Value: region, DataType: "string"},
-			{Name: "use_existing_resource_group", Value: true, DataType: "bool"},
 			{Name: "provider_visibility", Value: "public", DataType: "string"},
 		}
 		err := options.RunSchematicTest()
@@ -229,22 +282,23 @@ func TestRunExistingInstance(t *testing.T) {
 }
 
 // Test the DA when using IBM owned encryption keys
-func TestRunStandardSolutionIBMKeys(t *testing.T) {
+func TestFullyConfigurableSolutionIBMKeys(t *testing.T) {
 	t.Parallel()
 
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:       t,
-		TerraformDir:  standardSolutionTerraformDir,
+		TerraformDir:  fullyConfigurableSolutionTerraformDir,
 		Region:        "us-south",
-		Prefix:        "es-icd-key",
+		Prefix:        "esicdkey",
 		ResourceGroup: resourceGroup,
 	})
 
 	options.TerraformVars = map[string]any{
 		"elasticsearch_version":        "8.12",
 		"provider_visibility":          "public",
-		"resource_group_name":          options.Prefix,
-		"use_ibm_owned_encryption_key": true,
+		"existing_resource_group_name": resourceGroup,
+		"kms_encryption_enabled":       false,
+		"prefix":                       options.Prefix,
 	}
 
 	output, err := options.RunTestConsistency()
@@ -255,8 +309,8 @@ func TestRunStandardSolutionIBMKeys(t *testing.T) {
 func TestPlanValidation(t *testing.T) {
 	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 		Testing:       t,
-		TerraformDir:  standardSolutionTerraformDir,
-		Prefix:        "validate-plan",
+		TerraformDir:  fullyConfigurableSolutionTerraformDir,
+		Prefix:        "val-plan",
 		ResourceGroup: resourceGroup,
 		Region:        "us-south", // skip VPC region picker
 	})
@@ -264,37 +318,39 @@ func TestPlanValidation(t *testing.T) {
 	options.TerraformOptions.NoColor = true
 	options.TerraformOptions.Logger = logger.Discard
 	options.TerraformOptions.Vars = map[string]interface{}{
-		"prefix":                options.Prefix,
-		"region":                "us-south",
-		"elasticsearch_version": "8.10",
-		"provider_visibility":   "public",
-		"resource_group_name":   options.Prefix,
+		"prefix":                       options.Prefix,
+		"existing_resource_group_name": resourceGroup,
+		"region":                       "us-south",
+		"elasticsearch_version":        "8.10",
+		"provider_visibility":          "public",
 	}
 
 	// Test the DA when using Elser model
-	var standardSolutionWithElserModelVars = map[string]interface{}{
+	var fullyConfigurableSolutionWithElserModelVars = map[string]interface{}{
+		"kms_encryption_enabled":    true,
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
 		"enable_elser_model":        true,
 		"plan":                      "platinum",
 	}
 
 	// Test the DA when using Kibana dashboard and existing KMS instance
-	var standardSolutionWithKibanaDashboardVars = map[string]interface{}{
+	var fullyConfigurableSolutionWithKibanaDashboardVars = map[string]interface{}{
 		"enable_kibana_dashboard":   true,
+		"kms_encryption_enabled":    true,
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
 		"plan":                      "enterprise",
 	}
 
 	// Test the DA when using IBM owned encryption key
-	var standardSolutionWithUseIbmOwnedEncKey = map[string]interface{}{
-		"use_ibm_owned_encryption_key": true,
+	var fullyConfigurableSolutionWithUseIbmOwnedEncKey = map[string]interface{}{
+		"kms_encryption_enabled": false,
 	}
 
 	// Create a map of the variables
 	tfVarsMap := map[string]map[string]interface{}{
-		"standardSolutionWithElserModelVars":      standardSolutionWithElserModelVars,
-		"standardSolutionWithKibanaDashboardVars": standardSolutionWithKibanaDashboardVars,
-		"standardSolutionWithUseIbmOwnedEncKey":   standardSolutionWithUseIbmOwnedEncKey,
+		"fullyConfigurableSolutionWithElserModelVars":      fullyConfigurableSolutionWithElserModelVars,
+		"fullyConfigurableSolutionWithKibanaDashboardVars": fullyConfigurableSolutionWithKibanaDashboardVars,
+		"fullyConfigurableSolutionWithUseIbmOwnedEncKey":   fullyConfigurableSolutionWithUseIbmOwnedEncKey,
 	}
 
 	_, initErr := terraform.InitE(t, options.TerraformOptions)
