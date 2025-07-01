@@ -436,7 +436,6 @@ resource "random_password" "kibana_app_login_password" {
 }
 
 locals {
-<<<<<<< HEAD:solutions/standard/main.tf
   code_engine_project_id    = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
   code_engine_project_name  = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
   code_engine_app_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
@@ -444,12 +443,6 @@ locals {
   deployment_id             = urlencode(local.elasticsearch_id)
   kibana_system_password    = var.enable_kibana_dashboard ? random_password.kibana_system_password[0].result : null
   kibana_app_login_password = var.enable_kibana_dashboard ? random_password.kibana_app_login_password[0].result : null
-=======
-  code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
-  code_engine_project_name = local.code_engine_project_id != null ? null : "${local.prefix}${var.kibana_code_engine_new_project_name}"
-  code_engine_app_name     = "${local.prefix}${var.kibana_code_engine_new_app_name}"
-  kibana_version           = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
->>>>>>> origin/main:solutions/fully-configurable/main.tf
 }
 
 data "http" "es_metadata" {
