@@ -1,15 +1,10 @@
 ########################################################################################################################
-# Input variable validation
-# (approach based on https://github.com/hashicorp/terraform/issues/25609#issuecomment-1057614400)
-#
-# TODO: Replace with terraform cross variable validation: https://github.ibm.com/GoldenEye/issues/issues/10836
-########################################################################################################################
-
-########################################################################################################################
 # Locals
 ########################################################################################################################
 
 locals {
+  # If no value passed for 'backup_encryption_key_crn' use the value of 'kms_key_crn' and perform validation of 'kms_key_crn' to check if region is supported by backup encryption key.
+
   # If 'use_ibm_owned_encryption_key' is true or 'use_default_backup_encryption_key' is true, default to null.
   # If no value is passed for 'backup_encryption_key_crn', then default to use 'kms_key_crn'.
   backup_encryption_key_crn = var.use_ibm_owned_encryption_key || var.use_default_backup_encryption_key ? null : (var.backup_encryption_key_crn != null ? var.backup_encryption_key_crn : var.kms_key_crn)
@@ -68,12 +63,13 @@ locals {
   create_backup_kms_auth_policy = !var.use_ibm_owned_encryption_key && !var.skip_iam_authorization_policy && !var.use_same_kms_key_for_backups ? 1 : 0
 }
 
-resource "ibm_iam_authorization_policy" "policy" {
+# Create IAM Authorization Policies to allow Elasticsearch to access KMS for the encryption key
+resource "ibm_iam_authorization_policy" "kms_policy" {
   count                    = local.create_kms_auth_policy
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = var.resource_group_id
   roles                    = ["Reader"]
-  description              = "Allow all Elastic Search instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.kms_key_instance_guid}"
+  description              = "Allow all Elasticsearch instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.kms_key_instance_guid}"
   resource_attributes {
     name     = "serviceName"
     operator = "stringEquals"
@@ -108,8 +104,9 @@ resource "ibm_iam_authorization_policy" "policy" {
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
 resource "time_sleep" "wait_for_authorization_policy" {
-  count           = local.create_kms_auth_policy
-  depends_on      = [ibm_iam_authorization_policy.policy]
+  count      = local.create_kms_auth_policy
+  depends_on = [ibm_iam_authorization_policy.kms_policy]
+
   create_duration = "30s"
 }
 
@@ -118,7 +115,7 @@ resource "ibm_iam_authorization_policy" "backup_kms_policy" {
   source_service_name      = "databases-for-elasticsearch"
   source_resource_group_id = var.resource_group_id
   roles                    = ["Reader"]
-  description              = "Allow all Elastic Search instances in the Resource Group ${var.resource_group_id} to read the ${local.backup_kms_service} key ${local.backup_kms_key_id} from the instance GUID ${local.backup_kms_key_instance_guid}"
+  description              = "Allow all Elasticsearch instances in the Resource Group ${var.resource_group_id} to read the ${local.backup_kms_service} key ${local.backup_kms_key_id} from the instance GUID ${local.backup_kms_key_instance_guid}"
   resource_attributes {
     name     = "serviceName"
     operator = "stringEquals"
@@ -193,12 +190,12 @@ resource "ibm_database" "elasticsearch" {
   dynamic "group" {
     for_each = local.host_flavor_set && var.member_host_flavor != "multitenant" && var.backup_crn == null ? [1] : []
     content {
-      group_id = "member" # Only member type is allowed for elasticsearch
+      group_id = "member" # Only member type is allowed for IBM Cloud Databases
       host_flavor {
         id = var.member_host_flavor
       }
       disk {
-        allocation_mb = var.member_disk_mb
+        allocation_mb = var.disk_mb
       }
       members {
         allocation_count = var.members
@@ -210,18 +207,18 @@ resource "ibm_database" "elasticsearch" {
   dynamic "group" {
     for_each = local.host_flavor_set && var.member_host_flavor == "multitenant" && var.backup_crn == null ? [1] : []
     content {
-      group_id = "member" # Only member type is allowed for elasticsearch
+      group_id = "member" # Only member type is allowed for IBM Cloud Databases
       host_flavor {
         id = var.member_host_flavor
       }
       disk {
-        allocation_mb = var.member_disk_mb
+        allocation_mb = var.disk_mb
       }
       memory {
-        allocation_mb = var.member_memory_mb
+        allocation_mb = var.memory_mb
       }
       cpu {
-        allocation_count = var.member_cpu_count
+        allocation_count = var.cpu_count
       }
       members {
         allocation_count = var.members
@@ -231,17 +228,17 @@ resource "ibm_database" "elasticsearch" {
 
   ## This block is for if host_flavor IS NOT set
   dynamic "group" {
-    for_each = local.host_flavor_set == false && var.backup_crn == null ? [1] : []
+    for_each = !local.host_flavor_set && var.backup_crn == null ? [1] : []
     content {
-      group_id = "member" # Only member type is allowed for elasticsearch
+      group_id = "member" # Only member type is allowed for IBM Cloud Databases
       memory {
-        allocation_mb = var.member_memory_mb
+        allocation_mb = var.memory_mb
       }
       disk {
-        allocation_mb = var.member_disk_mb
+        allocation_mb = var.disk_mb
       }
       cpu {
-        allocation_count = var.member_cpu_count
+        allocation_count = var.cpu_count
       }
       members {
         allocation_count = var.members
@@ -299,7 +296,6 @@ resource "ibm_resource_tag" "elasticsearch_tag" {
   tags        = var.access_tags
   tag_type    = "access"
 }
-
 
 ########################################################################################################################
 # Context Based Restrictions
