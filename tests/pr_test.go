@@ -117,34 +117,35 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 	assert.Nil(t, err, "This should not have errored")
 }
 
-func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
+func TestRunSecurityEnforcedUpgradeSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
-	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:                    t,
-		TerraformDir:               securityEnforcedSolutionTerraformDir,
-		BestRegionYAMLPath:         regionSelectionPath,
-		Prefix:                     "es-da-upg",
-		ResourceGroup:              resourceGroup,
+	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
+		Testing:       t,
+		Region:        "us-south",
+		Prefix:        "es-se-upg",
+		ResourceGroup: resourceGroup,
+		TarIncludePatterns: []string{
+			"*.tf",
+			fullyConfigurableSolutionTerraformDir + "/*.tf",
+			securityEnforcedSolutionTerraformDir + "/*.tf",
+		},
+		TemplateFolder:             securityEnforcedSolutionTerraformDir,
+		Tags:                       []string{"es-se-upg"},
+		DeleteWorkspaceOnFail:      false,
+		WaitJobCompleteMinutes:     120,
 		CheckApplyResultForUpgrade: true,
 	})
 
-	options.TerraformVars = map[string]interface{}{
-		"prefix":                       options.Prefix,
-		"access_tags":                  permanentResources["accessTags"],
-		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
-		"existing_resource_group_name": resourceGroup,
-		// Currently, we can not have upgrade test for elser model, because test provision private endpoint for ES (fscloud profile), and script can not connect to private ES API without schematics
-		// "plan":                      "platinum",
-		// "enable_elser_model":        true,
-		// "service_credential_names":  "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}",
+	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 	}
 
-	output, err := options.RunTestUpgrade()
-	if !options.UpgradeTestSkipped {
-		assert.Nil(t, err, "This should not have errored")
-		assert.NotNil(t, output, "Expected some output")
-	}
+	err := options.RunSchematicUpgradeTest()
+	assert.Nil(t, err, "This should not have errored")
 }
 
 func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
