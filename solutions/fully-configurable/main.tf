@@ -302,8 +302,8 @@ module "elasticsearch" {
   access_tags                       = var.access_tags
   tags                              = var.resource_tags
   admin_pass                        = local.admin_pass
-  users                             = local.all_users
   members                           = var.members
+  users                             = local.all_users
   member_host_flavor                = var.member_host_flavor
   memory_mb                         = var.member_memory_mb
   disk_mb                           = var.member_disk_mb
