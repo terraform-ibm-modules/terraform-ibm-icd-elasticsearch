@@ -124,7 +124,7 @@ func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
 		Testing:                    t,
 		TerraformDir:               securityEnforcedSolutionTerraformDir,
 		BestRegionYAMLPath:         regionSelectionPath,
-		Prefix:                     "els-st-da-upg",
+		Prefix:                     "es-da-upg",
 		ResourceGroup:              resourceGroup,
 		CheckApplyResultForUpgrade: true,
 	})
@@ -184,7 +184,6 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
-		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
