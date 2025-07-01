@@ -489,6 +489,35 @@
           "index": 2,
           "install_type": "fullstack",
           "working_directory": "solutions/security-enforced",
+          "dependencies": [
+            {
+              "flavors": [
+                "fully-configurable"
+              ],
+              "id": "4322cf44-2289-49aa-a719-dd79e39b14dc-global",
+              "name": "deploy-arch-ibm-scc-workload-protection",
+              "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
+              "input_mapping": [
+                {
+                  "dependency_input": "region",
+                  "version_input": "region",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "prefix",
+                  "version_input": "prefix",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "existing_resource_group_name",
+                  "version_input": "existing_resource_group_name",
+                  "reference_version": true
+                }
+              ],
+              "version": "v1.10.1",
+              "optional": true
+            }
+          ],
           "compliance": {
             "authority": "scc-v3",
             "profiles": [
