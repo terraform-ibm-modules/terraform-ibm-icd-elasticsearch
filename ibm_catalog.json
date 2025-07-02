@@ -210,7 +210,7 @@
                 },
                 {
                   "dependency_input": "enable_platform_metrics",
-                  "version_input": "enable_platform_metrics",
+                  "version_input": "secrets_manager_enable_platform_metrics",
                   "reference_version": true
                 }
               ],
@@ -460,10 +460,10 @@
               ]
             },
             {
-              "key": "enable_platform_metrics",
+              "key": "secrets_manager_enable_platform_metrics",
               "required": true,
               "type": "bool",
-              "description": "When set to true, the IBM Cloud Monitoring instance will be configured to collect platform metrics from the provided region. You can configure 1 instance only of the IBM Cloud Monitoring service per region to collect platform metrics in that location. Check with the account or service administrator if another monitoring instance has already been configured. You may not have permissions to see all monitoring instances in the region.",
+              "description": "Secrets Manager enabled platform metrics",
               "virtual": true,
               "default_value": true
             },
@@ -935,7 +935,7 @@
                 },
                 {
                   "dependency_input": "enable_platform_metrics",
-                  "version_input": "enable_platform_metrics",
+                  "version_input": "secrets_manager_enable_platform_metrics",
                   "reference_version": true
                 }
               ],
@@ -1170,10 +1170,10 @@
               ]
             },
             {
-              "key": "enable_platform_metrics",
+              "key": "secrets_manager_enable_platform_metrics",
               "required": true,
               "type": "bool",
-              "description": "When set to true, the IBM Cloud Monitoring instance will be configured to collect platform metrics from the provided region. You can configure 1 instance only of the IBM Cloud Monitoring service per region to collect platform metrics in that location. Check with the account or service administrator if another monitoring instance has already been configured. You may not have permissions to see all monitoring instances in the region.",
+              "description": "Secrets Manager enabled platform metrics",
               "virtual": true,
               "default_value": true
             },
