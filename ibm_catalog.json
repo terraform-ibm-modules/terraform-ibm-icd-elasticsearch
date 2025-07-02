@@ -76,10 +76,169 @@
                   "dependency_input": "existing_resource_group_name",
                   "version_input": "existing_resource_group_name",
                   "reference_version": true
+                },
+                {
+                  "dependency_input": "provider_visibility",
+                  "version_input": "provider_visibility",
+                  "reference_version": true
                 }
               ],
               "version": "v1.10.1",
               "optional": true
+            },
+            {
+              "flavors": [
+                "fully-configurable"
+              ],
+              "id": "73debdbf-894f-4c14-81c7-5ece3a70b67d-global",
+              "name": "deploy-arch-ibm-cloud-monitoring",
+              "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
+              "input_mapping": [
+                {
+                  "dependency_input": "region",
+                  "version_input": "region",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "prefix",
+                  "version_input": "prefix",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "existing_resource_group_name",
+                  "version_input": "existing_resource_group_name",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "provider_visibility",
+                  "version_input": "provider_visibility",
+                  "reference_version": true
+                }
+              ],
+              "version": "v1.2.14",
+              "optional": true
+            },
+            {
+              "flavors": [
+                "fully-configurable"
+              ],
+              "id": "2cad4789-fa90-4886-9c9e-857081c273ee-global",
+              "name": "deploy-arch-ibm-kms",
+              "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
+              "input_mapping": [
+                {
+                  "dependency_input": "region",
+                  "version_input": "region",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "prefix",
+                  "version_input": "prefix",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "existing_resource_group_name",
+                  "version_input": "existing_resource_group_name",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "provider_visibility",
+                  "version_input": "provider_visibility",
+                  "reference_version": true
+                }
+              ],
+              "version": "v5.1.4",
+              "optional": true
+            },
+            {
+              "flavors": [
+                "fully-configurable"
+              ],
+              "id": "6d6ebc76-7bbd-42f5-8bc7-78f4fabd5944-global",
+              "name": "deploy-arch-ibm-secrets-manager",
+              "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
+              "input_mapping": [
+                {
+                  "dependency_input": "region",
+                  "version_input": "region",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "prefix",
+                  "version_input": "prefix",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "existing_resource_group_name",
+                  "version_input": "existing_resource_group_name",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "provider_visibility",
+                  "version_input": "provider_visibility",
+                  "reference_version": true
+                }
+              ],
+              "version": "v2.6.4",
+              "optional": true
+            },
+            {
+              "flavors": [
+                "apps",
+                "project"
+              ],
+              "id": "413843d9-8962-48a5-8ab5-dfcf4429372c-global",
+              "name": "deploy-arch-ibm-code-engine",
+              "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
+              "input_mapping": [
+                {
+                  "dependency_input": "prefix",
+                  "version_input": "prefix",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "existing_resource_group_name",
+                  "version_input": "existing_resource_group_name",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "provider_visibility",
+                  "version_input": "provider_visibility",
+                  "reference_version": true
+                }
+              ],
+              "version": "v4.4.1",
+              "optional": true
+            },
+            {
+              "id": "63641cec-6093-4b4f-b7b0-98d2f4185cd6-global",
+              "name": "deploy-arch-ibm-account-infra-base",
+              "description": "Cloud automation for Account Configuration organizes your IBM Cloud account with a ready-made set of resource groups by default—and, when you enable the \"with Account Settings\" option, it also applies baseline security and governance settings.",
+              "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
+              "flavors": [
+                "resource-group-only",
+                "resource-groups-with-account-settings"
+              ],
+              "default_flavor": "resource-group-only",
+              "input_mapping": [
+                {
+                  "dependency_output": "security_resource_group_name",
+                  "version_input": "existing_resource_group_name"
+                },
+                {
+                  "dependency_input": "prefix",
+                  "version_input": "prefix",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "provider_visibility",
+                  "version_input": "provider_visibility",
+                  "reference_version": true
+                }
+              ],
+              "optional": true,
+              "on_by_default": false,
+              "version": "v3.0.7"
             }
           ],
           "compliance": {
