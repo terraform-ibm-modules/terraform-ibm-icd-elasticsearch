@@ -58,8 +58,8 @@
               "flavors": [
                 "fully-configurable"
               ],
-              "id": "4322cf44-2289-49aa-a719-dd79e39b14dc-global",
-              "name": "deploy-arch-ibm-scc-workload-protection",
+              "id": "a3137d28-79e0-479d-8a24-758ebd5a0eab-global",
+              "name": "deploy-arch-ibm-observability",
               "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
               "input_mapping": [
                 {
@@ -81,66 +81,9 @@
                   "dependency_input": "provider_visibility",
                   "version_input": "provider_visibility",
                   "reference_version": true
-                },
-                {
-                  "dependency_input": "scc_workload_protection_service_plan",
-                  "version_input": "scc_workload_protection_service_plan",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "cspm_enabled",
-                  "version_input": "cspm_enabled",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "app_config_plan",
-                  "version_input": "app_config_plan",
-                  "reference_version": true
                 }
               ],
-              "version": "v1.10.1",
-              "optional": true
-            },
-            {
-              "flavors": [
-                "fully-configurable"
-              ],
-              "id": "73debdbf-894f-4c14-81c7-5ece3a70b67d-global",
-              "name": "deploy-arch-ibm-cloud-monitoring",
-              "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
-              "input_mapping": [
-                {
-                  "dependency_input": "region",
-                  "version_input": "region",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "prefix",
-                  "version_input": "prefix",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "existing_resource_group_name",
-                  "version_input": "existing_resource_group_name",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "provider_visibility",
-                  "version_input": "provider_visibility",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "cloud_monitoring_plan",
-                  "version_input": "cloud_monitoring_plan",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "enable_platform_metrics",
-                  "version_input": "cloud_monitoring_enable_platform_metrics",
-                  "reference_version": true
-                }
-              ],
-              "version": "v1.2.14",
+              "version": "v3.0.3",
               "optional": true
             },
             {
@@ -169,6 +112,11 @@
                 {
                   "dependency_input": "provider_visibility",
                   "version_input": "provider_visibility",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "key_protect_plan",
+                  "version_input": "key_protect_plan",
                   "reference_version": true
                 }
               ],
@@ -214,7 +162,7 @@
                   "reference_version": true
                 }
               ],
-              "version": "v2.6.4",
+              "version": "v2.4.0",
               "optional": true
             },
             {
@@ -483,78 +431,21 @@
               "default_value": "[]"
             },
             {
-              "key": "cloud_monitoring_plan",
+              "key": "key_protect_plan",
               "required": true,
               "type": "string",
-              "description": "The service plan for Cloud Monitoring instance created by this solution.",
-              "virtual": true,
-              "default_value": "graduated-tier",
+              "description": "The plan to use for the Key Protect service instance.",
               "options": [
                 {
-                  "displayname": "Graduated Tier",
-                  "value": "graduated-tier"
+                  "displayname": "Tiered Pricing",
+                  "value": "tiered-pricing"
                 },
                 {
-                  "displayname": "Lite",
-                  "value": "lite"
-                }
-              ]
-            },
-            {
-              "key": "cloud_monitoring_enable_platform_metrics",
-              "required": true,
-              "type": "string",
-              "description": "When set to true, the IBM Cloud Monitoring instance collects the platform metrics.",
-              "virtual": true,
-              "default_value": "false"
-            },
-            {
-              "key": "scc_workload_protection_service_plan",
-              "required": true,
-              "type": "string",
-              "description": "The pricing plan for the Workload Protection instance service. Possible values: free-trial, graduated-tier",
-              "virtual": true,
-              "default_value": "graduated-tier",
-              "options": [
-                {
-                  "displayname": "Graduated Tier",
-                  "value": "graduated-tier"
-                },
-                {
-                  "displayname": "Free Trial",
-                  "value": "free-trial"
-                }
-              ]
-            },
-            {
-              "key": "cspm_enabled",
-              "required": true,
-              "type": "string",
-              "description": "Enable Cloud Security Posture Management (CSPM) for the Workload Protection instance. This will create a trusted profile associated with the SCC Workload Protection instance that has viewer / reader access to the App Config service and viewer access to the Enterprise service.",
-              "virtual": true,
-              "default_value": "false"
-            },
-            {
-              "key": "app_config_plan",
-              "required": true,
-              "type": "string",
-              "description": "The plan to use for the App Configuration service instance.",
-              "options": [
-                {
-                  "displayname": "Basic",
-                  "value": "basic"
-                },
-                {
-                  "displayname": "Standard",
-                  "value": "standardv2"
-                },
-                {
-                  "displayname": "Enterprise",
-                  "value": "enterprise"
+                  "displayname": "Cross Region Resiliency",
+                  "value": "cross-region-resiliency"
                 }
               ],
-              "virtual": true,
-              "default_value": "basic"
+              "virtual": true
             },
             {
               "key": "name"
@@ -803,8 +694,8 @@
               "flavors": [
                 "fully-configurable"
               ],
-              "id": "4322cf44-2289-49aa-a719-dd79e39b14dc-global",
-              "name": "deploy-arch-ibm-scc-workload-protection",
+              "id": "a3137d28-79e0-479d-8a24-758ebd5a0eab-global",
+              "name": "deploy-arch-ibm-observability",
               "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
               "input_mapping": [
                 {
@@ -820,58 +711,6 @@
                 {
                   "dependency_input": "existing_resource_group_name",
                   "version_input": "existing_resource_group_name",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "scc_workload_protection_service_plan",
-                  "version_input": "scc_workload_protection_service_plan",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "cspm_enabled",
-                  "version_input": "cspm_enabled",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "app_config_plan",
-                  "version_input": "app_config_plan",
-                  "reference_version": true
-                }
-              ],
-              "version": "v1.10.1",
-              "optional": true
-            },
-            {
-              "flavors": [
-                "fully-configurable"
-              ],
-              "id": "73debdbf-894f-4c14-81c7-5ece3a70b67d-global",
-              "name": "deploy-arch-ibm-cloud-monitoring",
-              "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
-              "input_mapping": [
-                {
-                  "dependency_input": "region",
-                  "version_input": "region",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "prefix",
-                  "version_input": "prefix",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "existing_resource_group_name",
-                  "version_input": "existing_resource_group_name",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "cloud_monitoring_plan",
-                  "version_input": "cloud_monitoring_plan",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "enable_platform_metrics",
-                  "version_input": "cloud_monitoring_enable_platform_metrics",
                   "reference_version": true
                 }
               ],
@@ -899,6 +738,11 @@
                 {
                   "dependency_input": "existing_resource_group_name",
                   "version_input": "existing_resource_group_name",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "key_protect_plan",
+                  "version_input": "key_protect_plan",
                   "reference_version": true
                 }
               ],
@@ -939,7 +783,7 @@
                   "reference_version": true
                 }
               ],
-              "version": "v2.6.4",
+              "version": "v2.4.0",
               "optional": true
             },
             {
@@ -1120,7 +964,7 @@
                 }
               ]
             },
-{
+            {
               "key": "plan",
               "options": [
                 {
@@ -1193,78 +1037,21 @@
               "default_value": "[]"
             },
             {
-              "key": "cloud_monitoring_plan",
+              "key": "key_protect_plan",
               "required": true,
               "type": "string",
-              "description": "The service plan for Cloud Monitoring instance created by this solution.",
-              "virtual": true,
-              "default_value": "graduated-tier",
+              "description": "The plan to use for the Key Protect service instance.",
               "options": [
                 {
-                  "displayname": "Graduated Tier",
-                  "value": "graduated-tier"
+                  "displayname": "Tiered Pricing",
+                  "value": "tiered-pricing"
                 },
                 {
-                  "displayname": "Lite",
-                  "value": "lite"
-                }
-              ]
-            },
-            {
-              "key": "cloud_monitoring_enable_platform_metrics",
-              "required": true,
-              "type": "bool",
-              "description": "When set to true, the IBM Cloud Monitoring instance collects the platform metrics.",
-              "virtual": true,
-              "default_value": false
-            },
-            {
-              "key": "scc_workload_protection_service_plan",
-              "required": true,
-              "type": "string",
-              "description": "The pricing plan for the Workload Protection instance service. Possible values: free-trial, graduated-tier",
-              "virtual": true,
-              "default_value": "graduated-tier",
-              "options": [
-                {
-                  "displayname": "Graduated Tier",
-                  "value": "graduated-tier"
-                },
-                {
-                  "displayname": "Free Trial",
-                  "value": "free-trial"
-                }
-              ]
-            },
-            {
-              "key": "cspm_enabled",
-              "required": true,
-              "type": "string",
-              "description": "Enable Cloud Security Posture Management (CSPM) for the Workload Protection instance. This will create a trusted profile associated with the SCC Workload Protection instance that has viewer / reader access to the App Config service and viewer access to the Enterprise service.",
-              "virtual": true,
-              "default_value": "false"
-            },
-            {
-              "key": "app_config_plan",
-              "required": true,
-              "type": "string",
-              "description": "The plan to use for the App Configuration service instance.",
-              "options": [
-                {
-                  "displayname": "Basic",
-                  "value": "basic"
-                },
-                {
-                  "displayname": "Standard",
-                  "value": "standardv2"
-                },
-                {
-                  "displayname": "Enterprise",
-                  "value": "enterprise"
+                  "displayname": "Cross Region Resiliency",
+                  "value": "cross-region-resiliency"
                 }
               ],
-              "virtual": true,
-              "default_value": "basic"
+              "virtual": true
             },
             {
               "key": "name"
