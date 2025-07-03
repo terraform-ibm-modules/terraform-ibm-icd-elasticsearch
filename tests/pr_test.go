@@ -113,6 +113,14 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 	}
+
+	// need to ignore because of a provider issue: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6330
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.code_engine_kibana[0].module.app[\"" + options.Prefix + "-ce-kibana-app\"].ibm_code_engine_app.ce_app",
+		},
+	}
+
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
 }
@@ -198,6 +206,14 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 	}
+
+	// need to ignore because of a provider issue: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6330
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.elasticsearch.module.code_engine_kibana[0].module.app[\"" + options.Prefix + "-ce-kibana-app\"].ibm_code_engine_app.ce_app",
+		},
+	}
+
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
 }
