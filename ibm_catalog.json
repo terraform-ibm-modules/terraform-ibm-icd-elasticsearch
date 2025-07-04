@@ -445,7 +445,8 @@
                   "value": "cross-region-resiliency"
                 }
               ],
-              "virtual": true
+              "virtual": true,
+              "default_value": "tiered-pricing"
             },
             {
               "key": "name"
@@ -1051,7 +1052,8 @@
                   "value": "cross-region-resiliency"
                 }
               ],
-              "virtual": true
+              "virtual": true,
+              "default_value": "tiered-pricing"
             },
             {
               "key": "name"
