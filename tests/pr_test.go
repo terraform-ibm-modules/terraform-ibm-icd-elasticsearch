@@ -113,38 +113,46 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 	}
 
+	// need to ignore because of a provider issue: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6330
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.code_engine_kibana[0].module.app[\"" + options.Prefix + "-ce-kibana-app\"].ibm_code_engine_app.ce_app",
+		},
+	}
+
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
 }
 
-func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
+func TestRunSecurityEnforcedUpgradeSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
-	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:                    t,
-		TerraformDir:               securityEnforcedSolutionTerraformDir,
-		BestRegionYAMLPath:         regionSelectionPath,
-		Prefix:                     "els-st-da-upg",
-		ResourceGroup:              resourceGroup,
+	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
+		Testing:       t,
+		Region:        "us-south",
+		Prefix:        "es-se-upg",
+		ResourceGroup: resourceGroup,
+		TarIncludePatterns: []string{
+			"*.tf",
+			fullyConfigurableSolutionTerraformDir + "/*.tf",
+			securityEnforcedSolutionTerraformDir + "/*.tf",
+		},
+		TemplateFolder:             securityEnforcedSolutionTerraformDir,
+		Tags:                       []string{"es-se-upg"},
+		DeleteWorkspaceOnFail:      false,
+		WaitJobCompleteMinutes:     120,
 		CheckApplyResultForUpgrade: true,
 	})
 
-	options.TerraformVars = map[string]interface{}{
-		"prefix":                       options.Prefix,
-		"access_tags":                  permanentResources["accessTags"],
-		"existing_kms_instance_crn":    permanentResources["hpcs_south_crn"],
-		"existing_resource_group_name": resourceGroup,
-		// Currently, we can not have upgrade test for elser model, because test provision private endpoint for ES (fscloud profile), and script can not connect to private ES API without schematics
-		// "plan":                      "platinum",
-		// "enable_elser_model":        true,
-		// "service_credential_names":  "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}",
+	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 	}
 
-	output, err := options.RunTestUpgrade()
-	if !options.UpgradeTestSkipped {
-		assert.Nil(t, err, "This should not have errored")
-		assert.NotNil(t, output, "Expected some output")
-	}
+	err := options.RunSchematicUpgradeTest()
+	assert.Nil(t, err, "This should not have errored")
 }
 
 func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
@@ -184,7 +192,6 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
-		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
@@ -198,6 +205,14 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 	}
+
+	// need to ignore because of a provider issue: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6330
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.elasticsearch.module.code_engine_kibana[0].module.app[\"" + options.Prefix + "-ce-kibana-app\"].ibm_code_engine_app.ce_app",
+		},
+	}
+
 	err := options.RunSchematicTest()
 	assert.Nil(t, err, "This should not have errored")
 }
