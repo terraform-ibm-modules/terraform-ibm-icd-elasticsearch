@@ -682,7 +682,8 @@
             {
               "key": "cbr_rules"
             }
-          ]
+          ],
+          "dependency_version_2": true
         },
         {
           "label": "Security-enforced",
