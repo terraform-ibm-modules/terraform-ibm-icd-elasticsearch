@@ -188,6 +188,11 @@
                   "dependency_input": "provider_visibility",
                   "version_input": "provider_visibility",
                   "reference_version": true
+                },
+                {
+                  "dependency_input": "project_name",
+                  "version_input": "code_engine_project_name",
+                  "reference_version": true
                 }
               ],
               "version": "v4.4.1",
@@ -447,6 +452,14 @@
               ],
               "virtual": true,
               "default_value": "tiered-pricing"
+            },
+            {
+              "key": "project_name",
+              "required": true,
+              "type": "string",
+              "description": "The name to use for the Code Engine Project.",
+              "virtual": true,
+              "default_value": ""
             },
             {
               "key": "name"
@@ -807,6 +820,11 @@
                   "dependency_input": "existing_resource_group_name",
                   "version_input": "existing_resource_group_name",
                   "reference_version": true
+                },
+                {
+                  "dependency_input": "project_name",
+                  "version_input": "code_engine_project_name",
+                  "reference_version": true
                 }
               ],
               "version": "v4.4.1",
@@ -1056,6 +1074,14 @@
               ],
               "virtual": true,
               "default_value": "tiered-pricing"
+            },
+            {
+              "key": "project_name",
+              "required": true,
+              "type": "string",
+              "description": "The name to use for the Code Engine Project.",
+              "virtual": true,
+              "default_value": ""
             },
             {
               "key": "name"
