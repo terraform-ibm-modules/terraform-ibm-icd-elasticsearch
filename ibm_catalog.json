@@ -89,11 +89,12 @@
               "version": "v3.0.3"
             },
             {
+              "name": "deploy-arch-ibm-kms",
+              "id": "2cad4789-fa90-4886-9c9e-857081c273ee-global",
+              "description": "Enable Cloud automation for Key Protect to use your own managed encryption keys. If disabled, IBM Cloud's default service-managed encryption is used.",
               "flavors": [
                 "fully-configurable"
               ],
-              "id": "2cad4789-fa90-4886-9c9e-857081c273ee-global",
-              "name": "deploy-arch-ibm-kms",
               "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
               "input_mapping": [
                 {
@@ -120,10 +121,29 @@
                   "dependency_input": "key_protect_plan",
                   "version_input": "key_protect_plan",
                   "reference_version": true
+                },
+                {
+                  "dependency_output": "kms_instance_crn",
+                  "version_input": "existing_kms_instance_crn"
+                },
+                {
+                  "version_input": "kms_encryption_enabled",
+                  "value": true
+                },
+                {
+                  "dependency_input": "prefix",
+                  "version_input": "prefix",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "region",
+                  "version_input": "region",
+                  "reference_version": true
                 }
               ],
-              "version": "v5.1.4",
-              "optional": true
+              "optional": true,
+              "on_by_default": true,
+              "version": "v5.1.4"
             },
             {
               "flavors": [
@@ -482,18 +502,11 @@
               "default_value": "tiered-pricing"
             },
             {
-              "key": "project_name",
+              "key": "code_engine_project_name",
               "required": true,
               "type": "string",
               "description": "The name to use for the Code Engine Project.",
               "virtual": true,
-              "custom_config": {
-                "grouping": "deployment",
-                "original_grouping": "deployment",
-                "config_constraints": {
-                  "type": "string"
-                }
-              },
               "default_value": ""
             },
             {
@@ -776,11 +789,12 @@
               "version": "v3.0.3"
             },
             {
-              "flavors": [
-                "security-enforced"
-              ],
-              "id": "2cad4789-fa90-4886-9c9e-857081c273ee-global",
               "name": "deploy-arch-ibm-kms",
+              "id": "2cad4789-fa90-4886-9c9e-857081c273ee-global",
+              "description": "Enable Cloud automation for Key Protect to use your own managed encryption keys. If disabled, IBM Cloud's default service-managed encryption is used.",
+              "flavors": [
+                "fully-configurable"
+              ],
               "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
               "input_mapping": [
                 {
@@ -799,13 +813,37 @@
                   "reference_version": true
                 },
                 {
+                  "dependency_input": "provider_visibility",
+                  "version_input": "provider_visibility",
+                  "reference_version": true
+                },
+                {
                   "dependency_input": "key_protect_plan",
                   "version_input": "key_protect_plan",
                   "reference_version": true
+                },
+                {
+                  "dependency_output": "kms_instance_crn",
+                  "version_input": "existing_kms_instance_crn"
+                },
+                {
+                  "version_input": "kms_encryption_enabled",
+                  "value": true
+                },
+                {
+                  "dependency_input": "prefix",
+                  "version_input": "prefix",
+                  "reference_version": true
+                },
+                {
+                  "dependency_input": "region",
+                  "version_input": "region",
+                  "reference_version": true
                 }
               ],
-              "version": "v5.1.4",
-              "optional": true
+              "optional": true,
+              "on_by_default": true,
+              "version": "v5.1.4"
             },
             {
               "flavors": [
@@ -1136,7 +1174,7 @@
               "default_value": "tiered-pricing"
             },
             {
-              "key": "project_name",
+              "key": "code_engine_project_name",
               "required": true,
               "type": "string",
               "description": "The name to use for the Code Engine Project.",
