@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -19,6 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/cloudinfo"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
+	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testaddons"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testschematic"
 )
@@ -397,4 +399,78 @@ func GetRandomAdminPassword(t *testing.T) string {
 	require.Nil(t, randErr) // do not proceed if we can't gen a random password
 	randomPass := "A1" + base64.URLEncoding.EncodeToString(randomBytes)[:13]
 	return randomPass
+}
+
+// TestRunAddonTests runs addon tests in parallel using a matrix approach
+func TestRunAddonTests(t *testing.T) {
+	testCases := []testaddons.AddonTestCase{
+		{
+			Name:   "ES-Default-Configuration",
+			Prefix: "esaddon",
+		},
+		{
+			Name:   "ES-With-RG-OBS-CE-KMS-SM-And-Account-Settings",
+			Prefix: "esall",
+			Dependencies: []cloudinfo.AddonConfig{
+				{
+					OfferingName:   "deploy-arch-ibm-account-infra-base",
+					OfferingFlavor: "resource-group-only",
+					Enabled:        core.BoolPtr(true),
+				},
+				{
+					OfferingName:   "deploy-arch-ibm-observability",
+					OfferingFlavor: "instances",
+					Enabled:        core.BoolPtr(true),
+				},
+				{
+					OfferingName:   "deploy-arch-ibm-kms",
+					OfferingFlavor: "fully-configurable",
+					Enabled:        core.BoolPtr(true),
+				},
+				{
+					OfferingName:   "deploy-arch-ibm-secrets-manager",
+					OfferingFlavor: "fully-configurable",
+					Enabled:        core.BoolPtr(true),
+				},
+				{
+					OfferingName:   "deploy-arch-ibm-code-engine",
+					OfferingFlavor: "project",
+					Enabled:        core.BoolPtr(true),
+				},
+			},
+			SkipInfrastructureDeployment: true, // Skip infrastructure deployment for this test case
+		},
+	}
+	// Define common options that apply to all test cases
+	baseOptions := testaddons.TestAddonsOptionsDefault(&testaddons.TestAddonOptions{
+		Testing:              t,
+		Prefix:               "es-matrix", // Test cases will override with their own prefixes
+		ResourceGroup:        resourceGroup,
+		SkipLocalChangeCheck: true, // Skip local change check for addon tests
+	})
+
+	matrix := testaddons.AddonTestMatrix{
+		TestCases:   testCases,
+		BaseOptions: baseOptions,
+		BaseSetupFunc: func(baseOptions *testaddons.TestAddonOptions, testCase testaddons.AddonTestCase) *testaddons.TestAddonOptions {
+			// The framework automatically handles prefix assignment from testCase.Prefix
+			// You can add any custom logic here if needed
+			return baseOptions
+		},
+		AddonConfigFunc: func(options *testaddons.TestAddonOptions, testCase testaddons.AddonTestCase) cloudinfo.AddonConfig {
+			return cloudinfo.NewAddonConfigTerraform(
+				options.Prefix,
+				"deploy-arch-ibm-icd-elasticsearch",
+				"fully-configurable",
+				map[string]interface{}{
+					"prefix":                   options.Prefix,
+					"region":                   "us-south",
+					"elasticsearch_version":    "8.15",
+					"code_engine_project_name": "es-addons-project",
+				},
+			)
+		},
+	}
+
+	baseOptions.RunAddonTestMatrix(matrix)
 }

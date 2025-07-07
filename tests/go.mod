@@ -2,12 +2,13 @@ module github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch
 
 go 1.23.0
 
-toolchain go1.24.4
+toolchain go1.24.1
 
 require (
+	github.com/IBM/go-sdk-core/v5 v5.20.1
 	github.com/gruntwork-io/terratest v0.50.0
 	github.com/stretchr/testify v1.10.0
-	github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper v1.55.2
+	github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper v1.55.3
 )
 
 require (
