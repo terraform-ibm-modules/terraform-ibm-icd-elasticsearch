@@ -80,7 +80,7 @@
                 }
               ],
               "optional": true,
-              "on_by_default": true,
+              "on_by_default": false,
               "version": "v3.0.3"
             },
             {
@@ -137,7 +137,7 @@
                 }
               ],
               "optional": true,
-              "on_by_default": true,
+              "on_by_default": false,
               "version": "v5.1.4"
             },
             {
@@ -770,7 +770,7 @@
                 }
               ],
               "optional": true,
-              "on_by_default": true,
+              "on_by_default": false,
               "version": "v3.0.3"
             },
             {
@@ -827,7 +827,7 @@
                 }
               ],
               "optional": true,
-              "on_by_default": true,
+              "on_by_default": false,
               "version": "v5.1.4"
             },
             {
