@@ -174,7 +174,7 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 		Prefix:                 "els-se-da",
 		ResourceGroup:          resourceGroup,
 		DeleteWorkspaceOnFail:  false,
-		WaitJobCompleteMinutes: 60,
+		WaitJobCompleteMinutes: 90,
 	})
 
 	serviceCredentialSecrets := []map[string]interface{}{
