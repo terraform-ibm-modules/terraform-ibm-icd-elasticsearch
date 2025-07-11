@@ -80,7 +80,7 @@
                 }
               ],
               "optional": true,
-              "on_by_default": false,
+              "on_by_default": true,
               "version": "v3.0.3"
             },
             {
@@ -124,20 +124,10 @@
                 {
                   "version_input": "kms_encryption_enabled",
                   "value": true
-                },
-                {
-                  "dependency_input": "prefix",
-                  "version_input": "prefix",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "region",
-                  "version_input": "region",
-                  "reference_version": true
                 }
               ],
               "optional": true,
-              "on_by_default": false,
+              "on_by_default": true,
               "version": "v5.1.4"
             },
             {
@@ -770,7 +760,7 @@
                 }
               ],
               "optional": true,
-              "on_by_default": false,
+              "on_by_default": true,
               "version": "v3.0.3"
             },
             {
@@ -814,20 +804,10 @@
                 {
                   "version_input": "kms_encryption_enabled",
                   "value": true
-                },
-                {
-                  "dependency_input": "prefix",
-                  "version_input": "prefix",
-                  "reference_version": true
-                },
-                {
-                  "dependency_input": "region",
-                  "version_input": "region",
-                  "reference_version": true
                 }
               ],
               "optional": true,
-              "on_by_default": false,
+              "on_by_default": true,
               "version": "v5.1.4"
             },
             {
