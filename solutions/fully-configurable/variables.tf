@@ -474,6 +474,13 @@ variable "kibana_registry_server" {
   type        = string
   description = "The server URL of the container registry used to pull the Kibana image."
   default     = "https://index.docker.io/v1/"
+  validation {
+    condition = (
+      !(var.use_private_registry && !var.use_existing_registry_secret)
+      || (var.kibana_registry_server != null && var.kibana_registry_server != "")
+    )
+    error_message = "The `kibana_registry_server` must not be null or empty when `use_private_registry` is true and `use_existing_registry_secret` is false."
+  }
 }
 
 variable "kibana_image_digest" {
@@ -484,8 +491,6 @@ variable "kibana_image_digest" {
     condition     = var.kibana_image_digest == null || can(regex("^sha256:", var.kibana_image_digest))
     error_message = "If provided, the value of kibana_image_digest must start with 'sha256:'."
   }
-
-
 }
 
 variable "kibana_image_port" {
@@ -514,6 +519,13 @@ variable "kibana_registry_username" {
   description = "Username for the for the container registry."
   type        = string
   default     = null
+  validation {
+    condition = (
+      !(var.use_private_registry && !var.use_existing_registry_secret)
+      || (var.kibana_registry_username != null && var.kibana_registry_username != "")
+    )
+    error_message = "The `kibana_registry_username` must not be null or empty when `use_private_registry` is true and `use_existing_registry_secret` is false."
+  }
 }
 
 variable "kibana_registry_personal_access_token" {
@@ -521,6 +533,13 @@ variable "kibana_registry_personal_access_token" {
   type        = string
   default     = null
   sensitive   = true
+  validation {
+    condition = (
+      !(var.use_private_registry && !var.use_existing_registry_secret)
+      || (var.kibana_registry_personal_access_token != null && var.kibana_registry_personal_access_token != "")
+    )
+    error_message = "The `kibana_registry_personal_access_token` must not be null or empty when `use_private_registry` is true and `use_existing_registry_secret` is false."
+  }
 }
 
 ##############################################################
