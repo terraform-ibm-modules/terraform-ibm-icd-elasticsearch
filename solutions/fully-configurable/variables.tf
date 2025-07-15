@@ -455,7 +455,7 @@ variable "existing_code_engine_project_id" {
 variable "enable_kibana_dashboard" {
   type        = bool
   description = "Set to true to deploy Kibana in Code Engine. NOTE: By default, the Kibana image will be pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM, however this can be overridden using the `kibana_registry_namespace_image` and `kibana_image_digest` inputs."
-  default     = true
+  default     = false
 }
 
 variable "use_private_registry" {
