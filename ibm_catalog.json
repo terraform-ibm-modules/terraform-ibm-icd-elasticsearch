@@ -8,9 +8,10 @@
         "ibm_created",
         "target_terraform",
         "terraform",
+        "solution",
         "data_management",
         "database",
-        "solution"
+        "converged_infra"
       ],
       "keywords": [
         "elasticsearch",
@@ -607,7 +608,7 @@
                 }
               ]
             },
-{
+            {
               "key": "plan",
               "options": [
                 {
