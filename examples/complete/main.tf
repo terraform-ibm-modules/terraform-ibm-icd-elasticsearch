@@ -3,8 +3,8 @@
 ##############################################################################
 
 locals {
-  sm_guid   = var.existing_sm_instance_guid == null ? module.secrets_manager[0].secrets_manager_guid : var.existing_sm_instance_guid
-  sm_region = var.existing_sm_instance_region == null ? var.region : var.existing_sm_instance_region
+  secrets_manager_guid   = var.existing_sm_instance_guid == null ? module.secrets_manager[0].secrets_manager_guid : var.existing_sm_instance_guid
+  secrets_manager_region = var.existing_sm_instance_region == null ? var.region : var.existing_sm_instance_region
   service_credential_names = {
     "es_admin" : "Administrator",
     "es_operator" : "Operator",
@@ -18,7 +18,8 @@ locals {
 ##############################################################################
 
 module "resource_group" {
-  source = "git::https://github.com/terraform-ibm-modules/terraform-ibm-resource-group.git?ref=v1.2.1"
+  source  = "terraform-ibm-modules/resource-group/ibm"
+  version = "1.2.1"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -68,27 +69,26 @@ module "icd_elasticsearch" {
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
   # source            = "terraform-ibm-modules/icd-elasticsearch/ibm"
   # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  resource_group_id        = module.resource_group.resource_group_id
-  name                     = "${var.prefix}-elasticsearch"
-  region                   = var.region
-  plan                     = var.plan
-  access_tags              = var.access_tags
-  admin_pass               = var.admin_pass
-  users                    = var.users
-  service_credential_names = local.service_credential_names
-  elasticsearch_version    = var.elasticsearch_version
-  tags                     = var.resource_tags
-  auto_scaling             = var.auto_scaling
-  member_host_flavor       = "multitenant"
-  memory_mb                = 4096
-
+  resource_group_id     = module.resource_group.resource_group_id
+  name                  = "${var.prefix}-elasticsearch"
+  elasticsearch_version = var.elasticsearch_version
+  admin_pass            = var.admin_pass
+  users                 = var.users
+  region                = var.region
+  plan                  = var.plan
+  access_tags           = var.access_tags
+  tags                  = var.resource_tags
+  deletion_protection   = false
+  auto_scaling          = var.auto_scaling
   # Example of how to use different KMS keys for data and backups
   use_ibm_owned_encryption_key = false
   use_same_kms_key_for_backups = false
   kms_key_crn                  = module.key_protect_all_inclusive.keys["icd.${local.backups_key_name}"].crn
+  service_credential_names     = local.service_credential_names
+  member_host_flavor           = "multitenant"
+  memory_mb                    = 4096
   backup_encryption_key_crn    = module.key_protect_all_inclusive.keys["icd.${local.data_key_name}"].crn
 }
-
 
 ##############################################################################
 ## Secrets Manager layer
@@ -111,8 +111,8 @@ module "secrets_manager" {
 module "secrets_manager_secrets_group" {
   source               = "terraform-ibm-modules/secrets-manager-secret-group/ibm"
   version              = "1.3.11"
-  region               = local.sm_region
-  secrets_manager_guid = local.sm_guid
+  region               = local.secrets_manager_region
+  secrets_manager_guid = local.secrets_manager_guid
   #tfsec:ignore:general-secrets-no-plaintext-exposure
   secret_group_name        = "${var.prefix}-es-secrets"
   secret_group_description = "service secret-group" #tfsec:ignore:general-secrets-no-plaintext-exposure
@@ -123,8 +123,8 @@ module "secrets_manager_service_credentials_user_pass" {
   source                  = "terraform-ibm-modules/secrets-manager-secret/ibm"
   version                 = "1.7.0"
   for_each                = local.service_credential_names
-  region                  = local.sm_region
-  secrets_manager_guid    = local.sm_guid
+  region                  = local.secrets_manager_region
+  secrets_manager_guid    = local.secrets_manager_guid
   secret_group_id         = module.secrets_manager_secrets_group.secret_group_id
   secret_name             = "${var.prefix}-${each.key}-credentials"
   secret_description      = "Elasticsearch Service Credentials for ${each.key}"
@@ -137,8 +137,8 @@ module "secrets_manager_service_credentials_user_pass" {
 module "secrets_manager_service_credentials_cert" {
   source                    = "terraform-ibm-modules/secrets-manager-secret/ibm"
   version                   = "1.7.0"
-  region                    = local.sm_region
-  secrets_manager_guid      = local.sm_guid
+  region                    = local.secrets_manager_region
+  secrets_manager_guid      = local.secrets_manager_guid
   secret_group_id           = module.secrets_manager_secrets_group.secret_group_id
   secret_name               = "${var.prefix}-es-cert"
   secret_description        = "Elasticsearch Service Credential Certificate"

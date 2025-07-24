@@ -280,8 +280,8 @@ module "elasticsearch" {
   depends_on                        = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   resource_group_id                 = module.resource_group.resource_group_id
   name                              = "${local.prefix}${var.name}"
-  region                            = var.region
   plan                              = var.plan
+  region                            = var.region
   elasticsearch_version             = var.elasticsearch_version
   skip_iam_authorization_policy     = var.kms_encryption_enabled ? var.skip_elasticsearch_kms_auth_policy : true
   use_ibm_owned_encryption_key      = local.use_ibm_owned_encryption_key
@@ -302,6 +302,9 @@ module "elasticsearch" {
   service_credential_names          = var.service_credential_names
   backup_crn                        = var.backup_crn
   service_endpoints                 = var.service_endpoints
+  deletion_protection               = var.deletion_protection
+  version_upgrade_skip_backup       = var.version_upgrade_skip_backup
+  timeouts_update                   = var.timeouts_update
   enable_elser_model                = var.enable_elser_model
   elser_model_type                  = var.elser_model_type
   cbr_rules                         = var.cbr_rules
