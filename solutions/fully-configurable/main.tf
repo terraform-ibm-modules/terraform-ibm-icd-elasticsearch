@@ -274,13 +274,17 @@ data "ibm_database_connection" "existing_connection" {
 }
 
 locals {
-  kibana_user = [{
+  kibana_users = [{
     name     = "kibana_user"
     password = local.kibana_app_login_password
     type     = "database"
+    },
+    {
+      name     = "kibana_system"
+      password = local.kibana_system_password
   }]
 
-  all_users = local.kibana_app_login_password != null ? concat(var.users, local.kibana_user) : var.users
+  all_users = local.kibana_app_login_password != null ? concat(var.users, local.kibana_users) : var.users
 }
 
 # Create new instance
@@ -440,7 +444,6 @@ locals {
   code_engine_project_name  = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
   code_engine_app_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
   kibana_version            = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
-  deployment_id             = urlencode(local.elasticsearch_id)
   kibana_system_password    = var.enable_kibana_dashboard ? random_password.kibana_system_password[0].result : null
   kibana_app_login_password = var.enable_kibana_dashboard ? random_password.kibana_app_login_password[0].result : null
 }
@@ -509,19 +512,4 @@ module "code_engine_kibana" {
       managed_domain_mappings = var.kibana_visibility
     }
   }
-}
-
-# Set Elasticsearch built-in kibana_user password
-resource "restapi_object" "set_kibana_system_user_password" {
-  count          = var.enable_kibana_dashboard ? 1 : 0
-  path           = "/v5/ibm/deployments/${local.deployment_id}/users/database/kibana_system"
-  create_method  = "PATCH"
-  update_method  = "PATCH"
-  destroy_method = "PATCH"
-  object_id      = "kibana_system"
-  data = jsonencode({
-    user = {
-      password = local.kibana_system_password
-    }
-  })
 }
