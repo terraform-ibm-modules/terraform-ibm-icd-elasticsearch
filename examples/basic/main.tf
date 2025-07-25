@@ -27,6 +27,7 @@ module "database" {
   tags                  = var.resource_tags
   service_endpoints     = var.service_endpoints
   member_host_flavor    = var.member_host_flavor
+  deletion_protection   = false
   service_credential_names = {
     "elasticsearch_admin" : "Administrator",
     "elasticsearch_operator" : "Operator",
