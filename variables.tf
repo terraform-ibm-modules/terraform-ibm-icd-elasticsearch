@@ -62,7 +62,7 @@ variable "members" {
 
 variable "cpu_count" {
   type        = number
-  description = "The dedicated CPU per member that is allocated. For shared CPU, set to 0. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
+  description = "Allocated dedicated CPU per member. For shared CPU, set to 0. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
   default     = 0
   # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
@@ -83,7 +83,7 @@ variable "member_host_flavor" {
 
 variable "memory_mb" {
   type        = number
-  description = "Allocated memory per member that is allocated. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
+  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
   default     = 4096
   # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
@@ -109,7 +109,7 @@ variable "users" {
 
 variable "service_credential_names" {
   type        = map(string)
-  description = "Map of name and role for service credentials that you want to create for the database."
+  description = "Map of name, role for service credentials that you want to create for the database"
   default     = {}
 
   validation {
@@ -120,7 +120,7 @@ variable "service_credential_names" {
 
 variable "service_endpoints" {
   type        = string
-  description = "The type of endpoint of the database instance. Possible values: `public`, `private`, `public-and-private`."
+  description = "Specify whether you want to enable the public or private endpoints on the instance. Supported values are 'public', 'private' or 'public-and-private'."
   default     = "public"
 
   validation {
