@@ -22,16 +22,16 @@ variable "resource_group" {
   default     = null
 }
 
-variable "elasticsearch_version" {
-  type        = string
-  description = "Version of elasticsearch to deploy"
-  default     = null
-}
-
 variable "access_tags" {
   type        = list(string)
   description = "A list of access tags to apply to the Elasticsearch instance created by the module, see https://cloud.ibm.com/docs/account?topic=account-access-tags-tutorial for more details"
   default     = []
+}
+
+variable "elasticsearch_version" {
+  type        = string
+  description = "Version of elasticsearch to deploy"
+  default     = null
 }
 
 variable "resource_tags" {
@@ -42,7 +42,7 @@ variable "resource_tags" {
 
 variable "service_endpoints" {
   type        = string
-  description = "The type of endpoint of the database instance. Possible values: `public`, `private`, `public-and-private`."
+  description = "Specify whether you want to enable the public or private endpoints on the instance. Supported values: `public`, `private`, `public-and-private`."
   default     = "public"
 
   validation {
