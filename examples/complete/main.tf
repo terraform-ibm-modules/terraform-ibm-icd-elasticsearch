@@ -35,7 +35,7 @@ locals {
 
 module "key_protect_all_inclusive" {
   source            = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version           = "5.1.13"
+  version           = "5.1.14"
   resource_group_id = module.resource_group.resource_group_id
   # Only us-south, us-east and eu-de backup encryption keys are supported. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok for details.
   # Note: Database instance and Key Protect must be created on the same region.
@@ -98,7 +98,7 @@ module "icd_elasticsearch" {
 module "secrets_manager" {
   count                = var.existing_sm_instance_guid == null ? 1 : 0
   source               = "terraform-ibm-modules/secrets-manager/ibm"
-  version              = "2.6.13"
+  version              = "2.6.16"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
   secrets_manager_name = "${var.prefix}-secrets-manager"
