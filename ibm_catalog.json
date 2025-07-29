@@ -453,7 +453,8 @@
             {
               "key": "cbr_rules"
             }
-          ]
+          ],
+          "terraform_version": "1.10.5"
         },
         {
           "label": "Security-enforced",
@@ -775,7 +776,8 @@
             {
               "key": "cbr_rules"
             }
-          ]
+          ],
+          "terraform_version": "1.10.5"
         }
       ]
     }
