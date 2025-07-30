@@ -1,4 +1,4 @@
-// Tests in this file are run in the PR pipeline
+// Tests in this file are NOT run in the PR pipeline. They are run in the continuous testing pipeline along with the ones in pr_test.go
 package test
 
 import (
@@ -84,6 +84,7 @@ func TestPlanICDVersions(t *testing.T) {
 		t.Run(version, func(t *testing.T) { testPlanICDVersions(t, version) })
 	}
 }
+
 func TestRunRestoredDBExample(t *testing.T) {
 	t.Parallel()
 

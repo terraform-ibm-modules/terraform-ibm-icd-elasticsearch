@@ -13,7 +13,6 @@ The example uses the IBM Cloud Terraform provider to create the following infras
 - A context-based restriction (CBR) rule to only allow Elasticsearch to be accessible from within the VPC.
 
 :exclamation: **Important:** In this example, only the IBM Cloud Databases for Elasticsearch instance complies with the IBM Cloud Framework for Financial Services. Other parts of the infrastructure do not necessarily comply.
-
 ## Before you begin
 
 - You need a Hyper Protect Crypto Services instance and root key available in the region that you want to deploy your Elasticsearch database instance to.

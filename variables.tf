@@ -62,7 +62,7 @@ variable "members" {
 
 variable "cpu_count" {
   type        = number
-  description = "The dedicated CPU per member that is allocated. For shared CPU, set to 0. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
+  description = "Allocated dedicated CPU per member. For shared CPU, set to 0. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
   default     = 0
   # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
@@ -76,14 +76,14 @@ variable "disk_mb" {
 
 variable "member_host_flavor" {
   type        = string
-  description = "The host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  description = "Allocated host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
   default     = null
   # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
 
 variable "memory_mb" {
   type        = number
-  description = "The memory per member that is allocated. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
+  description = "Allocated memory per member. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
   default     = 4096
   # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
 }
@@ -102,14 +102,14 @@ variable "users" {
     type     = optional(string)
     role     = optional(string)
   }))
-  description = "The list of users that have access to the database. Multiple blocks are allowed. The user password must be 10-32 characters. In most cases, you can use IAM service credentials (by specifying `service_credential_names`) to control access to the database instance. This block creates native database users. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui)."
+  description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be 10-32 characters. In most cases, you can use IAM service credentials (by specifying `service_credential_names`) to control access to the database instance. This block creates native database users. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui)."
   default     = []
   sensitive   = true
 }
 
 variable "service_credential_names" {
   type        = map(string)
-  description = "The map of name and role for service credentials that you want to create for the database."
+  description = "Map of name, role for service credentials that you want to create for the database"
   default     = {}
 
   validation {
@@ -120,7 +120,7 @@ variable "service_credential_names" {
 
 variable "service_endpoints" {
   type        = string
-  description = "The type of endpoint of the database instance. Possible values: `public`, `private`, `public-and-private`."
+  description = "Specify whether you want to enable the public or private endpoints on the instance. Supported values are 'public', 'private' or 'public-and-private'."
   default     = "public"
 
   validation {
@@ -146,6 +146,24 @@ variable "access_tags" {
     ])
     error_message = "Tags must match the regular expression \"[\\w\\-_\\.]+:[\\w\\-_\\.]+\", see https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#limits for more details"
   }
+}
+
+variable "version_upgrade_skip_backup" {
+  type        = bool
+  description = "Whether to skip taking a backup before upgrading the database version. Attention: Skipping a backup is not recommended. Skipping a backup before a version upgrade is dangerous and may result in data loss if the upgrade fails at any stage — there will be no immediate backup to restore from."
+  default     = false
+}
+
+variable "deletion_protection" {
+  type        = bool
+  description = "Enable deletion protection within terraform. This is not a property of the resource and does not prevent deletion outside of terraform. The database can not be deleted by terraform when this value is set to 'true'. In order to delete with terraform the value must be set to 'false' and a terraform apply performed before the destroy is performed. The default is 'true'."
+  default     = true
+}
+
+variable "timeouts_update" {
+  type        = string
+  description = "A database update may require a longer timeout for the update to complete. The default is 120 minutes. Set this variable to change the `update` value in the `timeouts` block. [Learn more](https://developer.hashicorp.com/terraform/language/resources/syntax#operation-timeouts)."
+  default     = "120m"
 }
 
 ##############################################################
@@ -217,6 +235,12 @@ variable "use_ibm_owned_encryption_key" {
   }
 }
 
+variable "use_default_backup_encryption_key" {
+  type        = bool
+  description = "When `use_ibm_owned_encryption_key` is set to false, backups will be encrypted with either the key specified in `kms_key_crn`, or in `backup_encryption_key_crn` if a value is passed. If you do not want to use your own key for backups encryption, you can set this to `true` to use the IBM Cloud Databases default encryption for backups. Alternatively set `use_ibm_owned_encryption_key` to true to use the default encryption for both backups and deployment data."
+  default     = false
+}
+
 variable "kms_key_crn" {
   type        = string
   description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key to encrypt your data. Applies only if `use_ibm_owned_encryption_key` is false. By default this key is used for both deployment data and backups, but this behaviour can be altered using the `use_same_kms_key_for_backups` and `backup_encryption_key_crn` inputs. Bare in mind that backups encryption is only available in certain regions. See [Bring your own key for backups](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok) and [Using the HPCS Key for Backup encryption](https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups)."
@@ -251,12 +275,6 @@ variable "backup_encryption_key_crn" {
     ])
     error_message = "Value must be the KMS key CRN from a Key Protect or Hyper Protect Crypto Services instance in one of the supported backup regions."
   }
-}
-
-variable "use_default_backup_encryption_key" {
-  type        = bool
-  description = "When `use_ibm_owned_encryption_key` is set to false, backups will be encrypted with either the key specified in `kms_key_crn`, or in `backup_encryption_key_crn` if a value is passed. If you do not want to use your own key for backups encryption, you can set this to `true` to use the IBM Cloud Databases default encryption for backups. Alternatively set `use_ibm_owned_encryption_key` to true to use the default encryption for both backups and deployment data."
-  default     = false
 }
 
 variable "skip_iam_authorization_policy" {
