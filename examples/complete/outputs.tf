@@ -7,14 +7,14 @@ output "id" {
   value       = module.icd_elasticsearch.id
 }
 
-output "guid" {
-  description = "Elasticsearch instance guid"
-  value       = module.icd_elasticsearch.guid
-}
-
 output "version" {
   description = "Elasticsearch version"
   value       = module.icd_elasticsearch.version
+}
+
+output "guid" {
+  description = "Elasticsearch instance guid"
+  value       = module.icd_elasticsearch.guid
 }
 
 output "crn" {

@@ -3,7 +3,8 @@
 ##############################################################################
 
 module "resource_group" {
-  source = "git::https://github.com/terraform-ibm-modules/terraform-ibm-resource-group.git?ref=v1.2.1"
+  source  = "terraform-ibm-modules/resource-group/ibm"
+  version = "1.2.1"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -22,10 +23,11 @@ module "database" {
   name                  = "${var.prefix}-data-store"
   region                = var.region
   elasticsearch_version = var.elasticsearch_version
-  tags                  = var.resource_tags
   access_tags           = var.access_tags
+  tags                  = var.resource_tags
   service_endpoints     = var.service_endpoints
   member_host_flavor    = var.member_host_flavor
+  deletion_protection   = false
   service_credential_names = {
     "elasticsearch_admin" : "Administrator",
     "elasticsearch_operator" : "Operator",
