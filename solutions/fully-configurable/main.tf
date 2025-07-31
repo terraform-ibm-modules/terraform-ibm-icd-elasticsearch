@@ -432,22 +432,26 @@ module "code_engine_kibana" {
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
-  secrets = {
-    "es-secret" = {
-      format = "generic"
-      data = {
-        "ELASTICSEARCH_PASSWORD" = local.admin_pass
+  secrets = merge(
+    {
+      "es-secret" = {
+        format = "generic"
+        data = {
+          "ELASTICSEARCH_PASSWORD" = local.admin_pass
+        }
       }
     },
-    "registry-secret" = {
-      format = "registry"
-      data = {
-        username = var.kibana_registry_username
-        password = var.kibana_registry_personal_access_token
-        server   = var.kibana_registry_server
+    var.use_private_registry && !var.use_existing_registry_secret ? {
+      "registry-secret" = {
+        format = "registry"
+        data = {
+          username = var.kibana_registry_username
+          password = var.kibana_registry_personal_access_token
+          server   = var.kibana_registry_server
+        }
       }
-    }
-  }
+    } : {}
+  )
 
   apps = {
     (local.code_engine_app_name) = {
