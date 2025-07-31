@@ -44,13 +44,12 @@ If you can't use the IAM-enabled `service_credential_names` input variable for a
 
 ### Options for users
 
- - `name` (required): The username for the user account.
- - `password` (required): The password for the user account in the range of 10-32 characters.
- - `type` (required): The user type. The "type" field is required to generate the connection string for the outputs.
- - `role`: The user role. The role determines the user's access level and permissions.
+- `name` (required): The username for the user account.
+- `password` (required): The password for the user account in the range of 10-32 characters.
+- `type` (required): The user type. The "type" field is required to generate the connection string for the outputs.
+- `role`: The user role. The role determines the user's access level and permissions.
 
 ### Example users
-
 
 ```hcl
 [
@@ -89,7 +88,6 @@ The disk object in the `auto_scaling` input contains the following options. All 
 - `rate_limit_mb_per_member`: The limit in megabytes for the rate of disk increase per member (default: `3670016`).
 - `rate_period_seconds`: How long (in seconds) the rate limit is applied for disk (default: `900` (15 minutes)).
 - `rate_units`: The units to use for the rate increase (default: `"mb"` (megabytes)).
-
 
 ### Memory options for auto_scaling
 

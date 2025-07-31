@@ -45,6 +45,19 @@ variable "elasticsearch_version" {
   default     = null
 }
 
+variable "backup_crn" {
+  type        = string
+  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
+  default     = null
+}
+
+variable "backup_encryption_key_crn" {
+  type        = string
+  description = "The CRN of a Hyper Protect Crypto Services use for encrypting the disk that holds deployment backups. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
+  default     = null
+  # Validation happens in the root module
+}
+
 variable "auto_scaling" {
   type = object({
     disk = object({
@@ -78,19 +91,6 @@ variable "auto_scaling" {
       io_enabled : true,
     }
   }
-}
-
-variable "backup_crn" {
-  type        = string
-  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format crn:v1:<…>:backup:. If omitted, the database is provisioned empty."
-  default     = null
-}
-
-variable "backup_encryption_key_crn" {
-  type        = string
-  description = "The CRN of a Hyper Protect Crypto Services use for encrypting the disk that holds deployment backups. There are limitation per region on the Hyper Protect Crypto Services and region for those services. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-hpcs#use-hpcs-backups"
-  default     = null
-  # Validation happens in the root module
 }
 
 variable "enable_elser_model" {

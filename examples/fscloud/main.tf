@@ -58,24 +58,25 @@ module "elasticsearch" {
   # remove the above line and uncomment the below 2 lines to consume the module from the registry
   # source            = "terraform-ibm-modules/icd-elasticsearch/ibm//modules/fscloud"
   # version           = "X.Y.Z" # Replace "X.Y.Z" with a release version to lock into a specific release
-  resource_group_id     = module.resource_group.resource_group_id
-  name                  = "${var.prefix}-elasticsearch"
-  region                = var.region
-  tags                  = var.resource_tags
-  access_tags           = var.access_tags
-  kms_key_crn           = var.kms_key_crn
-  elasticsearch_version = var.elasticsearch_version
+  resource_group_id         = module.resource_group.resource_group_id
+  name                      = "${var.prefix}-elasticsearch"
+  region                    = var.region
+  tags                      = var.resource_tags
+  access_tags               = var.access_tags
+  deletion_protection       = false
+  kms_key_crn               = var.kms_key_crn
+  backup_encryption_key_crn = var.backup_encryption_key_crn
+  backup_crn                = var.backup_crn
+  elasticsearch_version     = var.elasticsearch_version
   service_credential_names = {
     "elasticsearch_admin" : "Administrator",
     "elasticsearch_operator" : "Operator",
     "elasticsearch_viewer" : "Viewer",
     "elasticsearch_editor" : "Editor",
   }
-  auto_scaling              = var.auto_scaling
-  member_host_flavor        = "b3c.4x16.encrypted"
-  backup_encryption_key_crn = var.backup_encryption_key_crn
-  backup_crn                = var.backup_crn
-  enable_elser_model        = var.enable_elser_model
+  auto_scaling       = var.auto_scaling
+  member_host_flavor = "b3c.4x16.encrypted"
+  enable_elser_model = var.enable_elser_model
   cbr_rules = [
     {
       description      = "${var.prefix}-elasticsearch access only from vpc"

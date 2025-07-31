@@ -220,9 +220,6 @@
               ]
             },
             {
-              "key": "name"
-            },
-            {
               "key": "plan",
               "options": [
                 {
@@ -234,6 +231,9 @@
                   "value": "platinum"
                 }
               ]
+            },
+            {
+              "key": "name"
             },
             {
               "key": "resource_tags",
@@ -291,6 +291,15 @@
                   "value": "public-and-private"
                 }
               ]
+            },
+            {
+              "key": "deletion_protection"
+            },
+            {
+              "key": "timeouts_update"
+            },
+            {
+              "key": "version_upgrade_skip_backup"
             },
             {
               "key": "service_credential_names"
@@ -501,7 +510,7 @@
               "role_crns": [
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
-              "service_name": "databases-for-redis"
+              "service_name": "databases-for-elasticsearch"
             },
             {
               "role_crns": [
@@ -682,6 +691,12 @@
             },
             {
               "key": "auto_scaling"
+            },
+            {
+              "key": "deletion_protection"
+            },
+            {
+              "key": "timeouts_update"
             },
             {
               "key": "service_credential_names"
