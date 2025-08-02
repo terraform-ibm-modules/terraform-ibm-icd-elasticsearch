@@ -44,6 +44,12 @@ output "adminuser" {
   value       = ibm_database.elasticsearch.adminuser
 }
 
+output "users_credentials" {
+  description = "Database user credentials"
+  value       = ibm_database.elasticsearch.users
+  sensitive   = true
+}
+
 output "hostname" {
   description = "Database connection hostname"
   value       = data.ibm_database_connection.database_connection.https[0].hosts[0].hostname
