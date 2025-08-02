@@ -93,7 +93,6 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 			},
 		},
 	}
-
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},

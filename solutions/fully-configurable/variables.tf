@@ -443,6 +443,12 @@ variable "admin_pass_secrets_manager_secret_name" {
   }
 }
 
+variable "use_existing_registry_secret" {
+  description = "Set to true to use an existing image registry secret instead of creating a new one."
+  type        = bool
+  default     = false
+}
+
 ##############################################################
 # Kibana Configuration
 ##############################################################
@@ -471,10 +477,29 @@ variable "enable_kibana_dashboard" {
   default     = false
 }
 
+variable "use_private_registry" {
+  description = "Set to true if the Kibana image is being pulled from a private registry."
+  type        = bool
+  default     = false
+}
+
 variable "kibana_registry_namespace_image" {
   type        = string
   description = "The Kibana image reference in the format of `[registry-url]/[namespace]/[image]`. This value is used only when `enable_kibana_dashboard` is set to true."
   default     = "docker.elastic.co/kibana/kibana"
+}
+
+variable "kibana_registry_server" {
+  type        = string
+  description = "The server URL of the container registry used to pull the Kibana image."
+  default     = "https://index.docker.io/v1/"
+  validation {
+    condition = (
+      !(var.use_private_registry && !var.use_existing_registry_secret)
+      || (var.kibana_registry_server != null && var.kibana_registry_server != "")
+    )
+    error_message = "The `kibana_registry_server` must not be null or empty when `use_private_registry` is true and `use_existing_registry_secret` is false."
+  }
 }
 
 variable "kibana_image_digest" {
@@ -485,13 +510,18 @@ variable "kibana_image_digest" {
     condition     = var.kibana_image_digest == null || can(regex("^sha256:", var.kibana_image_digest))
     error_message = "If provided, the value of kibana_image_digest must start with 'sha256:'."
   }
-
-
 }
+
 variable "kibana_image_port" {
   description = "Specify the port number used to connect to the Kibana service exposed by the container image. Default port is 5601 and it is only applicable if `enable_kibana_dashboard` is true"
   type        = number
   default     = 5601
+}
+
+variable "kibana_image_secret" {
+  description = "The name of the image registry access secret."
+  type        = string
+  default     = null
 }
 
 variable "kibana_visibility" {
@@ -501,6 +531,33 @@ variable "kibana_visibility" {
   validation {
     condition     = can(regex("local_public|local_private|local", var.kibana_visibility))
     error_message = "Valid values are 'local_public', 'local_private', or 'local'."
+  }
+}
+
+variable "kibana_registry_username" {
+  description = "Username for the for the container registry."
+  type        = string
+  default     = null
+  validation {
+    condition = (
+      !(var.use_private_registry && !var.use_existing_registry_secret)
+      || (var.kibana_registry_username != null && var.kibana_registry_username != "")
+    )
+    error_message = "The `kibana_registry_username` must not be null or empty when `use_private_registry` is true and `use_existing_registry_secret` is false."
+  }
+}
+
+variable "kibana_registry_personal_access_token" {
+  description = "Pesonal access token for the container registry."
+  type        = string
+  default     = null
+  sensitive   = true
+  validation {
+    condition = (
+      !(var.use_private_registry && !var.use_existing_registry_secret)
+      || (var.kibana_registry_personal_access_token != null && var.kibana_registry_personal_access_token != "")
+    )
+    error_message = "The `kibana_registry_personal_access_token` must not be null or empty when `use_private_registry` is true and `use_existing_registry_secret` is false."
   }
 }
 
