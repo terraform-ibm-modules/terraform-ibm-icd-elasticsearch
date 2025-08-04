@@ -449,19 +449,19 @@
               "key": "cbr_code_engine_kibana_project_rules"
             },
             {
+              "key": "use_private_registry"
+            },
+            {
               "key": "kibana_image_secret"
+            },
+            {
+              "key": "kibana_registry_username"
             },
             {
               "key": "kibana_registry_personal_access_token"
             },
             {
               "key": "kibana_registry_server"
-            },
-            {
-              "key": "kibana_registry_username"
-            },
-            {
-              "key": "use_private_registry"
             },
             {
               "key": "kibana_visibility",
