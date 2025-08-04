@@ -465,19 +465,32 @@ module "code_engine_kibana" {
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
   cbr_rules           = var.cbr_code_engine_kibana_project_rules
-  secrets = {
-    "es-secret" = {
-      format = "generic"
-      data = {
-        "ELASTICSEARCH_PASSWORD" = local.kibana_system_password
+  secrets = merge(
+    {
+      "es-secret" = {
+        format = "generic"
+        data = {
+          "ELASTICSEARCH_PASSWORD" = local.kibana_system_password
+        }
       }
-    }
-  }
+    },
+    var.use_private_registry && !var.use_existing_registry_secret ? {
+      "registry-secret" = {
+        format = "registry"
+        data = {
+          username = var.kibana_registry_username
+          password = var.kibana_registry_personal_access_token
+          server   = var.kibana_registry_server
+        }
+      }
+    } : {}
+  )
 
   apps = {
     (local.code_engine_app_name) = {
       image_reference = var.kibana_image_digest != null ? "${var.kibana_registry_namespace_image}@${var.kibana_image_digest}" : "${var.kibana_registry_namespace_image}:${local.kibana_version}"
       image_port      = var.kibana_image_port
+      image_secret    = var.use_private_registry ? (var.use_existing_registry_secret ? var.kibana_image_secret : "registry-secret") : null
       run_env_variables = [{
         type  = "literal"
         name  = "ELASTICSEARCH_HOSTS"
