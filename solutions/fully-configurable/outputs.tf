@@ -60,6 +60,14 @@ output "kibana_app_endpoint" {
   value       = var.enable_kibana_dashboard ? module.code_engine_kibana[0].app[local.code_engine_app_name].endpoint : null
 }
 
+output "user_credentials" {
+  description = "Kibana/database user credentials for Elasticsearch"
+  value = var.enable_kibana_dashboard ? {
+    for user in module.elasticsearch[0].users_credentials : user.name => user.password
+    if user.name != "kibana_system"
+  } : null
+  sensitive = true
+}
 output "cbr_rule_ids" {
   description = "CBR rule ids created to restrict Elasticsearch"
   value       = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].cbr_rule_ids
