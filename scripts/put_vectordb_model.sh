@@ -21,7 +21,7 @@ for i in $(seq 1 4); do
         break
     else
         echo "Failed to get the trained models from elasticsearch. HTTP status code: $http_code"
-        echo "Reponse: $content"
+        echo "Response: $content"
         if [ "$i" -eq 4 ]; then
           exit 1
         fi
@@ -60,7 +60,7 @@ do
               break
           else
               echo "Failed to delete the trained model '$model' from elasticsearch. HTTP status code: $http_code"
-              echo "Reponse: $content"
+              echo "Response: $content"
               if [ "$i" -eq 4 ]; then
                 exit 1
               fi
@@ -98,7 +98,7 @@ if [ "$INSTALL_NEW_MODEL" = true ] ; then
             break
         else
             echo "Failed to install the model '$ELSER_MODEL_TYPE'. HTTP status code: $http_code"
-            echo "Reponse: $content"
+            echo "Response: $content"
             if [ "$i" -eq 4 ]; then
                 exit 1
             fi
