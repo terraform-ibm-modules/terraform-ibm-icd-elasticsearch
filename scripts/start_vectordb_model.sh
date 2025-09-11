@@ -17,7 +17,7 @@ if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 201 ]; then
   echo "Request sent successfully."
 else
   echo "Failed to start the vectorDB model. HTTP status code: $http_code"
-  echo "Reponse: $content"
+  echo "Response: $content"
   exit 1
 fi
 

@@ -302,7 +302,12 @@
               "key": "version_upgrade_skip_backup"
             },
             {
-              "key": "service_credential_names"
+              "key": "service_credential_names",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "service_credential_secrets",
@@ -481,7 +486,13 @@
               ]
             },
             {
-              "key": "cbr_rules"
+              "key": "cbr_rules",
+              "type": "array",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             }
           ],
           "terraform_version": "1.10.5"
@@ -702,7 +713,12 @@
               "key": "timeouts_update"
             },
             {
-              "key": "service_credential_names"
+              "key": "service_credential_names",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "service_credential_secrets",
@@ -810,7 +826,13 @@
               "key": "kibana_image_port"
             },
             {
-              "key": "cbr_rules"
+              "key": "cbr_rules",
+              "type": "array",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             }
           ],
           "terraform_version": "1.10.5"
