@@ -12,9 +12,9 @@ terraform {
       version = ">= 2.0.7"
     }
     # The time provider is not actually required by the module itself, just this example, so OK to use ">=" here instead of locking into a version
-    time = {
-      source  = "hashicorp/time"
-      version = ">= 0.9.1"
-    }
+    # time = {
+    #   source  = "hashicorp/time"
+    #   version = ">= 0.9.1"
+    # }
   }
 }
