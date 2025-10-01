@@ -205,7 +205,8 @@
             },
             {
               "key": "elasticsearch_version",
-              "required": true,
+              "required": false,
+              "default_value": "8.15",
               "options": [
                 {
                   "displayname": "8.15",
