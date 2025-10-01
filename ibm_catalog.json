@@ -653,6 +653,7 @@
             {
               "key": "elasticsearch_version",
               "required": true,
+              "default_value": "8.15",
               "options": [
                 {
                   "displayname": "8.15",
