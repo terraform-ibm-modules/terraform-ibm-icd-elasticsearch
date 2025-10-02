@@ -560,6 +560,36 @@ variable "kibana_registry_personal_access_token" {
   }
 }
 
+variable "kibana_system_secret_name" {
+  type        = string
+  description = "The Secrets Manager secret name of a new kibana system secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "kibana-system-password"
+
+  validation {
+    condition = (
+      # TODO - do some sensible validation! Add enable_elser_model cross variable validation
+      var.existing_secrets_manager_instance_crn == null ||
+      var.kibana_system_secret_name != null
+    )
+    error_message = "`kibana_system_secret_name` is required when `existing_secrets_manager_instance_crn` is set."
+  }
+}
+
+variable "kibana_app_secret_name" {
+  type        = string
+  description = "The Secrets Manager secret name of a new kibana application secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "kibana-app-password"
+
+  validation {
+    condition = (
+      # TODO - do some sensible validation! Add enable_elser_model cross variable validation
+      var.existing_secrets_manager_instance_crn == null ||
+      var.kibana_app_secret_name != null
+    )
+    error_message = "`kibana_app_secret_name` is required when `existing_secrets_manager_instance_crn` is set."
+  }
+}
+
 ##############################################################
 # Context-based restriction (CBR)
 ##############################################################

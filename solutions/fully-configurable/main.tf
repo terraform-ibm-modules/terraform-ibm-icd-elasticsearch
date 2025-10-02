@@ -392,20 +392,34 @@ locals {
     }
   ]
 
+  # Prepare locally generated secrets
+  system_secrets = [{
+    "secret_name"             = "${local.prefix}${var.admin_pass_secrets_manager_secret_name}"
+    "secret_type"             = "arbitrary"
+    "secret_payload_password" = local.admin_pass
+  }]
+  kibana_secrets = var.enable_kibana_dashboard ? [{
+    "secret_name"             = "${local.prefix}${var.kibana_system_secret_name}"
+    "secret_type"             = "arbitrary"
+    "secret_payload_password" = local.kibana_system_password
+    },
+    {
+      "secret_name"             = "${local.prefix}${var.kibana_app_secret_name}"
+      "secret_type"             = "arbitrary"
+      "secret_payload_password" = local.kibana_app_login_password
+  }] : []
+  password_secrets = concat(local.system_secrets, local.kibana_secrets)
+
+
   # Build the structure of the arbitrary credential type secret for admin password
-  admin_pass_secret = [{
+  user_secrets = [{
     secret_group_name     = "${local.prefix}${var.admin_pass_secrets_manager_secret_group}"
     existing_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
-    secrets = [{
-      secret_name             = "${local.prefix}${var.admin_pass_secrets_manager_secret_name}"
-      secret_type             = "arbitrary"
-      secret_payload_password = local.admin_pass
-      }
-    ]
+    secrets               = local.password_secrets
   }]
 
   # Concatenate into 1 secrets object
-  secrets = concat(local.service_credential_secrets, local.admin_pass_secret)
+  secrets = concat(local.service_credential_secrets, local.user_secrets)
   # Parse Secrets Manager details from the CRN
   existing_secrets_manager_instance_guid   = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].service_instance : null
   existing_secrets_manager_instance_region = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].region : null
@@ -447,8 +461,8 @@ locals {
   code_engine_project_name  = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
   code_engine_app_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
   kibana_version            = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
-  kibana_system_password    = var.enable_kibana_dashboard ? random_password.kibana_system_password[0].result : null
-  kibana_app_login_password = var.enable_kibana_dashboard ? random_password.kibana_app_login_password[0].result : null
+  kibana_system_password    = var.enable_kibana_dashboard ? startswith(random_password.kibana_system_password[0].result, "-") ? "J${substr(random_password.kibana_system_password[0].result, 1, -1)}" : startswith(random_password.kibana_system_password[0].result, "_") ? "K${substr(random_password.kibana_system_password[0].result, 1, -1)}" : random_password.kibana_system_password[0].result : null
+  kibana_app_login_password = var.enable_kibana_dashboard ? startswith(random_password.kibana_app_login_password[0].result, "-") ? "J${substr(random_password.kibana_app_login_password[0].result, 1, -1)}" : startswith(random_password.kibana_app_login_password[0].result, "_") ? "K${substr(random_password.kibana_app_login_password[0].result, 1, -1)}" : random_password.kibana_app_login_password[0].result : null
 }
 
 data "http" "es_metadata" {

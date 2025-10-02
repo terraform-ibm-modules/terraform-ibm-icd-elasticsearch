@@ -454,6 +454,12 @@
               "key": "kibana_image_port"
             },
             {
+              "key": "kibana_system_secret_name"
+            },
+            {
+              "key": "kibana_app_secret_name"
+            },
+            {
               "key": "cbr_code_engine_kibana_project_rules"
             },
             {
@@ -830,6 +836,12 @@
             },
             {
               "key": "kibana_image_port"
+            },
+            {
+              "key": "kibana_system_secret_name"
+            },
+            {
+              "key": "kibana_app_secret_name"
             },
             {
               "key": "cbr_rules",
