@@ -447,8 +447,8 @@ locals {
   code_engine_project_name  = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
   code_engine_app_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
   kibana_version            = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
-  kibana_system_password    = var.enable_kibana_dashboard ? random_password.kibana_system_password[0].result : null
-  kibana_app_login_password = var.enable_kibana_dashboard ? random_password.kibana_app_login_password[0].result : null
+  kibana_system_password    = var.enable_kibana_dashboard ? startswith(random_password.kibana_system_password[0].result, "-") ? "J${substr(random_password.kibana_system_password[0].result, 1, -1)}" : startswith(random_password.kibana_system_password[0].result, "_") ? "K${substr(random_password.kibana_system_password[0].result, 1, -1)}" : random_password.kibana_system_password[0].result : null
+  kibana_app_login_password = var.enable_kibana_dashboard ? startswith(random_password.kibana_app_login_password[0].result, "-") ? "J${substr(random_password.kibana_app_login_password[0].result, 1, -1)}" : startswith(random_password.kibana_app_login_password[0].result, "_") ? "K${substr(random_password.kibana_app_login_password[0].result, 1, -1)}" : random_password.kibana_app_login_password[0].result : null
 }
 
 data "http" "es_metadata" {

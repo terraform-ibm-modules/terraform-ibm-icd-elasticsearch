@@ -142,7 +142,9 @@
                 "config_constraints": {
                   "identifier": "rg_name"
                 }
-              }
+              },
+              "default_value": "Default",
+              "description": "The name of an existing resource group to provision the resources."
             },
             {
               "key": "prefix"
@@ -204,6 +206,7 @@
             {
               "key": "elasticsearch_version",
               "required": true,
+              "default_value": "8.15",
               "options": [
                 {
                   "displayname": "8.15",
@@ -273,7 +276,12 @@
               "key": "member_host_flavor"
             },
             {
-              "key": "auto_scaling"
+              "key": "auto_scaling",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "service_endpoints",
@@ -573,7 +581,9 @@
                 "config_constraints": {
                   "identifier": "rg_name"
                 }
-              }
+              },
+              "default_value": "Default",
+              "description": "The name of an existing resource group to provision the resources."
             },
             {
               "key": "prefix"
@@ -648,6 +658,7 @@
             {
               "key": "elasticsearch_version",
               "required": true,
+              "default_value": "8.15",
               "options": [
                 {
                   "displayname": "8.15",
@@ -704,7 +715,12 @@
               "key": "member_host_flavor"
             },
             {
-              "key": "auto_scaling"
+              "key": "auto_scaling",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment"
+              }
             },
             {
               "key": "deletion_protection"
