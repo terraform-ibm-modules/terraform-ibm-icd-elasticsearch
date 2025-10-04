@@ -452,8 +452,11 @@ locals {
 }
 
 data "http" "es_metadata" {
-  count       = var.enable_kibana_dashboard ? 1 : 0
-  url         = "https://${local.elasticsearch_username}:${local.admin_pass}@${local.elasticsearch_hostname}:${local.elasticsearch_port}"
+  count = var.enable_kibana_dashboard ? 1 : 0
+  url   = "https://${local.elasticsearch_hostname}:${local.elasticsearch_port}"
+  request_headers = {
+    Authorization = "Basic ${base64encode("${local.elasticsearch_username}:${local.admin_pass}")}"
+  }
   ca_cert_pem = base64decode(local.elasticsearch_cert)
 }
 
