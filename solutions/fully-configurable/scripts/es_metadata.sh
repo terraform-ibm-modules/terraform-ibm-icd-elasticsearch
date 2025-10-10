@@ -37,6 +37,5 @@ VERSION_NUMBER="$(echo "$RESP" | jq -r '.version.number // empty')"
 if [[ -z "$VERSION_NUMBER" ]]; then
   echo '{"version_number":null}'
 else
-  # You can include more fields if desired, but keep it flat.
   echo "{\"version_number\":\"$VERSION_NUMBER\"}"
 fi
