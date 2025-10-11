@@ -184,7 +184,7 @@ func TestRunSecurityEnforcedUpgradeSolutionSchematics(t *testing.T) {
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
-		{Name: "admin_pass", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass", Value: GetRandomAdminPassword(t), DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("es-%s-admin-secrets", options.Prefix), DataType: "string"},
 	}
 
