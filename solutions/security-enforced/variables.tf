@@ -431,13 +431,24 @@ variable "kibana_image_digest" {
     condition     = var.kibana_image_digest == null || can(regex("^sha256:", var.kibana_image_digest))
     error_message = "If provided, the value of kibana_image_digest must start with 'sha256:'."
   }
-
-
 }
+
 variable "kibana_image_port" {
   description = "Specify the port number used to connect to the Kibana service exposed by the container image. Default port is 5601 and it is only applicable if `enable_kibana_dashboard` is true"
   type        = number
   default     = 5601
+}
+
+variable "kibana_system_secret_name" {
+  type        = string
+  description = "The Secrets Manager secret name of a new kibana system secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "kibana-system-password"
+}
+
+variable "kibana_app_secret_name" {
+  type        = string
+  description = "The Secrets Manager secret name of a new kibana application secret. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "kibana-app-password"
 }
 
 ##############################################################
