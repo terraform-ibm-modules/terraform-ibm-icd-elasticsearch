@@ -588,11 +588,9 @@ variable "kibana_system_secret_name" {
 
   validation {
     condition = (
-      # TODO - do some sensible validation! Add enable_elser_model cross variable validation
-      var.existing_secrets_manager_instance_crn == null ||
-      var.kibana_system_secret_name != null
+      !(var.enable_kibana_dashboard && var.existing_secrets_manager_instance_crn != null && length(var.kibana_system_secret_name) == 0)
     )
-    error_message = "`kibana_system_secret_name` is required when `existing_secrets_manager_instance_crn` is set."
+    error_message = "`kibana_system_secret_name` is required when `existing_secrets_manager_instance_crn` and `enable_kibana_dashboard` are set."
   }
 }
 
@@ -603,11 +601,9 @@ variable "kibana_app_secret_name" {
 
   validation {
     condition = (
-      # TODO - do some sensible validation! Add enable_elser_model cross variable validation
-      var.existing_secrets_manager_instance_crn == null ||
-      var.kibana_app_secret_name != null
+      !(var.enable_kibana_dashboard && var.existing_secrets_manager_instance_crn != null && length(var.kibana_app_secret_name) == 0)
     )
-    error_message = "`kibana_app_secret_name` is required when `existing_secrets_manager_instance_crn` is set."
+    error_message = "`kibana_app_secret_name` is required when `existing_secrets_manager_instance_crn` and `enable_kibana_dashboard` are set."
   }
 }
 
