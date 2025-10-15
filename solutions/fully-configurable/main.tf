@@ -456,14 +456,14 @@ locals {
 }
 
 data "external" "es_metadata" {
-count = var.enable_kibana_dashboard ? 1 : 0
-program = ["bash", "${path.module}/scripts/es_metadata.sh"]
-query = {
-    url          = "https://${local.elasticsearch_hostname}:${local.elasticsearch_port}"
-    username     = local.elasticsearch_username
-    password     = local.admin_pass
-    ca_cert_b64  = local.elasticsearch_cert
-}
+  count   = var.enable_kibana_dashboard ? 1 : 0
+  program = ["bash", "${path.module}/scripts/es_metadata.sh"]
+  query = {
+    url         = "https://${local.elasticsearch_hostname}:${local.elasticsearch_port}"
+    username    = local.elasticsearch_username
+    password    = local.admin_pass
+    ca_cert_b64 = local.elasticsearch_cert
+  }
 }
 
 module "code_engine_kibana" {

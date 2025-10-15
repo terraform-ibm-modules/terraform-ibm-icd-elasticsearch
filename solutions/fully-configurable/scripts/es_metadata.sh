@@ -7,7 +7,7 @@ INPUT_JSON="$(cat)"
 # Extract fields using jq
 URL="$(echo "$INPUT_JSON" | jq -r '.url')"
 USERNAME="$(echo "$INPUT_JSON" | jq -r '.username')"
-PASSWORD="$(echo "$INPUT_JSON" | jq -r '.password')"
+PASSWORD="$(echo "$INPUT_JSON" | jq -r '.password')" # pragma: allowlist secret
 CA_CERT_B64="$(echo "$INPUT_JSON" | jq -r '.ca_cert_b64')"
 
 # Create a temporary directory for the CA cert
@@ -19,7 +19,7 @@ CA_PEM="$TMPDIR/ca.pem"
 echo "$CA_CERT_B64" | base64 -d > "$CA_PEM"
 
 # Build Basic Auth header value
-BASIC_AUTH="$(printf '%s:%s' "$USERNAME" "$PASSWORD" | base64)"
+BASIC_AUTH="$(printf '%s:%s' "$USERNAME" "$PASSWORD" | base64)" # pragma: allowlist secret
 
 # Fetch ES root endpoint, which returns cluster metadata including version
 # -s silent, -S show errors, --fail for HTTP errors
