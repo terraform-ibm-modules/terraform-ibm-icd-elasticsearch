@@ -396,20 +396,34 @@ locals {
     }
   ]
 
+  # Prepare locally generated secrets
+  system_secrets = [{
+    "secret_name"             = "${local.prefix}${var.admin_pass_secrets_manager_secret_name}"
+    "secret_type"             = "arbitrary"
+    "secret_payload_password" = local.admin_pass
+  }]
+  kibana_secrets = var.enable_kibana_dashboard ? [{
+    "secret_name"             = "${local.prefix}${var.kibana_system_secret_name}"
+    "secret_type"             = "arbitrary"
+    "secret_payload_password" = local.kibana_system_password
+    },
+    {
+      "secret_name"             = "${local.prefix}${var.kibana_app_secret_name}"
+      "secret_type"             = "arbitrary"
+      "secret_payload_password" = local.kibana_app_login_password
+  }] : []
+  password_secrets = concat(local.system_secrets, local.kibana_secrets)
+
+
   # Build the structure of the arbitrary credential type secret for admin password
-  admin_pass_secret = [{
+  user_secrets = [{
     secret_group_name     = "${local.prefix}${var.admin_pass_secrets_manager_secret_group}"
     existing_secret_group = var.use_existing_admin_pass_secrets_manager_secret_group
-    secrets = [{
-      secret_name             = "${local.prefix}${var.admin_pass_secrets_manager_secret_name}"
-      secret_type             = "arbitrary"
-      secret_payload_password = local.admin_pass
-      }
-    ]
+    secrets               = local.password_secrets
   }]
 
   # Concatenate into 1 secrets object
-  secrets = concat(local.service_credential_secrets, local.admin_pass_secret)
+  secrets = concat(local.service_credential_secrets, local.user_secrets)
   # Parse Secrets Manager details from the CRN
   existing_secrets_manager_instance_guid   = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].service_instance : null
   existing_secrets_manager_instance_region = var.existing_secrets_manager_instance_crn != null ? module.sm_instance_crn_parser[0].region : null
