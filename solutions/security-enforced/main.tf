@@ -53,5 +53,7 @@ module "elasticsearch" {
   kibana_image_digest                 = var.kibana_image_digest
   kibana_image_port                   = var.kibana_image_port
   kibana_visibility                   = "local_private"
+  kibana_system_secret_name           = var.kibana_system_secret_name
+  kibana_app_secret_name              = var.kibana_app_secret_name
   cbr_rules                           = var.cbr_rules
 }
