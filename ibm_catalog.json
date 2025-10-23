@@ -506,7 +506,14 @@
               "key": "kibana_registry_namespace_image"
             },
             {
-              "key": "kibana_image_digest"
+              "key": "kibana_image_digest",
+              "value_constraints": [
+                {
+                  "type": "regex",
+                  "description": "The value provided for 'kibana_image_digest' is not valid.",
+                  "value": "^__NULL__$|^sha256:"
+                }
+              ]
             },
             {
               "key": "kibana_image_port"
@@ -948,7 +955,14 @@
               "key": "kibana_registry_namespace_image"
             },
             {
-              "key": "kibana_image_digest"
+              "key": "kibana_image_digest",
+              "value_constraints": [
+                {
+                  "type": "regex",
+                  "description": "The value provided for 'kibana_image_digest' must start with 'sha256:'.",
+                  "value": "^__NULL__$|^sha256:"
+                }
+              ]
             },
             {
               "key": "kibana_image_port"
