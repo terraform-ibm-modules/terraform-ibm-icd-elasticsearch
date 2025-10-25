@@ -464,15 +464,20 @@ locals {
   code_engine_project_id    = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
   code_engine_project_name  = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
   code_engine_app_name      = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
-  kibana_version            = var.enable_kibana_dashboard ? jsondecode(data.http.es_metadata[0].response_body).version.number : null
+  kibana_version            = var.enable_kibana_dashboard ? try(data.external.es_metadata[0].result.version_number, null) : null
   kibana_system_password    = var.enable_kibana_dashboard ? startswith(random_password.kibana_system_password[0].result, "-") ? "J${substr(random_password.kibana_system_password[0].result, 1, -1)}" : startswith(random_password.kibana_system_password[0].result, "_") ? "K${substr(random_password.kibana_system_password[0].result, 1, -1)}" : random_password.kibana_system_password[0].result : null
   kibana_app_login_password = var.enable_kibana_dashboard ? startswith(random_password.kibana_app_login_password[0].result, "-") ? "J${substr(random_password.kibana_app_login_password[0].result, 1, -1)}" : startswith(random_password.kibana_app_login_password[0].result, "_") ? "K${substr(random_password.kibana_app_login_password[0].result, 1, -1)}" : random_password.kibana_app_login_password[0].result : null
 }
 
-data "http" "es_metadata" {
-  count       = var.enable_kibana_dashboard ? 1 : 0
-  url         = "https://${local.elasticsearch_username}:${local.admin_pass}@${local.elasticsearch_hostname}:${local.elasticsearch_port}"
-  ca_cert_pem = base64decode(local.elasticsearch_cert)
+data "external" "es_metadata" {
+  count   = var.enable_kibana_dashboard ? 1 : 0
+  program = ["bash", "${path.module}/scripts/es_metadata.sh"]
+  query = {
+    url         = "https://${local.elasticsearch_hostname}:${local.elasticsearch_port}"
+    username    = local.elasticsearch_username
+    password    = local.admin_pass
+    ca_cert_b64 = local.elasticsearch_cert
+  }
 }
 
 module "code_engine_kibana" {
