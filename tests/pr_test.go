@@ -69,6 +69,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		TarIncludePatterns: []string{
 			"*.tf",
 			fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
+			fmt.Sprintf("%s/scripts/*.sh", fullyConfigurableSolutionTerraformDir),
 			fmt.Sprintf("%s/*.sh", "scripts"),
 		},
 		TemplateFolder:         fullyConfigurableSolutionTerraformDir,
@@ -201,6 +202,7 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 			"*.tf",
 			fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
 			fmt.Sprintf("%s/*.tf", securityEnforcedSolutionTerraformDir),
+			fmt.Sprintf("%s/scripts/*.sh", fullyConfigurableSolutionTerraformDir),
 			fmt.Sprintf("%s/*.sh", "scripts"),
 		},
 		TemplateFolder:         securityEnforcedSolutionTerraformDir,
