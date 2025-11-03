@@ -500,7 +500,8 @@
               }
             }
           ],
-          "terraform_version": "1.10.5"
+          "terraform_version": "1.10.5",
+          "ignore_readme": true
         },
         {
           "label": "Security-enforced",
@@ -845,7 +846,8 @@
               }
             }
           ],
-          "terraform_version": "1.10.5"
+          "terraform_version": "1.10.5",
+          "ignore_readme": true
         }
       ]
     }
