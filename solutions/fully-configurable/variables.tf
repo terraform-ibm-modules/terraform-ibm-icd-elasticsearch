@@ -66,7 +66,7 @@ variable "existing_elasticsearch_instance_crn" {
   validation {
     condition = anytrue([
       var.existing_elasticsearch_instance_crn == null,
-      can(regex("^crn:(.*:){3}databases-for-elasticsearch:(.*:){2}[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$", var.existing_elasticsearch_instance_crn))
+      can(regex("^crn:v\\d:(.*:){2}databases-for-elasticsearch:(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$", var.existing_elasticsearch_instance_crn))
     ])
     error_message = "The value provided for 'existing_elasticsearch_instance_crn' is not valid."
   }
@@ -241,7 +241,7 @@ variable "existing_kms_instance_crn" {
   validation {
     condition = anytrue([
       var.existing_kms_instance_crn == null,
-      can(regex("^crn:(.*:){3}(kms|hs-crypto):(.*:){2}[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$", var.existing_kms_instance_crn))
+      can(regex("^crn:v\\d:(.*:){2}(kms|hs-crypto):(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$", var.existing_kms_instance_crn))
     ])
     error_message = "The value provided for 'existing_kms_instance_crn' is not valid."
   }
@@ -256,7 +256,7 @@ variable "existing_kms_key_crn" {
   validation {
     condition = anytrue([
       var.existing_kms_key_crn == null,
-      can(regex("^crn:(.*:){3}(kms|hs-crypto):(.*:){2}[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}:key:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.existing_kms_key_crn))
+      can(regex("^crn:v\\d:(.*:){2}(kms|hs-crypto):(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}:key:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.existing_kms_key_crn))
     ])
     error_message = "The value provided for 'existing_kms_key_crn’ is not valid."
   }
@@ -307,7 +307,7 @@ variable "existing_backup_kms_key_crn" {
   validation {
     condition = anytrue([
       var.existing_backup_kms_key_crn == null,
-      can(regex("^crn:(.*:){3}(kms|hs-crypto):(.*:){2}[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}:key:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.existing_backup_kms_key_crn))
+      can(regex("^crn:v\\d:(.*:){2}(kms|hs-crypto):(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}:key:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.existing_backup_kms_key_crn))
     ])
     error_message = "The value provided for 'existing_backup_kms_key_crn' is not valid."
   }
@@ -328,7 +328,7 @@ variable "backup_crn" {
   validation {
     condition = anytrue([
       var.backup_crn == null,
-      can(regex("^crn:.*:backup:", var.backup_crn))
+      can(regex("^crn:v\\d:(.*:){2}databases-for-elasticsearch:(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}:backup:[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$", var.backup_crn))
     ])
     error_message = "backup_crn must be null OR starts with 'crn:' and contains ':backup:'"
   }
@@ -405,6 +405,14 @@ variable "existing_secrets_manager_instance_crn" {
   type        = string
   default     = null
   description = "The CRN of existing secrets manager to use to create service credential secrets for Databases for Elasticsearch instance."
+
+  validation {
+    condition = anytrue([
+      var.existing_secrets_manager_instance_crn == null,
+      can(regex("^crn:v\\d:(.*:){2}secrets-manager:(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$", var.existing_secrets_manager_instance_crn))
+    ])
+    error_message = "The value provided for 'existing_secrets_manager_instance_crn' is not valid."
+  }
 }
 
 variable "existing_secrets_manager_endpoint_type" {
