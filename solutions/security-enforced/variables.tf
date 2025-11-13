@@ -343,7 +343,7 @@ variable "existing_secrets_manager_instance_crn" {
   validation {
     condition = anytrue([
       var.existing_secrets_manager_instance_crn == null,
-      can(regex("^crn:(.*:){3}secrets-manager:(.*:){2}[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$", var.existing_secrets_manager_instance_crn))
+      can(regex("^crn:v\\d:(.*:){2}secrets-manager:(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$", var.existing_secrets_manager_instance_crn))
     ])
     error_message = "The value provided for 'existing_secrets_manager_instance_crn' is not valid."
   }
