@@ -29,7 +29,7 @@ const completeExampleTerraformDir = "examples/complete"
 const fscloudExampleTerraformDir = "examples/fscloud"
 const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
 const securityEnforcedSolutionTerraformDir = "solutions/security-enforced"
-const latestVersion = "8.15"
+const latestVersion = "8.19"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-elasticsearch"
