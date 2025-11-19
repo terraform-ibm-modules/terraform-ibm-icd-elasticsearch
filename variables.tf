@@ -14,7 +14,7 @@ variable "name" {
 
 variable "elasticsearch_version" {
   type        = string
-  description = "The version of Databases for Elasticsearch to deploy. Possible values: `8.7`, `8.10`, `8.12`, `8.15`, `8.19` which requires an Enterprise Platinum pricing plan. If no value is specified, the current preferred version for IBM Cloud Databases is used."
+  description = "The version of Databases for Elasticsearch to deploy. Possible values: `8.7`, `8.10`, `8.12`, `8.15`, `8.19`, `9.1` which requires an Enterprise Platinum pricing plan. If no value is specified, the current preferred version for IBM Cloud Databases is used."
   default     = null
 
   validation {
@@ -25,8 +25,9 @@ variable "elasticsearch_version" {
       var.elasticsearch_version == "8.12",
       var.elasticsearch_version == "8.15",
       var.elasticsearch_version == "8.19",
+      var.elasticsearch_version == "9.1",
     ])
-    error_message = "Version must be 8.7, 8.10, 8.12, 8.15 or 8.19 (Enterprise or Platinum plan if 8.10 or later)."
+    error_message = "Version must be 8.7, 8.10, 8.12, 8.15, 8.19 or 9.1 (Enterprise or Platinum plan if 8.10 or later)."
   }
 }
 
