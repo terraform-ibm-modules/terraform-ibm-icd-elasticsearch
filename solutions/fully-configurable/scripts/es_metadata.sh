@@ -11,13 +11,13 @@ USERNAME="$(echo "$INPUT_JSON" | jq -r '.username')"
 PASSWORD="$(echo "$INPUT_JSON" | jq -r '.password')" # pragma: allowlist secret
 CA_CERT_B64="$(echo "$INPUT_JSON" | jq -r '.ca_cert_b64')"
 
-
-BASIC_AUTH="$(printf '%s:%s' "$USERNAME" "$PASSWORD" | base64)" # pragma: allowlist secret
-
+# Extract host for .netrc "machine" entry
+HOST="$(echo "$URL" | sed -E 's#^https?://([^/:]+).*#\1#')"
 
 RESP="$(
   curl -sS --fail \
-    -H "Authorization: Basic $BASIC_AUTH" \
+    --netrc-file <(printf 'machine %s login %s password %s\n' \
+      "$HOST" "$USERNAME" "$PASSWORD") \
     --cacert <(echo "$CA_CERT_B64" | base64 -d) \
     "$URL"
 )"
