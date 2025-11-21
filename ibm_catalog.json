@@ -207,8 +207,16 @@
             {
               "key": "elasticsearch_version",
               "required": true,
-              "default_value": "8.15",
+              "default_value": "8.19",
               "options": [
+                {
+                  "displayname": "9.1",
+                  "value": "9.1"
+                },
+                {
+                  "displayname": "8.19",
+                  "value": "8.19"
+                },
                 {
                   "displayname": "8.15",
                   "value": "8.15"
@@ -716,8 +724,16 @@
             {
               "key": "elasticsearch_version",
               "required": true,
-              "default_value": "8.15",
+              "default_value": "8.19",
               "options": [
+                {
+                  "displayname": "9.1",
+                  "value": "9.1"
+                },
+                {
+                  "displayname": "8.19",
+                  "value": "8.19"
+                },
                 {
                   "displayname": "8.15",
                   "value": "8.15"
