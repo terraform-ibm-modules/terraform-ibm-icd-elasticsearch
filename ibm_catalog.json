@@ -58,6 +58,7 @@
           "index": 1,
           "install_type": "fullstack",
           "working_directory": "solutions/fully-configurable",
+          "short_description": "Ideal for users who want flexibility with a reliable starting point.",
           "iam_permissions": [
             {
               "role_crns": [
@@ -547,7 +548,17 @@
               "key": "kibana_app_secret_name"
             },
             {
-              "key": "cbr_code_engine_kibana_project_rules"
+              "key": "cbr_code_engine_kibana_project_rules",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment",
+                "config_constraints": {
+                  "supportedLanguages": [
+                    "hcl"
+                  ]
+                }
+              }
             },
             {
               "key": "use_private_registry"
@@ -605,6 +616,7 @@
           "index": 2,
           "install_type": "fullstack",
           "working_directory": "solutions/security-enforced",
+          "short_description": "Ideal for users who want locked down enforced security.",
           "iam_permissions": [
             {
               "role_crns": [
