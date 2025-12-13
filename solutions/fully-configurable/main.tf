@@ -7,7 +7,7 @@ locals {
 
 module "resource_group" {
   source                       = "terraform-ibm-modules/resource-group/ibm"
-  version                      = "1.4.4"
+  version                      = "1.4.6"
   existing_resource_group_name = var.existing_resource_group_name
 }
 
@@ -62,21 +62,21 @@ module "kms" {
 module "kms_instance_crn_parser" {
   count   = var.existing_kms_instance_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.3.3"
+  version = "1.3.5"
   crn     = var.existing_kms_instance_crn
 }
 
 module "kms_key_crn_parser" {
   count   = var.existing_kms_key_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.3.3"
+  version = "1.3.5"
   crn     = var.existing_kms_key_crn
 }
 
 module "kms_backup_key_crn_parser" {
   count   = var.existing_backup_kms_key_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.3.3"
+  version = "1.3.5"
   crn     = var.existing_backup_kms_key_crn
 }
 
@@ -239,7 +239,7 @@ locals {
 module "es_instance_crn_parser" {
   count   = var.existing_elasticsearch_instance_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.3.3"
+  version = "1.3.5"
   crn     = var.existing_elasticsearch_instance_crn
 }
 
@@ -347,7 +347,7 @@ locals {
 module "sm_instance_crn_parser" {
   count   = var.existing_secrets_manager_instance_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.3.3"
+  version = "1.3.5"
   crn     = var.existing_secrets_manager_instance_crn
 }
 
@@ -432,7 +432,7 @@ locals {
 module "secrets_manager_service_credentials" {
   count   = length(local.service_credential_secrets) > 0 ? 1 : 0
   source  = "terraform-ibm-modules/secrets-manager/ibm//modules/secrets"
-  version = "2.12.3"
+  version = "2.12.4"
   # converted into implicit dependency and removed explicit depends_on time_sleep.wait_for_elasticsearch_authorization_policy for this module because of issue https://github.com/terraform-ibm-modules/terraform-ibm-icd-redis/issues/608
   existing_sm_instance_guid   = local.create_secrets_manager_auth_policy > 0 ? time_sleep.wait_for_elasticsearch_authorization_policy[0].triggers["secrets_manager_guid"] : local.existing_secrets_manager_instance_guid
   existing_sm_instance_region = local.create_secrets_manager_auth_policy > 0 ? time_sleep.wait_for_elasticsearch_authorization_policy[0].triggers["secrets_manager_region"] : local.existing_secrets_manager_instance_region
@@ -483,7 +483,7 @@ data "external" "es_metadata" {
 module "code_engine_kibana" {
   count               = var.enable_kibana_dashboard ? 1 : 0
   source              = "terraform-ibm-modules/code-engine/ibm"
-  version             = "4.7.6"
+  version             = "4.7.7"
   resource_group_id   = module.resource_group.resource_group_id
   project_name        = local.code_engine_project_name
   existing_project_id = local.code_engine_project_id
