@@ -162,7 +162,7 @@ module "available_versions" {
   source   = "terraform-ibm-modules/common-utilities/ibm//modules/icd-versions"
   version  = "1.4.1"
   region   = var.region
-  icd_type = "redis"
+  icd_type = "elasticsearch"
 }
 
 
