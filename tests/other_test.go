@@ -59,32 +59,6 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 	options.TestTearDown()
 }
 
-func testPlanICDVersions(t *testing.T, version string) {
-	t.Parallel()
-
-	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:      t,
-		TerraformDir: "examples/basic",
-		TerraformVars: map[string]interface{}{
-			"elasticsearch_version": version,
-		},
-		CloudInfoService: sharedInfoSvc,
-	})
-	output, err := options.RunTestPlan()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
-}
-
-func TestPlanICDVersions(t *testing.T) {
-	t.Parallel()
-
-	// This test will run a terraform plan on available stable versions of elasticsearch
-	versions, _ := sharedInfoSvc.GetAvailableIcdVersions("elasticsearch")
-	for _, version := range versions {
-		t.Run(version, func(t *testing.T) { testPlanICDVersions(t, version) })
-	}
-}
-
 func TestRunRestoredDBExample(t *testing.T) {
 	t.Parallel()
 

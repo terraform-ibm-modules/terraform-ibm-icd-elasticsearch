@@ -325,7 +325,7 @@ func TestRunExistingInstance(t *testing.T) {
 		Vars: map[string]interface{}{
 			"prefix":                prefix,
 			"region":                region,
-			"elasticsearch_version": latestVersion,
+			"elasticsearch_version": oldestVersion,
 			"service_endpoints":     "public-and-private",
 		},
 		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
