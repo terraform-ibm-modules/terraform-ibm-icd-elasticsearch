@@ -18,16 +18,8 @@ variable "elasticsearch_version" {
   default     = null
 
   validation {
-    condition = anytrue([
-      var.elasticsearch_version == null,
-      var.elasticsearch_version == "8.7",
-      var.elasticsearch_version == "8.10",
-      var.elasticsearch_version == "8.12",
-      var.elasticsearch_version == "8.15",
-      var.elasticsearch_version == "8.19",
-      var.elasticsearch_version == "9.1",
-    ])
-    error_message = "Version must be 8.7, 8.10, 8.12, 8.15, 8.19 or 9.1 (Enterprise or Platinum plan if 8.10 or later)."
+    condition     = var.elasticsearch_version == null ? true : contains(local.icd_supported_versions, var.elasticsearch_version)
+    error_message = "Unsupported elasticsearch_version '${var.elasticsearch_version == null ? "null" : var.elasticsearch_version}'. Supported versions: ${join(", ", local.icd_supported_versions)}"
   }
 }
 

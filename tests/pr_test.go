@@ -9,6 +9,8 @@ import (
 	"log"
 	"math/big"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -29,7 +31,11 @@ const completeExampleTerraformDir = "examples/complete"
 const fscloudExampleTerraformDir = "examples/fscloud"
 const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
 const securityEnforcedSolutionTerraformDir = "solutions/security-enforced"
-const latestVersion = "9.1"
+
+var latestVersion string
+var oldestVersion string
+
+const icdType = "elasticsearch"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-elasticsearch"
@@ -55,6 +61,24 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	icdAvailableVersions, err := sharedInfoSvc.GetAvailableIcdVersions(icdType)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(icdAvailableVersions) == 0 {
+		log.Fatal("No available ICD versions found")
+	}
+	sort.Slice(icdAvailableVersions, func(i, j int) bool {
+		vi, _ := strconv.ParseFloat(icdAvailableVersions[i], 64)
+		vj, _ := strconv.ParseFloat(icdAvailableVersions[j], 64)
+		return vi < vj
+	})
+
+	latestVersion = icdAvailableVersions[len(icdAvailableVersions)-1]
+	oldestVersion = icdAvailableVersions[0]
 
 	permanentResources, err = common.LoadMapFromYaml(yamlLocation)
 	if err != nil {
@@ -358,7 +382,7 @@ func TestFullyConfigurableSolutionIBMKeys(t *testing.T) {
 	})
 
 	options.TerraformVars = map[string]interface{}{
-		"elasticsearch_version":        "8.12",
+		"elasticsearch_version":        latestVersion,
 		"provider_visibility":          "public",
 		"existing_resource_group_name": resourceGroup,
 		"kms_encryption_enabled":       false,
@@ -386,7 +410,7 @@ func TestPlanValidation(t *testing.T) {
 		"prefix":                       options.Prefix,
 		"existing_resource_group_name": resourceGroup,
 		"region":                       "us-south",
-		"elasticsearch_version":        "8.10",
+		"elasticsearch_version":        latestVersion,
 		"provider_visibility":          "public",
 	}
 
