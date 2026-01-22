@@ -82,10 +82,16 @@ func TestMain(m *testing.M) {
 		if majorI != majorJ {
 			return majorI < majorJ
 		}
+		
+		minorI := 0
+		minorJ := 0
 
-		minorI, _ := strconv.Atoi(partsI[1])
-		minorJ, _ := strconv.Atoi(partsJ[1])
-
+		if len(partsI) >= 2 {
+			minorI, _ = strconv.Atoi(partsI[1])
+		}
+		if len(partsJ) >= 2 {
+			minorJ, _ = strconv.Atoi(partsJ[1])
+		}
 		return minorI < minorJ
 	})
 
