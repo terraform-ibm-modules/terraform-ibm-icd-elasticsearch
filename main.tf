@@ -393,15 +393,26 @@ locals {
   es_username    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["username"] : var.admin_pass != null ? "admin" : null
   es_password    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["password"] : var.admin_pass != null ? ibm_database.elasticsearch.adminpassword : null
   es_url         = local.es_username != null && local.es_password != null ? "https://${local.es_username}:${local.es_password}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}" : null
+  binaries_path  = "/tmp"
+}
+
+resource "terraform_data" "install_required_binaries" {
+  count = var.install_required_binaries ? 1 : 0
+
+  provisioner "local-exec" {
+    command     = "${path.module}/scripts/install-binaries.sh ${local.binaries_path}"
+    interpreter = ["/bin/bash", "-c"]
+  }
 }
 
 resource "null_resource" "put_vectordb_model" {
-  count = var.enable_elser_model ? 1 : 0
+  depends_on = [terraform_data.install_required_binaries]
+  count      = var.enable_elser_model ? 1 : 0
   triggers = {
     file_changed = md5(var.elser_model_type)
   }
   provisioner "local-exec" {
-    command     = "${path.module}/scripts/put_vectordb_model.sh"
+    command     = "${path.module}/scripts/put_vectordb_model.sh ${local.binaries_path}"
     interpreter = ["/bin/bash", "-c"]
     environment = {
       ES               = local.es_url
