@@ -82,7 +82,7 @@ func TestMain(m *testing.M) {
 		if majorI != majorJ {
 			return majorI < majorJ
 		}
-		
+
 		minorI := 0
 		minorJ := 0
 
