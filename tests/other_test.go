@@ -32,7 +32,6 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 		ResourceGroup:      resourceGroup,
 		BestRegionYAMLPath: regionSelectionPath,
 		TerraformVars: map[string]interface{}{
-			"elasticsearch_version":       latestVersion,
 			"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
 			"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
 			"users": []map[string]interface{}{
@@ -46,6 +45,11 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 		},
 		CloudInfoService: sharedInfoSvc,
 	})
+
+	region := options.Region
+	latestVersion, _ := GetRegionVersions(region)
+	options.TerraformVars["elasticsearch_version"] = latestVersion
+
 	options.SkipTestTearDown = true
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
