@@ -96,6 +96,7 @@ func TestRunRestoredDBExample(t *testing.T) {
 		ResourceGroup: resourceGroup,
 		TerraformVars: map[string]interface{}{
 			"existing_database_crn": permanentResources["elasticsearchCrn"],
+			"provider_visibility":   "private",
 		},
 		CloudInfoService: sharedInfoSvc,
 	})
