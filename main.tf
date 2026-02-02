@@ -157,6 +157,19 @@ resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
 # Elasticsearch instance
 ########################################################################################################################
 
+module "available_versions" {
+
+  source   = "terraform-ibm-modules/common-utilities/ibm//modules/icd-versions"
+  version  = "1.4.1"
+  region   = var.region
+  icd_type = "elasticsearch"
+}
+
+
+locals {
+  icd_supported_versions = module.available_versions.supported_versions
+}
+
 resource "ibm_database" "elasticsearch" {
   depends_on                  = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   name                        = var.name
@@ -303,7 +316,7 @@ resource "ibm_resource_tag" "elasticsearch_tag" {
 module "cbr_rule" {
   count            = length(var.cbr_rules) > 0 ? length(var.cbr_rules) : 0
   source           = "terraform-ibm-modules/cbr/ibm//modules/cbr-rule-module"
-  version          = "1.35.12"
+  version          = "1.35.13"
   rule_description = var.cbr_rules[count.index].description
   enforcement_mode = var.cbr_rules[count.index].enforcement_mode
   rule_contexts    = var.cbr_rules[count.index].rule_contexts
