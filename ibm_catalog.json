@@ -164,8 +164,10 @@
                 "grouping": "deployment",
                 "original_grouping": "deployment",
                 "config_constraints": {
+                  "filterString": "service:databases-for-elasticsearch-group",
                   "showKinds": [
-                    "region"
+                    "region",
+                    "dc"
                   ]
                 }
               }
@@ -674,8 +676,10 @@
                 "grouping": "deployment",
                 "original_grouping": "deployment",
                 "config_constraints": {
+                  "filterString": "service:databases-for-elasticsearch-group",
                   "showKinds": [
-                    "region"
+                    "region",
+                    "dc"
                   ]
                 }
               }
