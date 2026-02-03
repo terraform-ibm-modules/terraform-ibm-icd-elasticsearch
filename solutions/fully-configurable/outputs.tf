@@ -83,3 +83,28 @@ output "certificate_base64" {
   value       = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].certificate_base64
   sensitive   = true
 }
+
+output "next_steps_text" {
+  value       = "Your Database for Elasticsearch instance is ready. You can now take advantage of the flexibility of a semantic search engine with the indexing power of a JSON document database and Vector DB capabilities via a number of built-in features."
+  description = "Next steps text"
+}
+
+output "next_step_primary_label" {
+  value       = "Deployment Details"
+  description = "Primary label"
+}
+
+output "next_step_primary_url" {
+  value       = "https://cloud.ibm.com/services/databases-for-elasticsearch/${local.elasticsearch_crn}"
+  description = "Primary URL"
+}
+
+output "next_step_secondary_label" {
+  value       = "Learn more about Databases for Elasticsearch"
+  description = "Secondary label"
+}
+
+output "next_step_secondary_url" {
+  value       = "https://cloud.ibm.com/docs/databases-for-elasticsearch"
+  description = "Secondary URL"
+}
