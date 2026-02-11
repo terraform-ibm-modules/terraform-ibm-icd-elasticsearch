@@ -411,6 +411,9 @@ locals {
 
 resource "terraform_data" "install_required_binaries" {
   count = var.install_required_binaries ? 1 : 0
+  triggers_replace = {
+    file_changed       = md5(var.enable_elser_model)
+  }
 
   provisioner "local-exec" {
     command     = "${path.module}/scripts/install-binaries.sh ${local.binaries_path}"
@@ -418,10 +421,10 @@ resource "terraform_data" "install_required_binaries" {
   }
 }
 
-resource "null_resource" "put_vectordb_model" {
+resource "terraform_data" "put_vectordb_model" {
   depends_on = [terraform_data.install_required_binaries]
   count      = var.enable_elser_model ? 1 : 0
-  triggers = {
+  triggers_replace = {
     file_changed = md5(var.elser_model_type)
   }
   provisioner "local-exec" {

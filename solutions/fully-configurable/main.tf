@@ -474,6 +474,9 @@ locals {
 
 resource "terraform_data" "install_required_binaries" {
   count = var.install_required_binaries ? 1 : 0
+  triggers_replace = {
+    enable_kibana_dashboard = var.enable_kibana_dashboard
+  }
 
   provisioner "local-exec" {
     command     = "${path.module}/../../scripts/install-binaries.sh ${local.binaries_path}"
@@ -483,7 +486,7 @@ resource "terraform_data" "install_required_binaries" {
 data "external" "es_metadata" {
   depends_on = [terraform_data.install_required_binaries]
   count      = var.enable_kibana_dashboard ? 1 : 0
-  program    = ["bash", "${path.module}/scripts/es_metadata.sh ${local.binaries_path}"]
+  program    = ["bash", "${path.module}/scripts/es_metadata.sh", local.binaries_path]
   query = {
     url         = "https://${local.elasticsearch_hostname}:${local.elasticsearch_port}"
     username    = local.elasticsearch_username
