@@ -2,11 +2,9 @@
 package test
 
 import (
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/big"
 	"os"
 	"sort"
 	"strconv"
@@ -27,7 +25,6 @@ import (
 )
 
 const completeExampleTerraformDir = "examples/complete"
-const fscloudExampleTerraformDir = "examples/fscloud"
 const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
 const securityEnforcedSolutionTerraformDir = "solutions/security-enforced"
 
@@ -116,6 +113,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+// Test the fully-configurable DA with defaults (IBM owned encryption keys)
 func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
@@ -123,9 +121,9 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		Testing: t,
 		TarIncludePatterns: []string{
 			"*.tf",
-			fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
-			fmt.Sprintf("%s/scripts/*.sh", fullyConfigurableSolutionTerraformDir),
-			fmt.Sprintf("%s/*.sh", "scripts"),
+			fullyConfigurableSolutionTerraformDir + "/*.tf",
+			fullyConfigurableSolutionTerraformDir + "/scripts/*.sh",
+			"scripts/*.sh",
 		},
 		TemplateFolder:         fullyConfigurableSolutionTerraformDir,
 		BestRegionYAMLPath:     regionSelectionPath,
@@ -135,80 +133,9 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		WaitJobCompleteMinutes: 60,
 	})
 
+	uniqueResourceGroup := generateUniqueResourceGroupName(options.Prefix)
+
 	serviceCredentialSecrets := []map[string]interface{}{
-		{
-			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
-			"service_credentials": []map[string]string{
-				{
-					"secret_name": fmt.Sprintf("%s-cred-reader", options.Prefix),
-					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Viewer",
-				},
-				{
-					"secret_name": fmt.Sprintf("%s-cred-writer", options.Prefix),
-					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Editor",
-				},
-			},
-		},
-	}
-
-	region := "us-south"
-	latestVersion, _ := GetRegionVersions(region)
-	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
-		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
-		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
-		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
-		{Name: "deletion_protection", Value: false, DataType: "bool"},
-		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
-		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
-		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
-		{Name: "plan", Value: "platinum", DataType: "string"},
-		{Name: "region", Value: region, DataType: "string"},
-		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"},
-		{Name: "enable_elser_model", Value: true, DataType: "bool"},
-		{Name: "service_credential_names", Value: "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}", DataType: "map(string)"},
-		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
-		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
-		{Name: "service_endpoints", Value: "private", DataType: "string"},
-		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
-		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
-		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
-		{Name: "provider_visibility", Value: "private", DataType: "string"},
-		{Name: "prefix", Value: options.Prefix, DataType: "string"},
-		{Name: "admin_pass", Value: common.GetRandomPasswordWithPrefix(), DataType: "string"},
-	}
-
-	// need to ignore because of a provider issue: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6330
-	options.IgnoreUpdates = testhelper.Exemptions{
-		List: []string{
-			"module.code_engine_kibana[0].module.app[\"" + options.Prefix + "-ce-kibana-app\"].ibm_code_engine_app.ce_app",
-		},
-	}
-
-	err := options.RunSchematicTest()
-	assert.Nil(t, err, "This should not have errored")
-}
-
-func TestRunSecurityEnforcedUpgradeSolutionSchematics(t *testing.T) {
-	t.Parallel()
-
-	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
-		Testing:       t,
-		Region:        "us-south",
-		Prefix:        "es-se-upg",
-		ResourceGroup: resourceGroup,
-		TarIncludePatterns: []string{
-			"*.tf",
-			fullyConfigurableSolutionTerraformDir + "/*.tf",
-			securityEnforcedSolutionTerraformDir + "/*.tf",
-		},
-		TemplateFolder:             securityEnforcedSolutionTerraformDir,
-		Tags:                       []string{"es-se-upg"},
-		DeleteWorkspaceOnFail:      false,
-		WaitJobCompleteMinutes:     120,
-		CheckApplyResultForUpgrade: true,
-	})
-
-	serviceCredentialSecrets := []map[string]any{
 		{
 			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
 			"service_credentials": []map[string]string{
@@ -238,25 +165,36 @@ func TestRunSecurityEnforcedUpgradeSolutionSchematics(t *testing.T) {
 	region := "us-south"
 	latestVersion, _ := GetRegionVersions(region)
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
-		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
+		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
 		{Name: "region", Value: region, DataType: "string"},
-		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"},
-		{Name: "existing_resource_group_name", Value: resourceGroup, DataType: "string"},
-		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
-		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
-		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
+		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
+		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass", Value: common.GetRandomPasswordWithPrefix(), DataType: "string"},
-		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("es-%s-admin-secrets", options.Prefix), DataType: "string"},
+		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
+		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
+		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"},
+		{Name: "plan", Value: "platinum", DataType: "string"},
+		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
+		{Name: "provider_visibility", Value: "private", DataType: "string"},
+		{Name: "service_endpoints", Value: "private", DataType: "string"},
+		{Name: "enable_elser_model", Value: true, DataType: "bool"},
 	}
 
-	err = options.RunSchematicUpgradeTest()
+	err = sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
+		return options.RunSchematicTest()
+	})
 	assert.Nil(t, err, "This should not have errored")
 }
 
+// Test the security-enforced DA with defaults (KMS encryption enabled, BYOK)
 func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 	t.Parallel()
 
@@ -264,10 +202,10 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 		Testing: t,
 		TarIncludePatterns: []string{
 			"*.tf",
-			fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
-			fmt.Sprintf("%s/*.tf", securityEnforcedSolutionTerraformDir),
-			fmt.Sprintf("%s/scripts/*.sh", fullyConfigurableSolutionTerraformDir),
-			fmt.Sprintf("%s/*.sh", "scripts"),
+			fullyConfigurableSolutionTerraformDir + "/*.tf",
+			securityEnforcedSolutionTerraformDir + "/*.tf",
+			fullyConfigurableSolutionTerraformDir + "/scripts/*.sh",
+			"scripts/*.sh",
 		},
 		TemplateFolder:         securityEnforcedSolutionTerraformDir,
 		BestRegionYAMLPath:     regionSelectionPath,
@@ -293,29 +231,39 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 		},
 	}
 
+	serviceCredentialNames := map[string]string{
+		"admin": "Administrator",
+		"user1": "Viewer",
+		"user2": "Editor",
+	}
+
+	serviceCredentialNamesJSON, err := json.Marshal(serviceCredentialNames)
+	if err != nil {
+		log.Fatalf("Error converting to JSON: %s", err)
+	}
+
 	uniqueResourceGroup := generateUniqueResourceGroupName(options.Prefix)
 
 	region := "us-south"
 	latestVersion, _ := GetRegionVersions(region)
-
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
 		{Name: "region", Value: region, DataType: "string"},
-		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"},
-		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
-		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
 		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
-		{Name: "plan", Value: "platinum", DataType: "string"},
-		{Name: "enable_elser_model", Value: true, DataType: "bool"},
-		{Name: "service_credential_names", Value: "{\"admin_test\": \"Administrator\", \"editor_test\": \"Editor\"}", DataType: "map(string)"},
-		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
+		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
+		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
+		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
+		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"},
+		{Name: "plan", Value: "platinum", DataType: "string"},
+		{Name: "enable_elser_model", Value: true, DataType: "bool"},
 		{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
-		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 	}
 
 	// need to ignore because of a provider issue: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6330
@@ -325,10 +273,167 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 		},
 	}
 
-	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
+	err = sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
 		return options.RunSchematicTest()
 	})
 	assert.Nil(t, err, "This should not have errored")
+}
+
+// Upgrade test the security-enforced DA with defaults (KMS encryption enabled, KYOK)
+func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
+	t.Parallel()
+
+	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
+		Testing: t,
+		TarIncludePatterns: []string{
+			"*.tf",
+			fullyConfigurableSolutionTerraformDir + "/*.tf",
+			securityEnforcedSolutionTerraformDir + "/*.tf",
+		},
+		TemplateFolder:             securityEnforcedSolutionTerraformDir,
+		Tags:                       []string{"es-se-upg"},
+		Prefix:                     "es-se-upg",
+		DeleteWorkspaceOnFail:      false,
+		WaitJobCompleteMinutes:     120,
+		CheckApplyResultForUpgrade: true,
+	})
+
+	serviceCredentialSecrets := []map[string]interface{}{
+		{
+			"secret_group_name": fmt.Sprintf("%s-secret-group", options.Prefix),
+			"service_credentials": []map[string]string{
+				{
+					"secret_name": fmt.Sprintf("%s-cred-reader", options.Prefix),
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Viewer",
+				},
+				{
+					"secret_name": fmt.Sprintf("%s-cred-writer", options.Prefix),
+					"service_credentials_source_service_role_crn": "crn:v1:bluemix:public:iam::::role:Editor",
+				},
+			},
+		},
+	}
+
+	serviceCredentialNames := map[string]string{
+		"admin": "Administrator",
+		"user1": "Viewer",
+		"user2": "Editor",
+	}
+
+	serviceCredentialNamesJSON, err := json.Marshal(serviceCredentialNames)
+	if err != nil {
+		log.Fatalf("Error converting to JSON: %s", err)
+	}
+
+	uniqueResourceGroup := generateUniqueResourceGroupName(options.Prefix)
+
+	region := "us-south"
+	latestVersion, _ := GetRegionVersions(region)
+	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
+		{Name: "prefix", Value: options.Prefix, DataType: "string"},
+		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
+		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
+		{Name: "deletion_protection", Value: false, DataType: "bool"},
+		{Name: "region", Value: region, DataType: "string"},
+		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
+		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
+		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
+		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("es-%s-admin-secrets", options.Prefix), DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass", Value: common.GetRandomPasswordWithPrefix(), DataType: "string"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
+		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"},
+	}
+	err = options.RunSchematicUpgradeTest()
+	if !options.UpgradeTestSkipped {
+		assert.Nil(t, err, "This should not have errored")
+	}
+}
+
+func TestPlanValidation(t *testing.T) {
+	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
+		Testing:      t,
+		TerraformDir: fullyConfigurableSolutionTerraformDir,
+		Prefix:       "val-plan",
+		// ResourceGroup: resourceGroup,
+		Region: "us-south", // skip VPC region picker
+	})
+	options.TestSetup()
+	options.TerraformOptions.NoColor = true
+	options.TerraformOptions.Logger = logger.Discard
+
+	latestVersion, _ := GetRegionVersions("us-south")
+	options.TerraformOptions.Vars = map[string]interface{}{
+		"prefix":                       options.Prefix,
+		"region":                       "us-south",
+		"elasticsearch_version":        latestVersion,
+		"provider_visibility":          "public",
+		"existing_resource_group_name": resourceGroup,
+	}
+
+	// Test the DA when using Elser model
+	var fullyConfigurableSolutionWithElserModelVars = map[string]interface{}{
+		"kms_encryption_enabled":    true,
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"enable_elser_model":        true,
+		"plan":                      "platinum",
+	}
+
+	// Test the DA when using Kibana dashboard and existing KMS instance
+	var fullyConfigurableSolutionWithKibanaDashboardVars = map[string]interface{}{
+		"enable_kibana_dashboard":   true,
+		"kms_encryption_enabled":    true,
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"plan":                      "enterprise",
+	}
+
+	// Test the DA when using an existing KMS instance
+	var fullyConfigurableWithExistingKms = map[string]interface{}{
+		"access_tags":               permanentResources["accessTags"],
+		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
+		"kms_encryption_enabled":    true,
+	}
+
+	// Test the DA when using IBM owned encryption key
+	var fullyConfigurableWithIbmOwnedKey = map[string]interface{}{
+		"kms_encryption_enabled": false,
+	}
+
+	// Test the DA when using IBM owned encryption keys
+	var fullyConfigurableWithIbmOwnedBackupKey = map[string]interface{}{
+		"use_default_backup_encryption_key": false,
+		"kms_encryption_enabled":            false,
+	}
+
+	// Create a map of the variables
+	tfVarsMap := map[string]map[string]interface{}{
+		"fullyConfigurableSolutionWithElserModelVars":      fullyConfigurableSolutionWithElserModelVars,
+		"fullyConfigurableSolutionWithKibanaDashboardVars": fullyConfigurableSolutionWithKibanaDashboardVars,
+		"fullyConfigurableWithExistingKms":                 fullyConfigurableWithExistingKms,
+		"fullyConfigurableWithIbmOwnedKey":                 fullyConfigurableWithIbmOwnedKey,
+		"fullyConfigurableWithIbmOwnedBackupKey":           fullyConfigurableWithIbmOwnedBackupKey,
+	}
+
+	_, initErr := terraform.InitE(t, options.TerraformOptions)
+	if assert.Nil(t, initErr, "This should not have errored") {
+		// Iterate over the slice of maps
+		for name, tfVars := range tfVarsMap {
+			t.Run(name, func(t *testing.T) {
+				// Iterate over the keys and values in each map
+				for key, value := range tfVars {
+					options.TerraformOptions.Vars[key] = value
+				}
+				output, err := terraform.PlanE(t, options.TerraformOptions)
+				assert.Nil(t, err, "This should not have errored")
+				assert.NotNil(t, output, "Expected some output")
+				// Delete the keys from the map
+				for key := range tfVars {
+					delete(options.TerraformOptions.Vars, key)
+				}
+			})
+		}
+	}
 }
 
 func TestRunExistingInstance(t *testing.T) {
@@ -336,12 +441,6 @@ func TestRunExistingInstance(t *testing.T) {
 	prefix := fmt.Sprintf("elastic-t-%s", strings.ToLower(random.UniqueId()))
 	realTerraformDir := ".."
 	tempTerraformDir, _ := files.CopyTerraformFolderToTemp(realTerraformDir, fmt.Sprintf(prefix+"-%s", strings.ToLower(random.UniqueId())))
-
-	index, err := rand.Int(rand.Reader, big.NewInt(int64(len(validICDRegions))))
-	if err != nil {
-		log.Fatalf("Failed to generate a secure random index: %v", err)
-	}
-	region := validICDRegions[index.Int64()]
 
 	// Verify ibmcloud_api_key variable is set
 	checkVariable := "TF_VAR_ibmcloud_api_key"
@@ -351,6 +450,7 @@ func TestRunExistingInstance(t *testing.T) {
 
 	logger.Log(t, "Tempdir: ", tempTerraformDir)
 
+	region := validICDRegions[common.CryptoIntn(len(validICDRegions))]
 	_, oldestVersion := GetRegionVersions(region)
 	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir + "/examples/basic",
@@ -375,10 +475,9 @@ func TestRunExistingInstance(t *testing.T) {
 			Testing: t,
 			TarIncludePatterns: []string{
 				"*.tf",
-				fmt.Sprintf("%s/*.tf", fullyConfigurableSolutionTerraformDir),
-				fmt.Sprintf("%s/*.tf", fscloudExampleTerraformDir),
-				fmt.Sprintf("%s/*.tf", "modules/fscloud"),
-				fmt.Sprintf("%s/*.sh", "scripts"),
+				fullyConfigurableSolutionTerraformDir + "/*.tf",
+				fullyConfigurableSolutionTerraformDir + "/scripts/*.sh",
+				"scripts/*.sh",
 			},
 			TemplateFolder:         fullyConfigurableSolutionTerraformDir,
 			BestRegionYAMLPath:     regionSelectionPath,
@@ -413,107 +512,7 @@ func TestRunExistingInstance(t *testing.T) {
 	}
 }
 
-// Test the DA when using IBM owned encryption keys
-func TestFullyConfigurableSolutionIBMKeys(t *testing.T) {
-	t.Parallel()
-
-	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:       t,
-		TerraformDir:  fullyConfigurableSolutionTerraformDir,
-		Region:        "us-south",
-		Prefix:        "esicdkey",
-		ResourceGroup: resourceGroup,
-	})
-
-	region := options.Region
-	latestVersion, _ := GetRegionVersions(region)
-	options.TerraformVars = map[string]interface{}{
-		"elasticsearch_version":        latestVersion,
-		"region":                       region,
-		"provider_visibility":          "public",
-		"existing_resource_group_name": resourceGroup,
-		"kms_encryption_enabled":       false,
-		"prefix":                       options.Prefix,
-		"deletion_protection":          false,
-	}
-
-	output, err := options.RunTestConsistency()
-	assert.Nil(t, err, "This should not have errored")
-	assert.NotNil(t, output, "Expected some output")
-}
-
-func TestPlanValidation(t *testing.T) {
-	options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
-		Testing:       t,
-		TerraformDir:  fullyConfigurableSolutionTerraformDir,
-		Prefix:        "val-plan",
-		ResourceGroup: resourceGroup,
-		Region:        "us-south", // skip VPC region picker
-	})
-	options.TestSetup()
-	options.TerraformOptions.NoColor = true
-	options.TerraformOptions.Logger = logger.Discard
-
-	latestVersion, _ := GetRegionVersions(options.Region)
-
-	options.TerraformOptions.Vars = map[string]interface{}{
-		"prefix":                       options.Prefix,
-		"existing_resource_group_name": resourceGroup,
-		"region":                       "us-south",
-		"elasticsearch_version":        latestVersion,
-		"provider_visibility":          "public",
-	}
-
-	// Test the DA when using Elser model
-	var fullyConfigurableSolutionWithElserModelVars = map[string]interface{}{
-		"kms_encryption_enabled":    true,
-		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
-		"enable_elser_model":        true,
-		"plan":                      "platinum",
-	}
-
-	// Test the DA when using Kibana dashboard and existing KMS instance
-	var fullyConfigurableSolutionWithKibanaDashboardVars = map[string]interface{}{
-		"enable_kibana_dashboard":   true,
-		"kms_encryption_enabled":    true,
-		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
-		"plan":                      "enterprise",
-	}
-
-	// Test the DA when using IBM owned encryption key
-	var fullyConfigurableSolutionWithUseIbmOwnedEncKey = map[string]interface{}{
-		"kms_encryption_enabled": false,
-	}
-
-	// Create a map of the variables
-	tfVarsMap := map[string]map[string]interface{}{
-		"fullyConfigurableSolutionWithElserModelVars":      fullyConfigurableSolutionWithElserModelVars,
-		"fullyConfigurableSolutionWithKibanaDashboardVars": fullyConfigurableSolutionWithKibanaDashboardVars,
-		"fullyConfigurableSolutionWithUseIbmOwnedEncKey":   fullyConfigurableSolutionWithUseIbmOwnedEncKey,
-	}
-
-	_, initErr := terraform.InitE(t, options.TerraformOptions)
-	if assert.Nil(t, initErr, "This should not have errored") {
-		// Iterate over the slice of maps
-		for name, tfVars := range tfVarsMap {
-			t.Run(name, func(t *testing.T) {
-				// Iterate over the keys and values in each map
-				for key, value := range tfVars {
-					options.TerraformOptions.Vars[key] = value
-				}
-				output, err := terraform.PlanE(t, options.TerraformOptions)
-				assert.Nil(t, err, "This should not have errored")
-				assert.NotNil(t, output, "Expected some output")
-				// Delete the keys from the map
-				for key := range tfVars {
-					delete(options.TerraformOptions.Vars, key)
-				}
-			})
-		}
-	}
-}
-
 func generateUniqueResourceGroupName(baseName string) string {
-	id := uuid.New().String()[:8]
+	id := uuid.New().String()[:8] // Shorten UUID for readability
 	return fmt.Sprintf("%s-%s", baseName, id)
 }
