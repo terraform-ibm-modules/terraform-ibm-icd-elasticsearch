@@ -27,7 +27,7 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
 		Testing:            t,
-		TerraformDir:       completeExampleTerraformDir,
+		TerraformDir:       "examples/complete",
 		Prefix:             "es-complete-test",
 		ResourceGroup:      resourceGroup,
 		BestRegionYAMLPath: regionSelectionPath,

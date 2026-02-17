@@ -1,4 +1,4 @@
-// Tests in this file are run in the PR pipeline.
+// Tests in this file are run in the PR pipeline
 package test
 
 import (
@@ -24,11 +24,11 @@ import (
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testschematic"
 )
 
-const completeExampleTerraformDir = "examples/complete"
 const fullyConfigurableSolutionTerraformDir = "solutions/fully-configurable"
 const securityEnforcedSolutionTerraformDir = "solutions/security-enforced"
 
 const icdType = "elasticsearch"
+const icdShortType = "es"
 
 // Use existing resource group
 const resourceGroup = "geretain-test-elasticsearch"
@@ -125,12 +125,13 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 			fullyConfigurableSolutionTerraformDir + "/scripts/*.sh",
 			"scripts/*.sh",
 		},
-		TemplateFolder:         fullyConfigurableSolutionTerraformDir,
-		BestRegionYAMLPath:     regionSelectionPath,
-		Prefix:                 "els-fc-da",
-		ResourceGroup:          resourceGroup,
-		DeleteWorkspaceOnFail:  false,
-		WaitJobCompleteMinutes: 60,
+		TemplateFolder:             fullyConfigurableSolutionTerraformDir,
+		BestRegionYAMLPath:         regionSelectionPath,
+		Prefix:                     fmt.Sprintf("%s-fc-da", icdShortType),
+		ResourceGroup:              resourceGroup,
+		DeleteWorkspaceOnFail:      false,
+		WaitJobCompleteMinutes:     60,
+		CheckApplyResultForUpgrade: true,
 	})
 
 	uniqueResourceGroup := generateUniqueResourceGroupName(options.Prefix)
@@ -174,7 +175,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
-		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("%s-%s-admin-secrets", icdShortType, options.Prefix), DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass", Value: common.GetRandomPasswordWithPrefix(), DataType: "string"},
 		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
@@ -207,12 +208,13 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 			fullyConfigurableSolutionTerraformDir + "/scripts/*.sh",
 			"scripts/*.sh",
 		},
-		TemplateFolder:         securityEnforcedSolutionTerraformDir,
-		BestRegionYAMLPath:     regionSelectionPath,
-		Prefix:                 "els-se-da",
-		ResourceGroup:          resourceGroup,
-		DeleteWorkspaceOnFail:  false,
-		WaitJobCompleteMinutes: 60,
+		TemplateFolder:             securityEnforcedSolutionTerraformDir,
+		BestRegionYAMLPath:         regionSelectionPath,
+		Prefix:                     fmt.Sprintf("%s-se-da", icdShortType),
+		ResourceGroup:              resourceGroup,
+		DeleteWorkspaceOnFail:      false,
+		WaitJobCompleteMinutes:     60,
+		CheckApplyResultForUpgrade: true,
 	})
 
 	serviceCredentialSecrets := []map[string]interface{}{
@@ -256,8 +258,9 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
-		{Name: "admin_pass_secrets_manager_secret_group", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("%s-%s-admin-secrets", icdShortType, options.Prefix), DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
+		{Name: "admin_pass", Value: common.GetRandomPasswordWithPrefix(), DataType: "string"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "existing_backup_kms_key_crn", Value: permanentResources["hpcs_south_root_key_crn"], DataType: "string"},
 		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"},
@@ -291,8 +294,8 @@ func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
 			securityEnforcedSolutionTerraformDir + "/*.tf",
 		},
 		TemplateFolder:             securityEnforcedSolutionTerraformDir,
-		Tags:                       []string{"es-se-upg"},
-		Prefix:                     "es-se-upg",
+		Tags:                       []string{fmt.Sprintf("%s-se-upg", icdShortType)},
+		Prefix:                     fmt.Sprintf("%s-se-upg", icdShortType),
 		DeleteWorkspaceOnFail:      false,
 		WaitJobCompleteMinutes:     120,
 		CheckApplyResultForUpgrade: true,
@@ -339,13 +342,15 @@ func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
 		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
-		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("es-%s-admin-secrets", options.Prefix), DataType: "string"},
+		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("%s-%s-admin-secrets", icdShortType, options.Prefix), DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass", Value: common.GetRandomPasswordWithPrefix(), DataType: "string"},
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"},
 	}
-	err = options.RunSchematicUpgradeTest()
+	err = sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
+		return options.RunSchematicUpgradeTest()
+	})
 	if !options.UpgradeTestSkipped {
 		assert.Nil(t, err, "This should not have errored")
 	}
@@ -373,7 +378,7 @@ func TestPlanValidation(t *testing.T) {
 	}
 
 	// Test the DA when using Elser model
-	var fullyConfigurableSolutionWithElserModelVars = map[string]interface{}{
+	var fullyConfigurableWithElserModelVars = map[string]interface{}{
 		"kms_encryption_enabled":    true,
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
 		"enable_elser_model":        true,
@@ -381,7 +386,7 @@ func TestPlanValidation(t *testing.T) {
 	}
 
 	// Test the DA when using Kibana dashboard and existing KMS instance
-	var fullyConfigurableSolutionWithKibanaDashboardVars = map[string]interface{}{
+	var fullyConfigurableWithKibanaDashboardVars = map[string]interface{}{
 		"enable_kibana_dashboard":   true,
 		"kms_encryption_enabled":    true,
 		"existing_kms_instance_crn": permanentResources["hpcs_south_crn"],
@@ -408,11 +413,11 @@ func TestPlanValidation(t *testing.T) {
 
 	// Create a map of the variables
 	tfVarsMap := map[string]map[string]interface{}{
-		"fullyConfigurableSolutionWithElserModelVars":      fullyConfigurableSolutionWithElserModelVars,
-		"fullyConfigurableSolutionWithKibanaDashboardVars": fullyConfigurableSolutionWithKibanaDashboardVars,
-		"fullyConfigurableWithExistingKms":                 fullyConfigurableWithExistingKms,
-		"fullyConfigurableWithIbmOwnedKey":                 fullyConfigurableWithIbmOwnedKey,
-		"fullyConfigurableWithIbmOwnedBackupKey":           fullyConfigurableWithIbmOwnedBackupKey,
+		"fullyConfigurableWithElserModelVars":      fullyConfigurableWithElserModelVars,
+		"fullyConfigurableWithKibanaDashboardVars": fullyConfigurableWithKibanaDashboardVars,
+		"fullyConfigurableWithExistingKms":         fullyConfigurableWithExistingKms,
+		"fullyConfigurableWithIbmOwnedKey":         fullyConfigurableWithIbmOwnedKey,
+		"fullyConfigurableWithIbmOwnedBackupKey":   fullyConfigurableWithIbmOwnedBackupKey,
 	}
 
 	_, initErr := terraform.InitE(t, options.TerraformOptions)
@@ -438,7 +443,7 @@ func TestPlanValidation(t *testing.T) {
 
 func TestRunExistingInstance(t *testing.T) {
 	t.Parallel()
-	prefix := fmt.Sprintf("elastic-t-%s", strings.ToLower(random.UniqueId()))
+	prefix := fmt.Sprintf("%s-t-%s", icdShortType, strings.ToLower(random.UniqueId()))
 	realTerraformDir := ".."
 	tempTerraformDir, _ := files.CopyTerraformFolderToTemp(realTerraformDir, fmt.Sprintf(prefix+"-%s", strings.ToLower(random.UniqueId())))
 
@@ -481,7 +486,7 @@ func TestRunExistingInstance(t *testing.T) {
 			},
 			TemplateFolder:         fullyConfigurableSolutionTerraformDir,
 			BestRegionYAMLPath:     regionSelectionPath,
-			Prefix:                 "els-sr-da",
+			Prefix:                 fmt.Sprintf("%s-ex", icdShortType),
 			ResourceGroup:          resourceGroup,
 			DeleteWorkspaceOnFail:  false,
 			WaitJobCompleteMinutes: 60,
