@@ -189,6 +189,13 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "enable_elser_model", Value: true, DataType: "bool"},
 	}
 
+	// need to ignore because of a provider issue: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6330
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.code_engine_kibana[0].module.app[\"" + options.Prefix + "-ce-kibana-app\"].ibm_code_engine_app.ce_app",
+		},
+	}
+
 	err = sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
 		return options.RunSchematicTest()
 	})
