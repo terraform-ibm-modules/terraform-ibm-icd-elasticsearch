@@ -68,12 +68,24 @@ module "elasticsearch" {
   backup_encryption_key_crn = var.backup_encryption_key_crn
   backup_crn                = var.backup_crn
   elasticsearch_version     = var.elasticsearch_version
-  service_credential_names = {
-    "elasticsearch_admin" : "Administrator",
-    "elasticsearch_operator" : "Operator",
-    "elasticsearch_viewer" : "Viewer",
-    "elasticsearch_editor" : "Editor",
-  }
+  service_credential_names = [
+    {
+      name = "elasticsearch_admin"
+      role = "Administrator"
+    },
+    {
+      name = "elasticsearch_operator"
+      role = "Operator"
+    },
+    {
+      name = "elasticsearch_viewer"
+      role = "Viewer"
+    },
+    {
+      name = "elasticsearch_editor"
+      role = "Editor"
+    }
+  ]
   auto_scaling       = var.auto_scaling
   member_host_flavor = "b3c.4x16.encrypted"
   enable_elser_model = var.enable_elser_model

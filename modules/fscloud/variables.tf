@@ -84,9 +84,13 @@ variable "users" {
 }
 
 variable "service_credential_names" {
-  type        = map(string)
-  description = "Map of name, role for service credentials that you want to create for the database"
-  default     = {}
+  type = list(object({
+    name     = string
+    role     = string
+    endpoint = optional(string, null)
+  }))
+  description = "List of service credentials to create for the database, including name, role, and optional endpoint type (`public` or `private`)."
+  default     = []
 }
 
 variable "tags" {

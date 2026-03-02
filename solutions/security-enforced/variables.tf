@@ -138,9 +138,13 @@ variable "member_host_flavor" {
 }
 
 variable "service_credential_names" {
-  description = "Map of name, role for service credentials that you want to create for the database. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/fully-configurable/DA-types.md#svc-credential-name)"
-  type        = map(string)
-  default     = {}
+  description = "List of service credentials to create for the database, including name, role, and optional endpoint type (`public` or `private`). [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/fully-configurable/DA-types.md#svc-credential-name)"
+  type = list(object({
+    name     = string
+    role     = string
+    endpoint = optional(string, "private")
+  }))
+  default = []
 }
 
 variable "admin_pass" {

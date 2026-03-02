@@ -9,26 +9,40 @@ Several optional input variables in the IBM Cloud [Databases for Elasticsearch d
 
 ## Service credentials <a name="svc-credential-name"></a>
 
-You can specify a set of IAM credentials to connect to the database with the `service_credential_names` input variable. Include a credential name and IAM service role for each key-value pair. Each role provides a specific level of access to the database. For more information, see [Adding and viewing credentials](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui).
+You can specify a set of IAM credentials to connect to the database with the `service_credential_names` input variable. Include a credential name, IAM service role, and optional endpoint type for each credential. Each role provides a specific level of access to the database. For more information, see [Adding and viewing credentials](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui).
 
 - Variable name: `service_credential_names`.
-- Type: A map. The key is the name of the service credential. The value is the role that is assigned to that credential.
-- Default value: An empty map (`{}`).
+- Type: A list of objects.
+- Default value: An empty list (`[]`).
 
 ### Options for service_credential_names
 
-- Key (required): The name of the service credential.
-- Value (required): The IAM service role that is assigned to the credential. For more information, see [IBM Cloud IAM roles](https://cloud.ibm.com/docs/account?topic=account-userroles).
+- `name` (required): The name of the service credential.
+- `role` (required): The IAM service role that is assigned to the credential. For more information, see [IBM Cloud IAM roles](https://cloud.ibm.com/docs/account?topic=account-userroles).
+- `endpoint` (optional, default = `private`): The Elasticsearch endpoint that the resource key uses. Allowed values are `public` and `private`.
 
 ### Example service credential
 
 ```hcl
+[
   {
-      "es_admin" : "Administrator",
-      "es_reader" : "Operator",
-      "es_viewer" : "Viewer",
-      "es_editor" : "Editor"
+    "name": "es_admin",
+    "role": "Administrator",
+    "endpoint": "private"
+  },
+  {
+    "name": "es_reader",
+    "role": "Operator"
+  },
+  {
+    "name": "es_viewer",
+    "role": "Viewer"
+  },
+  {
+    "name": "es_editor",
+    "role": "Editor"
   }
+]
 ```
 
 

@@ -5,11 +5,26 @@
 locals {
   secrets_manager_guid   = var.existing_sm_instance_guid == null ? module.secrets_manager[0].secrets_manager_guid : var.existing_sm_instance_guid
   secrets_manager_region = var.existing_sm_instance_region == null ? var.region : var.existing_sm_instance_region
-  service_credential_names = {
-    "es_admin" : "Administrator",
-    "es_operator" : "Operator",
-    "es_viewer" : "Viewer",
-    "es_editor" : "Editor",
+  service_credential_names = [
+    {
+      name = "es_admin"
+      role = "Administrator"
+    },
+    {
+      name = "es_operator"
+      role = "Operator"
+    },
+    {
+      name = "es_viewer"
+      role = "Viewer"
+    },
+    {
+      name = "es_editor"
+      role = "Editor"
+    }
+  ]
+  service_credential_names_by_name = {
+    for credential in local.service_credential_names : credential.name => credential
   }
 }
 
@@ -122,7 +137,7 @@ module "secrets_manager_secrets_group" {
 module "secrets_manager_service_credentials_user_pass" {
   source                  = "terraform-ibm-modules/secrets-manager-secret/ibm"
   version                 = "1.9.14"
-  for_each                = local.service_credential_names
+  for_each                = local.service_credential_names_by_name
   region                  = local.secrets_manager_region
   secrets_manager_guid    = local.secrets_manager_guid
   secret_group_id         = module.secrets_manager_secrets_group.secret_group_id

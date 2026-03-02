@@ -354,9 +354,12 @@ module "cbr_rule" {
 ##############################################################################
 
 resource "ibm_resource_key" "service_credentials" {
-  for_each             = var.service_credential_names
-  name                 = each.key
-  role                 = each.value
+  for_each = { for credential in var.service_credential_names : credential.name => credential }
+  name     = each.value.name
+  role     = each.value.role
+  parameters = {
+    service-endpoints = each.value.endpoint
+  }
   resource_instance_id = ibm_database.elasticsearch.id
 }
 
@@ -368,9 +371,9 @@ locals {
   } : null
 
   service_credentials_object = length(var.service_credential_names) > 0 ? {
-    hostname    = ibm_resource_key.service_credentials[keys(var.service_credential_names)[0]].credentials["connection.https.hosts.0.hostname"]
-    port        = ibm_resource_key.service_credentials[keys(var.service_credential_names)[0]].credentials["connection.https.hosts.0.port"]
-    certificate = ibm_resource_key.service_credentials[keys(var.service_credential_names)[0]].credentials["connection.https.certificate.certificate_base64"]
+    hostname    = ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.hosts.0.hostname"]
+    port        = ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.hosts.0.port"]
+    certificate = ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.certificate.certificate_base64"]
     credentials = {
       for service_credential in ibm_resource_key.service_credentials :
       service_credential["name"] => {
@@ -401,7 +404,7 @@ data "ibm_database_connection" "database_connection" {
 #       use the key name to obtain username and password from service_credentials_object
 #   else if admin_pass is used, then use 'admin' for username and password from ES password
 locals {
-  es_admin_users = var.enable_elser_model && var.service_credential_names != null && length(var.service_credential_names) > 0 ? [for k, v in var.service_credential_names : k if v == "Administrator"] : []
+  es_admin_users = var.enable_elser_model && var.service_credential_names != null && length(var.service_credential_names) > 0 ? [for service_credential in var.service_credential_names : service_credential.name if service_credential.role == "Administrator"] : []
   es_admin_user  = length(local.es_admin_users) > 0 ? local.es_admin_users[0] : null
   es_username    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["username"] : var.admin_pass != null ? "admin" : null
   es_password    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["password"] : var.admin_pass != null ? ibm_database.elasticsearch.adminpassword : null
