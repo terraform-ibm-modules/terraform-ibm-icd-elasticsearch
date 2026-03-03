@@ -178,12 +178,12 @@
               "default_value": "8.19",
               "options": [
                 {
-                  "displayname": "9.1",
-                  "value": "9.1"
-                },
-                {
                   "displayname": "8.19",
                   "value": "8.19"
+                },
+                {
+                  "displayname": "9.1",
+                  "value": "9.1"
                 },
                 {
                   "displayname": "8.15",
@@ -196,6 +196,10 @@
                 {
                   "displayname": "8.10",
                   "value": "8.10"
+                },
+                {
+                  "displayname": "8.7",
+                  "value": "8.7"
                 }
               ]
             },
@@ -728,12 +732,12 @@
               "default_value": "8.19",
               "options": [
                 {
-                  "displayname": "9.1",
-                  "value": "9.1"
-                },
-                {
                   "displayname": "8.19",
                   "value": "8.19"
+                },
+                {
+                  "displayname": "9.1",
+                  "value": "9.1"
                 },
                 {
                   "displayname": "8.15",
@@ -746,6 +750,10 @@
                 {
                   "displayname": "8.10",
                   "value": "8.10"
+                },
+                {
+                  "displayname": "8.7",
+                  "value": "8.7"
                 }
               ]
             },
