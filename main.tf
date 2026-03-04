@@ -437,10 +437,10 @@ resource "terraform_data" "put_vectordb_model" {
   }
 }
 
-resource "null_resource" "start_vectordb_model" {
+resource "terraform_data" "start_vectordb_model" {
   depends_on = [null_resource.put_vectordb_model]
   count      = var.enable_elser_model ? 1 : 0
-  triggers = {
+  triggers_replace =  = {
     file_changed = md5(var.elser_model_type)
   }
   provisioner "local-exec" {
