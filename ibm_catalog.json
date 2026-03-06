@@ -605,7 +605,8 @@
               }
             },
             {
-              "key": "install_required_binaries"
+              "key": "install_required_binaries",
+              "hidden": true
             }
           ],
           "terraform_version": "1.12.2",
