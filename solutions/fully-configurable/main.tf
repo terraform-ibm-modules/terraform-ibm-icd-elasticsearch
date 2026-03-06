@@ -472,19 +472,13 @@ locals {
   binaries_path             = "/tmp"
 }
 
-resource "terraform_data" "install_required_binaries" {
-  count = var.install_required_binaries ? 1 : 0
-  triggers_replace = {
-    enable_kibana_dashboard = var.enable_kibana_dashboard
-  }
-
-  provisioner "local-exec" {
-    command     = "${path.module}/../../scripts/install-binaries.sh ${local.binaries_path}"
-    interpreter = ["/bin/bash", "-c"]
-  }
+data "external" "install_required_binaries" {
+  count   = var.install_required_binaries ? 1 : 0
+  program = ["bash", "-c", "${path.module}/../../scripts/install-binaries.sh ${local.binaries_path} && echo '{\"status\":\"success\"}'"]
 }
+
 data "external" "es_metadata" {
-  depends_on = [terraform_data.install_required_binaries]
+  depends_on = [data.external.install_required_binaries]
   count      = var.enable_kibana_dashboard ? 1 : 0
   program    = ["bash", "${path.module}/scripts/es_metadata.sh", local.binaries_path]
   query = {
