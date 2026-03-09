@@ -13,7 +13,7 @@ TAG=v0.4.0
 # Running multiple Terraform executions on the same environment that share a /tmp directory can lead to conflicts during script execution.
 TMP_DIR=$(mktemp -d "${DIRECTORY}/common-bash-XXXXX")
 
-echo "Downloading common-bash-library version ${TAG}."
+echo "Downloading common-bash-library version ${TAG}." >&2
 
 # download common-bash-library
 curl --silent \
@@ -36,9 +36,12 @@ rm -f "${TMP_DIR}/common-bash.tar.gz"
 # shellcheck disable=SC1091,SC1090
 source "${TMP_DIR}/common-bash-library-${TAG#v}/common/common.sh"
 
-echo "Installing jq."
+echo "Installing jq." >&2
 install_jq "latest" "${DIRECTORY}" "true"
 
 rm -rf "$TMP_DIR"
 
-echo "Installation complete successfully"
+echo "Installation complete successfully" >&2
+
+# Output JSON for Terraform external data source
+echo '{"status":"success"}'
