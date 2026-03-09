@@ -1,0 +1,71 @@
+cd tests && go test -run TestRunSecurityEnforcedSolutionSchematics -count=1 -v -timeout 600m
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 API cache disabled
+=== RUN   TestRunSecurityEnforcedSolutionSchematics
+=== PAUSE TestRunSecurityEnforcedSolutionSchematics
+=== CONT  TestRunSecurityEnforcedSolutionSchematics
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 API cache disabled
+2026/03/09 14:24:37 Region eu-de VPC count: 3
+2026/03/09 14:24:37 --- new best region is eu-de
+2026/03/09 14:24:39 Region us-south VPC count: 11
+2026/03/09 14:24:39 Best region was found!: eu-de
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 API cache disabled
+version list is  [8.7 8.10 8.12 8.15 8.19 9.1]
+Running task inside resource group context...
+Created resource group es-se-da-jby-a298797b with ID 7b1cd352771c40bea83cce48681f3667[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 API cache disabled
+    tests.go:347: [SCHEMATICS] Random Workspace region chosen: us
+    schematics.go:123: [SCHEMATICS] Schematics API for region us: https://us.schematics.cloud.ibm.com
+    tests.go:101: [SCHEMATICS] Creating Test Workspace
+    schematics.go:208: [SCHEMATICS] Created workspace: es-se-da-jby (ID: us-east.workspace.es-se-da-jby.84b3cbc3)
+    tests.go:107: [SCHEMATICS] Workspace Created: es-se-da-jby (us-east.workspace.es-se-da-jby.84b3cbc3)
+    tests.go:124: Starting with variable validation for branch: issue-16994 
+    schematics.go:216: [SCHEMATICS] Creating TAR file
+    schematics.go:222: [SCHEMATICS] Uploading TAR file
+    schematics.go:310: [SCHEMATICS] Uploaded TAR to workspace: us-east.workspace.es-se-da-jby.84b3cbc3
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job TAR_WORKSPACE_UPLOAD to complete: 1 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] The status of job TAR_WORKSPACE_UPLOAD is: COMPLETED
+    tests.go:146: [SCHEMATICS] Updating Workspace Variablestore
+    schematics.go:284: [SCHEMATICS] Updated variables for workspace: us-east.workspace.es-se-da-jby.84b3cbc3
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] Created plan job: f1a6251d6e6d4f91c83239393baca393 for workspace: us-east.workspace.es-se-da-jby.84b3cbc3
+    tests.go:162: [SCHEMATICS] Starting PLAN job ...
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job PLAN to complete: 1 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] The status of job PLAN is: COMPLETED
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] Created apply job: 3a79c12fd7908b0badaffb6b897163df for workspace: us-east.workspace.es-se-da-jby.84b3cbc3
+    tests.go:196: [SCHEMATICS] Starting APPLY job ...
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 1 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 2 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 3 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 4 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 5 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 6 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 7 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 8 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 9 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 10 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 11 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 12 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 13 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 14 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 15 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 16 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job APPLY to complete: 17 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] The status of job APPLY is: COMPLETED
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] Retrieved 16 outputs from workspace: us-east.workspace.es-se-da-jby.84b3cbc3
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] Created plan job: bf64a892464a3dcf134a681aa764926a for workspace: us-east.workspace.es-se-da-jby.84b3cbc3
+    tests.go:262: [SCHEMATICS] Starting CONSISTENCY PLAN job ...
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job PLAN to complete: 1 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job PLAN to complete: 2 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] The status of job PLAN is: COMPLETED
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] Retrieved 16 outputs from workspace: us-east.workspace.es-se-da-jby.84b3cbc3
+    tests.go:451: Performing Teardown
+    tests.go:452: Test Passed: true
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] Created destroy job: bf64a892464a3dcf134a681aa764ae69 for workspace: us-east.workspace.es-se-da-jby.84b3cbc3
+    tests.go:457: [SCHEMATICS] Starting DESTROY job ...
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job DESTROY to complete: 1 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job DESTROY to complete: 2 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] ... still waiting for job DESTROY to complete: 3 minutes
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] The status of job DESTROY is: COMPLETED
+    tests.go:484: [SCHEMATICS] Deleting Workspace
+[32mINFO[0m: [32m[CloudInfoService][0m logger.go:937 [SCHEMATICS] Deleted workspace: us-east.workspace.es-se-da-jby.84b3cbc3
+--- PASS: TestRunSecurityEnforcedSolutionSchematics (1506.39s)
+PASS
+ok  	github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch	1511.209s
