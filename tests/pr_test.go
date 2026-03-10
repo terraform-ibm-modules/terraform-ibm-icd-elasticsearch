@@ -298,6 +298,7 @@ func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
 		TarIncludePatterns: []string{
 			"*.tf",
 			fullyConfigurableSolutionTerraformDir + "/*.tf",
+			fullyConfigurableSolutionTerraformDir + "/scripts/*.sh",
 			securityEnforcedSolutionTerraformDir + "/*.tf",
 		},
 		TemplateFolder:             securityEnforcedSolutionTerraformDir,

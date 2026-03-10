@@ -474,7 +474,7 @@ locals {
 
 data "external" "install_required_binaries" {
   count   = var.install_required_binaries ? 1 : 0
-  program = ["/bin/bash", "${path.module}/../../scripts/install-binaries.sh", local.binaries_path]
+  program = ["/bin/bash", "${path.module}/scripts/install-binaries.sh", local.binaries_path]
 }
 
 data "external" "es_metadata" {
