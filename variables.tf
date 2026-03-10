@@ -104,7 +104,8 @@ variable "users" {
 variable "service_credential_names" {
   type = list(object({
     name     = string
-    role     = string
+    key_name = optional(string, null)
+    role     = optional(string, "Viewer")
     endpoint = optional(string, "public")
   }))
   description = "List of service credentials to create for the database, including name, role, and optional endpoint type (`public` or `private`)."
@@ -118,11 +119,6 @@ variable "service_credential_names" {
   validation {
     condition     = alltrue([for credential in var.service_credential_names : contains(["public", "private"], credential.endpoint)])
     error_message = "`service_credential_names` endpoint must be `public` or `private`."
-  }
-
-  validation {
-    condition     = length(var.service_credential_names) == length(distinct([for credential in var.service_credential_names : credential.name]))
-    error_message = "Each service credential name must be unique."
   }
 
   validation {

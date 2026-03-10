@@ -70,20 +70,24 @@ module "elasticsearch" {
   elasticsearch_version     = var.elasticsearch_version
   service_credential_names = [
     {
-      name = "elasticsearch_admin"
-      role = "Administrator"
+      name     = "elasticsearch_admin"
+      role     = "Administrator"
+      endpoint = "private"
     },
     {
-      name = "elasticsearch_operator"
-      role = "Operator"
+      name     = "elasticsearch_operator"
+      role     = "Operator"
+      endpoint = "private"
     },
     {
-      name = "elasticsearch_viewer"
-      role = "Viewer"
+      name     = "elasticsearch_viewer"
+      role     = "Viewer"
+      endpoint = "private"
     },
     {
-      name = "elasticsearch_editor"
-      role = "Editor"
+      name     = "elasticsearch_editor"
+      role     = "Editor"
+      endpoint = "private"
     }
   ]
   auto_scaling       = var.auto_scaling

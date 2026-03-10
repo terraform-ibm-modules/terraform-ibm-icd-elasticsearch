@@ -157,8 +157,8 @@ variable "service_credential_names" {
   description = "List of service credentials to create for the database, including name, role, and optional endpoint type (`public` or `private`). [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/fully-configurable/DA-types.md#svc-credential-name)"
   type = list(object({
     name     = string
-    role     = string
-    endpoint = optional(string, "public")
+    role     = optional(string, "Viewer")
+    endpoint = optional(string, "private")
   }))
   default = []
 }

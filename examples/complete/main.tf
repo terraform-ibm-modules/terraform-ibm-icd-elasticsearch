@@ -7,20 +7,24 @@ locals {
   secrets_manager_region = var.existing_sm_instance_region == null ? var.region : var.existing_sm_instance_region
   service_credential_names = [
     {
-      name = "es_admin"
-      role = "Administrator"
+      name     = "redis_admin"
+      role     = "Administrator"
+      endpoint = "private"
     },
     {
-      name = "es_operator"
-      role = "Operator"
+      name     = "redis_operator"
+      role     = "Operator"
+      endpoint = "private"
     },
     {
-      name = "es_viewer"
-      role = "Viewer"
+      name     = "redis_viewer"
+      role     = "Viewer"
+      endpoint = "private"
     },
     {
-      name = "es_editor"
-      role = "Editor"
+      name     = "redis_editor"
+      role     = "Editor"
+      endpoint = "private"
     }
   ]
   service_credential_names_by_name = {
@@ -99,10 +103,10 @@ module "icd_elasticsearch" {
   use_ibm_owned_encryption_key = false
   use_same_kms_key_for_backups = false
   kms_key_crn                  = module.key_protect_all_inclusive.keys["icd.${local.backups_key_name}"].crn
-  service_credential_names     = local.service_credential_names
   member_host_flavor           = "multitenant"
   memory_mb                    = 4096
   backup_encryption_key_crn    = module.key_protect_all_inclusive.keys["icd.${local.data_key_name}"].crn
+  service_credential_names     = local.service_credential_names
 }
 
 ##############################################################################

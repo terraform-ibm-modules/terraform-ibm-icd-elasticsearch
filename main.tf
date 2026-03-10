@@ -354,13 +354,13 @@ module "cbr_rule" {
 ##############################################################################
 
 resource "ibm_resource_key" "service_credentials" {
-  for_each = { for credential in var.service_credential_names : credential.name => credential }
-  name     = each.value.name
-  role     = each.value.role
+  for_each             = { for key in var.service_credential_names : key.name => key }
+  name                 = each.value.key_name == null ? each.key : each.value.key_name
+  role                 = each.value.role
+  resource_instance_id = ibm_database.elasticsearch.id
   parameters = {
     service-endpoints = each.value.endpoint
   }
-  resource_instance_id = ibm_database.elasticsearch.id
 }
 
 locals {

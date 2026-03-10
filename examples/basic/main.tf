@@ -30,20 +30,24 @@ module "database" {
   deletion_protection   = false
   service_credential_names = [
     {
-      name = "elasticsearch_admin"
-      role = "Administrator"
+      name     = "elasticsearch_admin"
+      role     = "Administrator"
+      endpoint = "public"
     },
     {
-      name = "elasticsearch_operator"
-      role = "Operator"
+      name     = "elasticsearch_operator"
+      role     = "Operator"
+      endpoint = "public"
     },
     {
-      name = "elasticsearch_viewer"
-      role = "Viewer"
+      name     = "elasticsearch_viewer"
+      role     = "Viewer"
+      endpoint = "public"
     },
     {
-      name = "elasticsearch_editor"
-      role = "Editor"
+      name     = "elasticsearch_editor"
+      role     = "Editor"
+      endpoint = "public"
     }
   ]
 }

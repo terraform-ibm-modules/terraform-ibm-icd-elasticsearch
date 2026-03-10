@@ -84,13 +84,13 @@ variable "users" {
 }
 
 variable "service_credential_names" {
+  description = "List of service credentials to create for the database, including name, role, and optional endpoint type (`public` or `private`)."
   type = list(object({
     name     = string
-    role     = string
-    endpoint = optional(string, null)
+    role     = optional(string, "Viewer")
+    endpoint = optional(string, "private")
   }))
-  description = "List of service credentials to create for the database, including name, role, and optional endpoint type (`public` or `private`)."
-  default     = []
+  default = []
 }
 
 variable "tags" {
