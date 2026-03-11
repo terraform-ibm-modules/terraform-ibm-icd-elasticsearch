@@ -469,11 +469,18 @@ locals {
   kibana_version            = var.enable_kibana_dashboard ? try(data.external.es_metadata[0].result.version_number, null) : null
   kibana_system_password    = var.enable_kibana_dashboard ? startswith(random_password.kibana_system_password[0].result, "-") ? "J${substr(random_password.kibana_system_password[0].result, 1, -1)}" : startswith(random_password.kibana_system_password[0].result, "_") ? "K${substr(random_password.kibana_system_password[0].result, 1, -1)}" : random_password.kibana_system_password[0].result : null
   kibana_app_login_password = var.enable_kibana_dashboard ? startswith(random_password.kibana_app_login_password[0].result, "-") ? "J${substr(random_password.kibana_app_login_password[0].result, 1, -1)}" : startswith(random_password.kibana_app_login_password[0].result, "_") ? "K${substr(random_password.kibana_app_login_password[0].result, 1, -1)}" : random_password.kibana_app_login_password[0].result : null
+  binaries_path             = "/tmp"
+}
+
+data "external" "install_required_binaries" {
+  count   = var.install_required_binaries && var.enable_kibana_dashboard ? 1 : 0
+  program = ["/bin/bash", "${path.module}/scripts/install-binaries.sh", local.binaries_path]
 }
 
 data "external" "es_metadata" {
-  count   = var.enable_kibana_dashboard ? 1 : 0
-  program = ["bash", "${path.module}/scripts/es_metadata.sh"]
+  depends_on = [data.external.install_required_binaries]
+  count      = var.enable_kibana_dashboard ? 1 : 0
+  program    = ["bash", "${path.module}/scripts/es_metadata.sh", local.binaries_path]
   query = {
     url         = "https://${local.elasticsearch_hostname}:${local.elasticsearch_port}"
     username    = local.elasticsearch_username
