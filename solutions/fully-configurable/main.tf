@@ -473,7 +473,7 @@ locals {
 }
 
 data "external" "install_required_binaries" {
-  count   = var.install_required_binaries ? 1 : 0
+  count   = var.install_required_binaries && var.enable_kibana_dashboard ? 1 : 0
   program = ["/bin/bash", "${path.module}/scripts/install-binaries.sh", local.binaries_path]
 }
 
