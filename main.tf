@@ -416,7 +416,7 @@ resource "terraform_data" "install_required_binaries" {
   }
 
   provisioner "local-exec" {
-    command     = "${path.module}/scripts/install-binaries.sh ${local.binaries_path}"
+    command     = "${path.module}/solutions/fully-configurable/scripts/install-binaries.sh ${local.binaries_path}"
     interpreter = ["/bin/bash", "-c"]
   }
 }
