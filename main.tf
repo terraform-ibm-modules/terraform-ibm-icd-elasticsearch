@@ -355,7 +355,7 @@ module "cbr_rule" {
 
 resource "ibm_resource_key" "service_credentials" {
   for_each             = { for key in var.service_credential_names : key.name => key }
-  name                 = each.value.key_name == null ? each.key : each.value.key_name
+  name                 = each.key
   role                 = each.value.role
   resource_instance_id = ibm_database.elasticsearch.id
   parameters = {

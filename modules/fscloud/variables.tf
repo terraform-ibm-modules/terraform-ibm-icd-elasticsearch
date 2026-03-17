@@ -84,7 +84,7 @@ variable "users" {
 }
 
 variable "service_credential_names" {
-  description = "List of service credentials to create for the database, including name, role, and optional endpoint type (`public` or `private`)."
+  description = "A list of service credential resource keys to be created for the Elasticsearch instance."
   type = list(object({
     name     = string
     role     = optional(string, "Viewer")

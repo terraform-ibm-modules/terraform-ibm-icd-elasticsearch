@@ -9,42 +9,33 @@ Several optional input variables in the IBM Cloud [Databases for Elasticsearch d
 
 ## Service credentials <a name="svc-credential-name"></a>
 
-You can specify a set of IAM credentials to connect to the database with the `service_credential_names` input variable. Include a credential name, IAM service role, and optional endpoint type for each credential. Each role provides a specific level of access to the database. For more information, see [Adding and viewing credentials](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui).
+You can specify a set of IAM credentials to connect to the database with the `service_credential_names` input variable. Include a resource key name and IAM service role, and optionally set the endpoint type (`private` or `public`) for each key. Each role provides a specific level of access to the database. For more information, see [Adding and viewing credentials](https://cloud.ibm.com/docs/account?topic=account-service_credentials&interface=ui). If you want to add service credentials to secret manager and to allow secret manager to manage it, you should use `service_credential_secrets` , see [Service credential secrets](#service-credential-secrets)
 
 - Variable name: `service_credential_names`.
-- Type: A list of objects.
+- Type: A list of objects that represent resource keys.
 - Default value: An empty list (`[]`).
 
 ### Options for service_credential_names
 
-- `name` (required): The name of the service credential.
-- `role` (required): The IAM service role that is assigned to the credential. For more information, see [IBM Cloud IAM roles](https://cloud.ibm.com/docs/account?topic=account-userroles).
-- `endpoint` (optional, default = `private`): The Elasticsearch endpoint that the resource key uses. Allowed values are `public` and `private`.
+- `name` (required): A unique human-readable name that identifies this resource key.
+- `role` (optional, default = `Viewer`): The IAM service role assigned to the credential. Valid values are `Administrator`, `Operator`, `Viewer`, and `Editor`.
+- `endpoint` (optional, default = `private`): The endpoint type for the resource key. Valid values are `private` and `public`.
 
-### Example service credential
+### Example service credentials
 
 ```hcl
 [
   {
-    "name": "es_admin",
+    "name": "elasticsearch-admin-resource-key",
     "role": "Administrator",
     "endpoint": "private"
   },
   {
-    "name": "es_reader",
-    "role": "Operator"
-  },
-  {
-    "name": "es_viewer",
+    "name": "elasticsearch-viewer-resource-key",
     "role": "Viewer"
-  },
-  {
-    "name": "es_editor",
-    "role": "Editor"
   }
 ]
 ```
-
 
 ## Users <a name="users"></a>
 

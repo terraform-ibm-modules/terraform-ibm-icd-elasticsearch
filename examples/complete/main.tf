@@ -9,22 +9,22 @@ locals {
     {
       name     = "es_admin"
       role     = "Administrator"
-      endpoint = "private"
+      endpoint = "public"
     },
     {
       name     = "es_operator"
       role     = "Operator"
-      endpoint = "private"
+      endpoint = "public"
     },
     {
       name     = "es_viewer"
       role     = "Viewer"
-      endpoint = "private"
+      endpoint = "public"
     },
     {
       name     = "es_editor"
       role     = "Editor"
-      endpoint = "private"
+      endpoint = "public"
     }
   ]
 }
