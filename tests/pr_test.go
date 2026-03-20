@@ -2,7 +2,6 @@
 package test
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -152,15 +151,12 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		},
 	}
 
-	serviceCredentialNames := map[string]string{
-		"admin": "Administrator",
-		"user1": "Viewer",
-		"user2": "Editor",
-	}
-
-	serviceCredentialNamesJSON, err := json.Marshal(serviceCredentialNames)
-	if err != nil {
-		log.Fatalf("Error converting to JSON: %s", err)
+	serviceCredentialNames := []map[string]string{
+		{
+			"name":     "es-admin",
+			"role":     "Administrator",
+			"endpoint": "private",
+		},
 	}
 
 	region := "us-south"
@@ -172,7 +168,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
 		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
 		{Name: "region", Value: region, DataType: "string"},
-		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
+		{Name: "service_credential_names", Value: serviceCredentialNames, DataType: "list(object)"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("%s-%s-admin-secrets", icdShortType, options.Prefix), DataType: "string"},
@@ -196,7 +192,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		},
 	}
 
-	err = sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
+	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
 		return options.RunSchematicTest()
 	})
 	assert.Nil(t, err, "This should not have errored")
@@ -240,15 +236,12 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 		},
 	}
 
-	serviceCredentialNames := map[string]string{
-		"admin": "Administrator",
-		"user1": "Viewer",
-		"user2": "Editor",
-	}
-
-	serviceCredentialNamesJSON, err := json.Marshal(serviceCredentialNames)
-	if err != nil {
-		log.Fatalf("Error converting to JSON: %s", err)
+	serviceCredentialNames := []map[string]string{
+		{
+			"name":     "es-admin",
+			"role":     "Administrator",
+			"endpoint": "private",
+		},
 	}
 
 	uniqueResourceGroup := generateUniqueResourceGroupName(options.Prefix)
@@ -262,7 +255,7 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
 		{Name: "region", Value: region, DataType: "string"},
 		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
-		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
+		{Name: "service_credential_names", Value: serviceCredentialNames, DataType: "list(object)"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("%s-%s-admin-secrets", icdShortType, options.Prefix), DataType: "string"},
@@ -283,7 +276,7 @@ func TestRunSecurityEnforcedSolutionSchematics(t *testing.T) {
 		},
 	}
 
-	err = sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
+	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
 		return options.RunSchematicTest()
 	})
 	assert.Nil(t, err, "This should not have errored")
@@ -325,15 +318,12 @@ func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
 		},
 	}
 
-	serviceCredentialNames := map[string]string{
-		"admin": "Administrator",
-		"user1": "Viewer",
-		"user2": "Editor",
-	}
-
-	serviceCredentialNamesJSON, err := json.Marshal(serviceCredentialNames)
-	if err != nil {
-		log.Fatalf("Error converting to JSON: %s", err)
+	serviceCredentialNames := []map[string]string{
+		{
+			"name":     "es-admin",
+			"role":     "Administrator",
+			"endpoint": "private",
+		},
 	}
 
 	uniqueResourceGroup := generateUniqueResourceGroupName(options.Prefix)
@@ -347,7 +337,7 @@ func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
 		{Name: "region", Value: region, DataType: "string"},
 		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
-		{Name: "service_credential_names", Value: string(serviceCredentialNamesJSON), DataType: "map(string)"},
+		{Name: "service_credential_names", Value: serviceCredentialNames, DataType: "list(object)"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "admin_pass_secrets_manager_secret_group", Value: fmt.Sprintf("%s-%s-admin-secrets", icdShortType, options.Prefix), DataType: "string"},
@@ -356,7 +346,7 @@ func TestRunSecurityEnforcedUpgradeSolution(t *testing.T) {
 		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
 		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"},
 	}
-	err = sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
+	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
 		return options.RunSchematicUpgradeTest()
 	})
 	if !options.UpgradeTestSkipped {

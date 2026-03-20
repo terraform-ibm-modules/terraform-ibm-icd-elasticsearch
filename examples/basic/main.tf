@@ -28,12 +28,28 @@ module "database" {
   service_endpoints     = var.service_endpoints
   member_host_flavor    = var.member_host_flavor
   deletion_protection   = false
-  service_credential_names = {
-    "elasticsearch_admin" : "Administrator",
-    "elasticsearch_operator" : "Operator",
-    "elasticsearch_viewer" : "Viewer",
-    "elasticsearch_editor" : "Editor",
-  }
+  service_credential_names = [
+    {
+      name     = "elasticsearch_admin"
+      role     = "Administrator"
+      endpoint = "public"
+    },
+    {
+      name     = "elasticsearch_operator"
+      role     = "Operator"
+      endpoint = "public"
+    },
+    {
+      name     = "elasticsearch_viewer"
+      role     = "Viewer"
+      endpoint = "public"
+    },
+    {
+      name     = "elasticsearch_editor"
+      role     = "Editor"
+      endpoint = "public"
+    }
+  ]
 }
 
 # wait 60 secs to allow IAM credential access to kick in before configuring instance

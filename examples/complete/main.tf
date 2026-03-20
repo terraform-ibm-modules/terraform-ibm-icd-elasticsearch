@@ -5,12 +5,28 @@
 locals {
   secrets_manager_guid   = var.existing_sm_instance_guid == null ? module.secrets_manager[0].secrets_manager_guid : var.existing_sm_instance_guid
   secrets_manager_region = var.existing_sm_instance_region == null ? var.region : var.existing_sm_instance_region
-  service_credential_names = {
-    "es_admin" : "Administrator",
-    "es_operator" : "Operator",
-    "es_viewer" : "Viewer",
-    "es_editor" : "Editor",
-  }
+  service_credential_names = [
+    {
+      name     = "es_admin"
+      role     = "Administrator"
+      endpoint = "public"
+    },
+    {
+      name     = "es_operator"
+      role     = "Operator"
+      endpoint = "public"
+    },
+    {
+      name     = "es_viewer"
+      role     = "Viewer"
+      endpoint = "public"
+    },
+    {
+      name     = "es_editor"
+      role     = "Editor"
+      endpoint = "public"
+    }
+  ]
 }
 
 ##############################################################################
@@ -84,10 +100,10 @@ module "icd_elasticsearch" {
   use_ibm_owned_encryption_key = false
   use_same_kms_key_for_backups = false
   kms_key_crn                  = module.key_protect_all_inclusive.keys["icd.${local.backups_key_name}"].crn
-  service_credential_names     = local.service_credential_names
   member_host_flavor           = "multitenant"
   memory_mb                    = 4096
   backup_encryption_key_crn    = module.key_protect_all_inclusive.keys["icd.${local.data_key_name}"].crn
+  service_credential_names     = local.service_credential_names
 }
 
 ##############################################################################
@@ -122,7 +138,7 @@ module "secrets_manager_secrets_group" {
 module "secrets_manager_service_credentials_user_pass" {
   source                  = "terraform-ibm-modules/secrets-manager-secret/ibm"
   version                 = "1.9.14"
-  for_each                = local.service_credential_names
+  for_each                = { for credential in local.service_credential_names : credential.name => credential }
   region                  = local.secrets_manager_region
   secrets_manager_guid    = local.secrets_manager_guid
   secret_group_id         = module.secrets_manager_secrets_group.secret_group_id
