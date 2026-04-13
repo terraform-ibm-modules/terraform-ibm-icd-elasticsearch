@@ -226,6 +226,23 @@ variable "auto_scaling" {
   })
   description = "The rules to allow the database to increase resources in response to usage. Only a single autoscaling block is allowed. Make sure you understand the effects of autoscaling, especially for production environments. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-autoscaling&interface=cli#autoscaling-considerations)."
   default     = null
+
+  validation {
+    condition = var.auto_scaling == null ? true : alltrue([
+      # Validate disk rate_limit_mb_per_member (must be between 5 and 4096 GB)
+      var.auto_scaling.disk.rate_units == "mb" ? (var.auto_scaling.disk.rate_limit_mb_per_member >= 5120 && var.auto_scaling.disk.rate_limit_mb_per_member <= 4194304) : true,
+      var.auto_scaling.disk.rate_units == "gb" ? (var.auto_scaling.disk.rate_limit_mb_per_member >= 5 && var.auto_scaling.disk.rate_limit_mb_per_member <= 4096) : true,
+      var.auto_scaling.disk.rate_units == "tb" ? (var.auto_scaling.disk.rate_limit_mb_per_member >= 0.005 && var.auto_scaling.disk.rate_limit_mb_per_member <= 4) : true,
+      # Validate memory rate_limit_mb_per_member (must be between 4 and 112 GB)
+      var.auto_scaling.memory.rate_units == "mb" ? (var.auto_scaling.memory.rate_limit_mb_per_member >= 4096 && var.auto_scaling.memory.rate_limit_mb_per_member <= 114688) : true,
+      var.auto_scaling.memory.rate_units == "gb" ? (var.auto_scaling.memory.rate_limit_mb_per_member >= 4 && var.auto_scaling.memory.rate_limit_mb_per_member <= 112) : true,
+      var.auto_scaling.memory.rate_units == "tb" ? (var.auto_scaling.memory.rate_limit_mb_per_member >= 0.004 && var.auto_scaling.memory.rate_limit_mb_per_member <= 0.109) : true,
+      # Validate rate_units values
+      contains(["mb", "gb", "tb"], var.auto_scaling.disk.rate_units),
+      contains(["mb", "gb", "tb"], var.auto_scaling.memory.rate_units)
+    ])
+    error_message = "For disk: rate_limit_mb_per_member must be between 5 and 4096 GB (5120-4194304 MB, 5-4096 GB, or 0.005-4 TB). For memory: rate_limit_mb_per_member must be between 4 and 112 GB (4096-114688 MB, 4-112 GB, or 0.004-0.109 TB). The rate_units must be one of: mb, gb, tb."
+  }
 }
 
 ##############################################################
