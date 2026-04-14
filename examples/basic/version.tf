@@ -4,7 +4,7 @@ terraform {
     # Use latest version of provider in non-basic examples to verify latest version works with module
     ibm = {
       source  = "IBM-Cloud/ibm"
-      version = "1.79.2"
+      version = "1.89.0"
     }
     # The elasticsearch provider is not actually required by the module itself, just this example, so OK to use ">=" here instead of locking into a version
     elasticsearch = {
