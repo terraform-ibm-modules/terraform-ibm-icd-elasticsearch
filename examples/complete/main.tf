@@ -35,7 +35,7 @@ locals {
 
 module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
-  version = "1.4.8"
+  version = "1.6.0"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -52,7 +52,7 @@ locals {
 
 module "key_protect_all_inclusive" {
   source            = "terraform-ibm-modules/kms-all-inclusive/ibm"
-  version           = "5.5.36"
+  version           = "5.6.0"
   resource_group_id = module.resource_group.resource_group_id
   # Only us-south, us-east and eu-de backup encryption keys are supported. See https://cloud.ibm.com/docs/cloud-databases?topic=cloud-databases-key-protect&interface=ui#key-byok for details.
   # Note: Database instance and Key Protect must be created on the same region.
@@ -114,7 +114,7 @@ module "icd_elasticsearch" {
 module "secrets_manager" {
   count                = var.existing_sm_instance_guid == null ? 1 : 0
   source               = "terraform-ibm-modules/secrets-manager/ibm"
-  version              = "2.13.9"
+  version              = "2.14.0"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
   secrets_manager_name = "${var.prefix}-secrets-manager"
@@ -126,7 +126,7 @@ module "secrets_manager" {
 # Add a Secrets Group to the secret manager instance
 module "secrets_manager_secrets_group" {
   source               = "terraform-ibm-modules/secrets-manager-secret-group/ibm"
-  version              = "1.4.8"
+  version              = "1.5.0"
   region               = local.secrets_manager_region
   secrets_manager_guid = local.secrets_manager_guid
   #tfsec:ignore:general-secrets-no-plaintext-exposure
@@ -137,7 +137,7 @@ module "secrets_manager_secrets_group" {
 # Add service credentials to secret manager as a username/password secret type in the created secret group
 module "secrets_manager_service_credentials_user_pass" {
   source                  = "terraform-ibm-modules/secrets-manager-secret/ibm"
-  version                 = "1.9.14"
+  version                 = "1.10.0"
   for_each                = { for credential in local.service_credential_names : credential.name => credential }
   region                  = local.secrets_manager_region
   secrets_manager_guid    = local.secrets_manager_guid
@@ -152,7 +152,7 @@ module "secrets_manager_service_credentials_user_pass" {
 # Add Elasticsearch certificate to secret manager as a certificate secret type in the created secret group
 module "secrets_manager_service_credentials_cert" {
   source                    = "terraform-ibm-modules/secrets-manager-secret/ibm"
-  version                   = "1.9.14"
+  version                   = "1.10.0"
   region                    = local.secrets_manager_region
   secrets_manager_guid      = local.secrets_manager_guid
   secret_group_id           = module.secrets_manager_secrets_group.secret_group_id
