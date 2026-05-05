@@ -20,7 +20,7 @@ module "elasticsearch" {
   backup_encryption_key_crn         = var.backup_encryption_key_crn
   cbr_rules                         = var.cbr_rules
   access_tags                       = var.access_tags
-  tags                              = var.tags
+  resource_tags                     = var.resource_tags
   members                           = var.members
   memory_mb                         = var.member_memory_mb
   admin_pass                        = var.admin_pass
