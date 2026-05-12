@@ -302,8 +302,14 @@ resource "ibm_database" "elasticsearch" {
   }
 }
 
+# Check whether access tags are valid and exist in the account
+data "ibm_iam_access_tag" "access_tags" {
+  for_each = length(var.access_tags) != 0 ? toset(var.access_tags) : []
+  name     = each.value
+}
+
 resource "ibm_resource_tag" "elasticsearch_tag" {
-  depends_on  = [data.ibm_iam_access_tag.access_tag] # Force dependency on data source validation to ensure access_tags exist and are valid before use.
+  depends_on  = [data.ibm_iam_access_tag.access_tags] # Force dependency on data source validation to ensure access_tags exist and are valid before use.
   count       = length(var.access_tags) == 0 ? 0 : 1
   resource_id = ibm_database.elasticsearch.resource_crn
   tags        = var.access_tags
