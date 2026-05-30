@@ -24,7 +24,7 @@ module "database" {
   region                = var.region
   elasticsearch_version = var.elasticsearch_version
   access_tags           = var.access_tags
-  tags                  = var.resource_tags
+  resource_tags         = var.resource_tags
   service_endpoints     = var.service_endpoints
   member_host_flavor    = var.member_host_flavor
   deletion_protection   = false

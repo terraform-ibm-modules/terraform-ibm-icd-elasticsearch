@@ -24,7 +24,7 @@ module "restored_icd_elasticsearch" {
   region                = var.region
   elasticsearch_version = var.elasticsearch_version
   access_tags           = var.access_tags
-  tags                  = var.resource_tags
+  resource_tags         = var.resource_tags
   member_host_flavor    = "multitenant"
   deletion_protection   = false
   backup_crn            = data.ibm_database_backups.backup_database.backups[0].backup_id

@@ -304,7 +304,7 @@ module "elasticsearch" {
   use_same_kms_key_for_backups      = local.use_same_kms_key_for_backups
   use_default_backup_encryption_key = var.use_default_backup_encryption_key
   access_tags                       = var.access_tags
-  tags                              = var.resource_tags
+  resource_tags                     = var.resource_tags
   admin_pass                        = local.admin_pass
   users                             = local.all_users
   members                           = var.members
