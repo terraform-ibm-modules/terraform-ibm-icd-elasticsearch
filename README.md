@@ -41,7 +41,6 @@
   <li><a href="./solutions">Deployable Architectures</a>
     <ul>
       <li><a href="./solutions/fully-configurable">Cloud automation for Elasticsearch (Fully Configurable)</a></li>
-      <li><a href="./solutions/security-enforced">Cloud automation for Elasticsearch (Security-enforced)</a></li>
     </ul>
   </li>
   <li><a href="#contributing">Contributing</a></li>
