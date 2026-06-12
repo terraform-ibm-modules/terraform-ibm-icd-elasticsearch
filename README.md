@@ -12,35 +12,35 @@
 ## Overview
 <ul>
   <li><a href="#terraform-ibm-icd-elasticsearch">terraform-ibm-icd-elasticsearch</a></li>
-  <li><a href="./modules">Submodules</a>
+  <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/modules">Submodules</a>
     <ul>
-      <li><a href="./modules/fscloud">fscloud</a></li>
+      <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/modules/fscloud">fscloud</a></li>
     </ul>
   </li>
-  <li><a href="./examples">Examples</a>
+  <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples">Examples</a>
     <ul>
       <li>
-        <a href="./examples/backup-restore">Restore from backup example</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/backup-restore">Restore from backup example</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=icd-elasticsearch-backup-restore-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/backup-restore"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="./examples/basic">Basic example with index creation and updates to cluster-wide settings</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/basic">Basic example with index creation and updates to cluster-wide settings</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=icd-elasticsearch-basic-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/basic"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="./examples/complete">Complete example with autoscaling, BYOK encryption and service credentials creation</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/complete">Complete example with autoscaling, BYOK encryption and service credentials creation</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=icd-elasticsearch-complete-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/complete"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="./examples/fscloud">Financial Services Cloud profile example with autoscaling enabled</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/fscloud">Financial Services Cloud profile example with autoscaling enabled</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=icd-elasticsearch-fscloud-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/fscloud"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
     </ul>
     ℹ️ Ctrl/Cmd+Click or right-click on the Schematics deploy button to open in a new tab.
   </li>
-  <li><a href="./solutions">Deployable Architectures</a>
+  <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions">Deployable Architectures</a>
     <ul>
-      <li><a href="./solutions/fully-configurable">Cloud automation for Elasticsearch (Fully Configurable)</a></li>
+      <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable">Cloud automation for Elasticsearch (Fully Configurable)</a></li>
     </ul>
   </li>
   <li><a href="#contributing">Contributing</a></li>
