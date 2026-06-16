@@ -304,7 +304,7 @@ resource "ibm_database" "elasticsearch" {
 
 # Check whether access tags are valid and exist in the account
 data "ibm_iam_access_tag" "access_tags" {
-  for_each = length(var.access_tags) != 0 ? toset(var.access_tags) : []
+  for_each = toset(var.access_tags)
   name     = each.value
 }
 
