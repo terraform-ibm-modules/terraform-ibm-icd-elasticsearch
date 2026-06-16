@@ -2,6 +2,7 @@
 package test
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
@@ -56,7 +57,7 @@ func TestRunCompleteExampleOtherVersion(t *testing.T) {
 	assert.NotNil(t, output, "Expected some output")
 
 	// check if outputs exist
-	outputs := terraform.OutputAll(options.Testing, options.TerraformOptions)
+	outputs := terraform.OutputAllContext(options.Testing, context.Background(), options.TerraformOptions)
 	expectedOutputs := []string{"port", "hostname"}
 	_, outputErr := testhelper.ValidateTerraformOutputs(outputs, expectedOutputs...)
 	assert.NoErrorf(t, outputErr, "Some outputs not found or nil")

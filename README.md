@@ -12,36 +12,35 @@
 ## Overview
 <ul>
   <li><a href="#terraform-ibm-icd-elasticsearch">terraform-ibm-icd-elasticsearch</a></li>
-  <li><a href="./modules">Submodules</a>
+  <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/modules">Submodules</a>
     <ul>
-      <li><a href="./modules/fscloud">fscloud</a></li>
+      <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/modules/fscloud">fscloud</a></li>
     </ul>
   </li>
-  <li><a href="./examples">Examples</a>
+  <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples">Examples</a>
     <ul>
       <li>
-        <a href="./examples/backup-restore">Restore from backup example</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/backup-restore">Restore from backup example</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=icd-elasticsearch-backup-restore-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/backup-restore"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="./examples/basic">Basic example with index creation and updates to cluster-wide settings</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/basic">Basic example with index creation and updates to cluster-wide settings</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=icd-elasticsearch-basic-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/basic"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="./examples/complete">Complete example with autoscaling, BYOK encryption and service credentials creation</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/complete">Complete example with autoscaling, BYOK encryption and service credentials creation</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=icd-elasticsearch-complete-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/complete"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
       <li>
-        <a href="./examples/fscloud">Financial Services Cloud profile example with autoscaling enabled</a>
+        <a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/fscloud">Financial Services Cloud profile example with autoscaling enabled</a>
         <a href="https://cloud.ibm.com/schematics/workspaces/create?workspace_name=icd-elasticsearch-fscloud-example&repository=https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/examples/fscloud"><img src="https://img.shields.io/badge/Deploy%20with%20IBM%20Cloud%20Schematics-0f62fe?style=flat&logo=ibm&logoColor=white&labelColor=0f62fe" alt="Deploy with IBM Cloud Schematics" style="height: 16px; vertical-align: text-bottom; margin-left: 5px;"></a>
       </li>
     </ul>
     ℹ️ Ctrl/Cmd+Click or right-click on the Schematics deploy button to open in a new tab.
   </li>
-  <li><a href="./solutions">Deployable Architectures</a>
+  <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions">Deployable Architectures</a>
     <ul>
-      <li><a href="./solutions/fully-configurable">Cloud automation for Elasticsearch (Fully Configurable)</a></li>
-      <li><a href="./solutions/security-enforced">Cloud automation for Elasticsearch (Security-enforced)</a></li>
+      <li><a href="https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable">Cloud automation for Elasticsearch (Fully Configurable)</a></li>
     </ul>
   </li>
   <li><a href="#contributing">Contributing</a></li>
@@ -95,10 +94,10 @@ You need the following permissions to run this module.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_available_versions"></a> [available\_versions](#module\_available\_versions) | terraform-ibm-modules/common-utilities/ibm//modules/icd-versions | 1.5.0 |
-| <a name="module_backup_key_crn_parser"></a> [backup\_key\_crn\_parser](#module\_backup\_key\_crn\_parser) | terraform-ibm-modules/common-utilities/ibm//modules/crn-parser | 1.5.0 |
-| <a name="module_cbr_rule"></a> [cbr\_rule](#module\_cbr\_rule) | terraform-ibm-modules/cbr/ibm//modules/cbr-rule-module | 1.36.2 |
-| <a name="module_kms_key_crn_parser"></a> [kms\_key\_crn\_parser](#module\_kms\_key\_crn\_parser) | terraform-ibm-modules/common-utilities/ibm//modules/crn-parser | 1.5.0 |
+| <a name="module_available_versions"></a> [available\_versions](#module\_available\_versions) | terraform-ibm-modules/common-utilities/ibm//modules/icd-versions | 1.6.1 |
+| <a name="module_backup_key_crn_parser"></a> [backup\_key\_crn\_parser](#module\_backup\_key\_crn\_parser) | terraform-ibm-modules/common-utilities/ibm//modules/crn-parser | 1.6.1 |
+| <a name="module_cbr_rule"></a> [cbr\_rule](#module\_cbr\_rule) | terraform-ibm-modules/cbr/ibm//modules/cbr-rule-module | 1.36.5 |
+| <a name="module_kms_key_crn_parser"></a> [kms\_key\_crn\_parser](#module\_kms\_key\_crn\_parser) | terraform-ibm-modules/common-utilities/ibm//modules/crn-parser | 1.6.1 |
 
 ### Resources
 
