@@ -62,21 +62,21 @@ module "kms" {
 module "kms_instance_crn_parser" {
   count   = var.existing_kms_instance_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.6.1"
+  version = "1.8.0"
   crn     = var.existing_kms_instance_crn
 }
 
 module "kms_key_crn_parser" {
   count   = var.existing_kms_key_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.6.1"
+  version = "1.8.0"
   crn     = var.existing_kms_key_crn
 }
 
 module "kms_backup_key_crn_parser" {
   count   = var.existing_backup_kms_key_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.6.1"
+  version = "1.8.0"
   crn     = var.existing_backup_kms_key_crn
 }
 
@@ -239,7 +239,7 @@ locals {
 module "es_instance_crn_parser" {
   count   = var.existing_elasticsearch_instance_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.6.1"
+  version = "1.8.0"
   crn     = var.existing_elasticsearch_instance_crn
 }
 
@@ -349,7 +349,7 @@ locals {
 module "sm_instance_crn_parser" {
   count   = var.existing_secrets_manager_instance_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.6.1"
+  version = "1.8.0"
   crn     = var.existing_secrets_manager_instance_crn
 }
 
