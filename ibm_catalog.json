@@ -73,7 +73,7 @@
                 "crn:v1:bluemix:public:iam::::role:Editor"
               ],
               "service_name": "databases-for-elasticsearch",
-              "notes": "Required to configure a Databases for Elasticsearch instance."
+              "notes": "Required to configure an instance of Databases for Elasticsearch."
             },
             {
               "role_crns": [
