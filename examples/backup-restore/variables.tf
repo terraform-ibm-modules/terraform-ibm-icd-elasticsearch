@@ -28,6 +28,12 @@ variable "access_tags" {
   default     = []
 }
 
+variable "plan" {
+  type        = string
+  description = "The name of the service plan that you choose for your Elasticsearch instance"
+  default     = "enterprise"
+}
+
 variable "elasticsearch_version" {
   type        = string
   description = "Version of the elasticsearch instance. If no value passed, the current ICD preferred version is used."
