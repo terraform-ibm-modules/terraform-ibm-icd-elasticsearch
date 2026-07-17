@@ -83,3 +83,29 @@ func TestRunRestoredDBExample(t *testing.T) {
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
 }
+
+func TestRunRestoredDBGen2Example(t *testing.T) {
+	t.Parallel()
+
+	// TODO: replace with a real Gen2 Elasticsearch instance CRN and region once a permanent Gen2 instance is available
+	esGen2Crn := "crn:v1:bluemix:public:databases-for-elasticsearch:eu-de:a/abac0df06b644a9cabc6e44f55b3880e:replace-with-real-gen2-instance-guid::"
+	esGen2Region := "eu-de"
+
+	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
+		Testing:       t,
+		TerraformDir:  "examples/backup-restore",
+		Prefix:        "es-gen2-restored",
+		Region:        esGen2Region,
+		ResourceGroup: resourceGroup,
+		TerraformVars: map[string]interface{}{
+			"existing_database_crn": esGen2Crn,
+			"plan":                  "enterprise-gen2",
+			"region":                esGen2Region,
+		},
+		CloudInfoService: sharedInfoSvc,
+	})
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
+}
