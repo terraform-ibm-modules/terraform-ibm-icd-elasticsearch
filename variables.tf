@@ -414,16 +414,20 @@ variable "cbr_rules" {
 
 variable "backup_crn" {
   type        = string
-  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after both provisioning is complete and the new deployment that uses that data starts. For classic instances, a backup CRN is in the format `crn:v1:<...>:backup:`. For Gen2 instances, both coupled (`crn:v1:<...>:backup:`) and decoupled (`crn:v1:bluemix:public:databases-independent-backups:<region>:...`) backup CRNs are supported. Classic backup CRNs cannot be used to restore Gen2 instances. If not specified, the database is provisioned empty."
+  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after both provisioning is complete and the new deployment that uses that data starts. Specify a backup CRN is in the format `crn:v1:<...>:backup:`. Not supported for Gen2 instances. If not specified, the database is provisioned empty."
   default     = null
 
   validation {
     condition = anytrue([
       var.backup_crn == null,
-      can(regex("^crn:.*:backup:", var.backup_crn)),
-      can(regex("^crn:v1:bluemix:public:databases-independent-backups:", var.backup_crn)),
+      can(regex("^crn:.*:backup:", var.backup_crn))
     ])
-    error_message = "backup_crn must be null OR a valid backup CRN (starts with 'crn:' and contains ':backup:') OR a Gen2 decoupled backup CRN (starts with 'crn:v1:bluemix:public:databases-independent-backups:')"
+    error_message = "backup_crn must be null OR start with 'crn:' and contain ':backup:'"
+  }
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.backup_crn == null)
+    error_message = "`backup_crn` is only supported for classic instances, remove `backup_crn` or select a classic `plan`."
   }
 }
 
