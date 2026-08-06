@@ -16,11 +16,6 @@ variable "elasticsearch_version" {
   type        = string
   description = "The version of Databases for Elasticsearch to deploy. Possible values: `8.7`, `8.10`, `8.12`, `8.15`, `8.19`, `9.1` which requires an Enterprise Platinum pricing plan. If no value is specified, the current preferred version for IBM Cloud Databases is used."
   default     = null
-
-  validation {
-    condition     = var.elasticsearch_version == null ? true : contains(local.icd_supported_versions, var.elasticsearch_version)
-    error_message = "Unsupported elasticsearch_version '${var.elasticsearch_version == null ? "null" : var.elasticsearch_version}'. Supported versions: ${join(", ", local.icd_supported_versions)}"
-  }
 }
 
 variable "region" {
