@@ -68,7 +68,7 @@ module "database" {
   name                     = "${var.prefix}-data-store"
   region                   = var.region
   plan                     = var.plan
-  elasticsearch_version    = var.elasticsearch_version
+  elasticsearch_version    = local.is_gen2 ? "8.0" : var.elasticsearch_version # TODO: gen2 hardcoded to 8.0 until the catalog/provider version list is fixed (unpinned provisions 8.19.11 which CustomizeDiff rejects)
   access_tags              = var.access_tags
   resource_tags            = var.resource_tags
   service_endpoints        = var.service_endpoints
