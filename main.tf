@@ -171,7 +171,7 @@ resource "ibm_database" "elasticsearch" {
   service                     = "databases-for-elasticsearch"
   version                     = local.is_gen2 && var.elasticsearch_version == null ? "8.0" : var.elasticsearch_version # TODO: gen2 defaults to 8.0 until the catalog/provider version list is fixed (unpinned provisions 8.19.11 which CustomizeDiff rejects)
   resource_group_id           = var.resource_group_id
-  service_endpoints           = var.service_endpoints
+  service_endpoints           = local.is_gen2 ? "private" : var.service_endpoints # Gen2 supports private endpoints only
   deletion_protection         = var.deletion_protection
   version_upgrade_skip_backup = var.version_upgrade_skip_backup
   tags                        = var.resource_tags

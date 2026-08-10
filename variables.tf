@@ -165,7 +165,7 @@ variable "service_credential_names" {
 
 variable "service_endpoints" {
   type        = string
-  description = "Specify whether you want to enable the public or private endpoints on the instance. Supported values are 'public', 'private' or 'public-and-private'."
+  description = "Specify whether you want to enable the public or private endpoints on the instance. Supported values are 'public', 'private' or 'public-and-private'. Gen2 instances support private endpoints only, so this value is ignored and forced to 'private' when a `-gen2` plan is used."
   default     = "public"
 
   validation {
