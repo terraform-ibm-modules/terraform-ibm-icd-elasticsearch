@@ -426,7 +426,7 @@ func TestRunExistingInstance(t *testing.T) {
 			"prefix":                prefix,
 			"region":                region,
 			"elasticsearch_version": oldestVersion,
-			"service_endpoints":     "public-and-private",
+			"service_endpoints":     "public", // public so the elasticsearch provider in the example can reach the instance from CI (public-and-private would resolve credentials to the unreachable private endpoint)
 		},
 		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
 		// This is the same as setting the -upgrade=true flag with terraform.
