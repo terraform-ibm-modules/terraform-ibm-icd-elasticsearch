@@ -74,7 +74,7 @@ locals {
 resource "ibm_iam_authorization_policy" "kms_policy" {
   count               = local.create_kms_auth_policy
   source_service_name = "databases-for-elasticsearch"
-  # Workaround: Gen2 returns "422 Missing or mis-configured S2S Authorization Policy" when the full
+  # Workaround: Gen2 returns "422 Missing or misconfigured S2S Authorization Policy" when the full
   # resource group is used as scope. See https://github.com/terraform-ibm-modules/terraform-ibm-icd-postgresql/issues/885
   source_resource_group_id = local.is_classic ? var.resource_group_id : null
   roles                    = ["Reader", "Authorization Delegator"] # Authorization Delegator role required for backup encryption key
