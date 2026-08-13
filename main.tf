@@ -18,6 +18,10 @@ locals {
   # Determine if gen2 plan is being used
   is_gen2    = can(regex("-gen2$", var.plan))
   is_classic = !local.is_gen2 # For code readability and maintenance
+
+  # Service credential connection details live under different keys per platform:
+  # gen2 exposes them under 'connection.elasticsearch.*', classic under 'connection.https.*'.
+  connection_key_prefix = local.is_gen2 ? "connection.elasticsearch" : "connection.https"
 }
 
 ########################################################################################################################
@@ -372,8 +376,8 @@ locals {
   } : null
 
   service_credentials_object = length(var.service_credential_names) > 0 ? {
-    hostname    = can(ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.hosts.0.hostname"]) ? ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.hosts.0.hostname"] : null
-    port        = can(ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.hosts.0.port"]) ? ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.hosts.0.port"] : null
+    hostname    = can(ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.hostname"]) ? ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.hostname"] : null
+    port        = can(ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.port"]) ? ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.port"] : null
     certificate = can(ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.certificate.certificate_base64"]) ? ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.certificate.certificate_base64"] : null
     credentials = {
       for service_credential in ibm_resource_key.service_credentials :
