@@ -74,8 +74,8 @@ locals {
 resource "ibm_iam_authorization_policy" "kms_policy" {
   count               = local.create_kms_auth_policy
   source_service_name = "databases-for-elasticsearch"
-  # Gen2 broker requires an account-level S2S policy (no resource group scope).
-  # Gen1/Classic uses resource-group scope.
+  # Workaround: Gen2 returns "422 Missing or mis-configured S2S Authorization Policy" when the full
+  # resource group is used as scope. See https://github.com/terraform-ibm-modules/terraform-ibm-icd-postgresql/issues/885
   source_resource_group_id = local.is_classic ? var.resource_group_id : null
   roles                    = ["Reader", "Authorization Delegator"] # Authorization Delegator role required for backup encryption key
   description              = local.is_gen2 ? "Allow all Elasticsearch instances to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.kms_key_instance_guid}" : "Allow all Elasticsearch instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.kms_key_instance_guid}"
@@ -376,9 +376,10 @@ locals {
   } : null
 
   service_credentials_object = length(var.service_credential_names) > 0 ? {
-    hostname    = can(ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.hostname"]) ? ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.hostname"] : null
-    port        = can(ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.port"]) ? ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.port"] : null
-    certificate = can(ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.certificate.certificate_base64"]) ? ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.certificate.certificate_base64"] : null
+    hostname = ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.hostname"]
+    port     = ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.port"]
+    # Gen2 does not expose a certificate.
+    certificate = local.is_classic ? ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.certificate.certificate_base64"] : null
     credentials = {
       for service_credential in ibm_resource_key.service_credentials :
       service_credential["name"] => {
