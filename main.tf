@@ -7,13 +7,21 @@ locals {
 
   # If 'use_ibm_owned_encryption_key' is true or 'use_default_backup_encryption_key' is true, default to null.
   # If no value is passed for 'backup_encryption_key_crn', then default to use 'kms_key_crn'.
-  backup_encryption_key_crn = var.use_ibm_owned_encryption_key || var.use_default_backup_encryption_key ? null : (var.backup_encryption_key_crn != null ? var.backup_encryption_key_crn : var.kms_key_crn)
+  backup_encryption_key_crn = local.is_gen2 ? null : var.use_ibm_owned_encryption_key || var.use_default_backup_encryption_key ? null : (var.backup_encryption_key_crn != null ? var.backup_encryption_key_crn : var.kms_key_crn)
 
   # Determine if auto scaling is enabled
   auto_scaling_enabled = var.auto_scaling == null ? [] : [1]
 
   # Determine if host_flavor is used
   host_flavor_set = var.member_host_flavor != null ? true : false
+
+  # Determine if gen2 plan is being used
+  is_gen2    = can(regex("-gen2$", var.plan))
+  is_classic = !local.is_gen2 # For code readability and maintenance
+
+  # Service credential connection details live under different keys per platform:
+  # gen2 exposes them under 'connection.elasticsearch.*', classic under 'connection.https.*'.
+  connection_key_prefix = local.is_gen2 ? "connection.elasticsearch" : "connection.https"
 }
 
 ########################################################################################################################
@@ -22,7 +30,7 @@ locals {
 
 locals {
   parse_kms_key        = !var.use_ibm_owned_encryption_key
-  parse_backup_kms_key = !var.use_ibm_owned_encryption_key && !var.use_default_backup_encryption_key
+  parse_backup_kms_key = local.is_classic && !var.use_ibm_owned_encryption_key && !var.use_default_backup_encryption_key
 }
 
 module "kms_key_crn_parser" {
@@ -59,16 +67,18 @@ locals {
   # only create auth policy if 'use_ibm_owned_encryption_key' is false, and 'skip_iam_authorization_policy' is false
   create_kms_auth_policy = !var.use_ibm_owned_encryption_key && !var.skip_iam_authorization_policy ? 1 : 0
   # only create backup auth policy if 'use_ibm_owned_encryption_key' is false, 'skip_iam_authorization_policy' is false and 'use_same_kms_key_for_backups' is false
-  create_backup_kms_auth_policy = !var.use_ibm_owned_encryption_key && !var.skip_iam_authorization_policy && !var.use_same_kms_key_for_backups ? 1 : 0
+  create_backup_kms_auth_policy = local.is_classic && !var.use_ibm_owned_encryption_key && !var.skip_iam_authorization_policy && !var.use_same_kms_key_for_backups ? 1 : 0
 }
 
 # Create IAM Authorization Policies to allow Elasticsearch to access KMS for the encryption key
 resource "ibm_iam_authorization_policy" "kms_policy" {
-  count                    = local.create_kms_auth_policy
-  source_service_name      = "databases-for-elasticsearch"
-  source_resource_group_id = var.resource_group_id
+  count               = local.create_kms_auth_policy
+  source_service_name = "databases-for-elasticsearch"
+  # Workaround: Gen2 returns "422 Missing or misconfigured S2S Authorization Policy" when the full
+  # resource group is used as scope. See https://github.com/terraform-ibm-modules/terraform-ibm-icd-postgresql/issues/885
+  source_resource_group_id = local.is_classic ? var.resource_group_id : null
   roles                    = ["Reader", "Authorization Delegator"] # Authorization Delegator role required for backup encryption key
-  description              = "Allow all Elasticsearch instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.kms_key_instance_guid}"
+  description              = local.is_gen2 ? "Allow all Elasticsearch instances to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.kms_key_instance_guid}" : "Allow all Elasticsearch instances in the resource group ${var.resource_group_id} to read the ${local.kms_service} key ${local.kms_key_id} from the instance GUID ${local.kms_key_instance_guid}"
   resource_attributes {
     name     = "serviceName"
     operator = "stringEquals"
@@ -157,26 +167,13 @@ resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
 # Elasticsearch instance
 ########################################################################################################################
 
-module "available_versions" {
-
-  source   = "terraform-ibm-modules/common-utilities/ibm//modules/icd-versions"
-  version  = "1.9.0"
-  region   = var.region
-  icd_type = "elasticsearch"
-}
-
-
-locals {
-  icd_supported_versions = module.available_versions.supported_versions
-}
-
 resource "ibm_database" "elasticsearch" {
   depends_on                  = [time_sleep.wait_for_authorization_policy, time_sleep.wait_for_backup_kms_authorization_policy]
   name                        = var.name
   plan                        = var.plan
   location                    = var.region
   service                     = "databases-for-elasticsearch"
-  version                     = var.elasticsearch_version
+  version                     = local.is_gen2 && var.elasticsearch_version == null ? "8.0" : var.elasticsearch_version # TODO: gen2 defaults to 8.0 until the catalog/provider version list is fixed (unpinned provisions 8.19.11 which CustomizeDiff rejects)
   resource_group_id           = var.resource_group_id
   service_endpoints           = var.service_endpoints
   deletion_protection         = var.deletion_protection
@@ -363,10 +360,11 @@ module "cbr_rule" {
 resource "ibm_resource_key" "service_credentials" {
   for_each             = { for key in var.service_credential_names : key.name => key }
   name                 = each.key
-  role                 = each.value.role
+  role                 = local.is_classic ? each.value.role : null
   resource_instance_id = ibm_database.elasticsearch.id
   parameters = {
     service-endpoints = each.value.endpoint
+    role_crn          = local.is_gen2 ? "crn:v1:bluemix:public:iam::::role:${each.value.role}" : null
   }
 }
 
@@ -378,20 +376,22 @@ locals {
   } : null
 
   service_credentials_object = length(var.service_credential_names) > 0 ? {
-    hostname    = ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.hosts.0.hostname"]
-    port        = ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.hosts.0.port"]
-    certificate = ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.certificate.certificate_base64"]
+    hostname = ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.hostname"]
+    port     = ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["${local.connection_key_prefix}.hosts.0.port"]
+    # Gen2 does not expose a certificate.
+    certificate = local.is_classic ? ibm_resource_key.service_credentials[var.service_credential_names[0].name].credentials["connection.https.certificate.certificate_base64"] : null
     credentials = {
       for service_credential in ibm_resource_key.service_credentials :
       service_credential["name"] => {
-        username = service_credential.credentials["connection.https.authentication.username"]
-        password = service_credential.credentials["connection.https.authentication.password"]
+        username = local.is_gen2 ? service_credential.credentials["username"] : service_credential.credentials["connection.https.authentication.username"]
+        password = local.is_gen2 ? service_credential.credentials["password"] : service_credential.credentials["connection.https.authentication.password"]
       }
     }
   } : null
 }
 
 data "ibm_database_connection" "database_connection" {
+  count         = local.is_classic ? 1 : 0
   endpoint_type = var.service_endpoints == "public-and-private" ? "public" : var.service_endpoints
   deployment_id = ibm_database.elasticsearch.id
   user_id       = ibm_database.elasticsearch.adminuser
@@ -415,8 +415,9 @@ locals {
   es_admin_user  = length(local.es_admin_users) > 0 ? local.es_admin_users[0] : null
   es_username    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["username"] : var.admin_pass != null ? "admin" : null
   es_password    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["password"] : var.admin_pass != null ? ibm_database.elasticsearch.adminpassword : null
-  es_url         = local.es_username != null && local.es_password != null ? "https://${local.es_username}:${local.es_password}@${data.ibm_database_connection.database_connection.https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection.https[0].hosts[0].port}" : null
-  binaries_path  = "/tmp"
+  # ELSER is only supported on the classic 'platinum' plan, so the connection data source (classic only) is always present when the URL is needed
+  es_url        = local.es_username != null && local.es_password != null ? "https://${local.es_username}:${local.es_password}@${data.ibm_database_connection.database_connection[0].https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection[0].https[0].hosts[0].port}" : null
+  binaries_path = "/tmp"
 }
 
 resource "terraform_data" "install_required_binaries" {

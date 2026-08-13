@@ -16,11 +16,6 @@ variable "elasticsearch_version" {
   type        = string
   description = "The version of Databases for Elasticsearch to deploy. Possible values: `8.7`, `8.10`, `8.12`, `8.15`, `8.19`, `9.1` which requires an Enterprise Platinum pricing plan. If no value is specified, the current preferred version for IBM Cloud Databases is used."
   default     = null
-
-  validation {
-    condition     = var.elasticsearch_version == null ? true : contains(local.icd_supported_versions, var.elasticsearch_version)
-    error_message = "Unsupported elasticsearch_version '${var.elasticsearch_version == null ? "null" : var.elasticsearch_version}'. Supported versions: ${join(", ", local.icd_supported_versions)}"
-  }
 }
 
 variable "region" {
@@ -31,15 +26,16 @@ variable "region" {
 
 variable "plan" {
   type        = string
-  description = "The pricing plan for the Databases for Elasticsearch instance. Must be `enterprise` or `platinum` if the `elasticsearch_version` variable is set to `8.10` or later."
+  description = "The pricing plan for the Databases for Elasticsearch instance. Must be `enterprise` or `platinum` if the `elasticsearch_version` variable is set to `8.10` or later. Set to `enterprise-gen2` to provision a Gen2 instance on the latest VPC platform."
   default     = "enterprise"
 
   validation {
     condition = anytrue([
       var.plan == "enterprise",
       var.plan == "platinum",
+      var.plan == "enterprise-gen2",
     ])
-    error_message = "Only the Enterprise and Platinum plans are supported if 'elasticsearch_version' is set to 8.10 or later."
+    error_message = "Only supported plans are enterprise, platinum and enterprise-gen2."
   }
 }
 
@@ -64,15 +60,30 @@ variable "cpu_count" {
 variable "disk_mb" {
   type        = number
   description = "The disk that is allocated per member. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)."
-  default     = 5120
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+  # Retain classic minimum default to avoid impacting existing consumers
+  default = 5120
+  # Gen2 minimum is 10240, although the provider will just say 10.
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.disk_mb >= 10240)
+    error_message = "`disk_mb` for Gen2 must be 10240 or more, either set the `disk_mb` input or select a classic `plan`."
+  }
+
+  validation {
+    condition     = local.is_gen2 || (local.is_classic && var.disk_mb >= 5120)
+    error_message = "`disk_mb` for Classic must be 5120 or more, set the `disk_mb`."
+  }
 }
 
 variable "member_host_flavor" {
   type        = string
-  description = "Allocated host flavor per member. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
+  description = "Allocated host flavor per member. Required for Gen2 instances, which do not support the `multitenant` flavor. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor)."
   default     = null
-  # Validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+  # For classic plans, validation is done in the Terraform plan phase by the IBM provider, so no need to add extra validation here.
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.member_host_flavor != null && var.member_host_flavor != "multitenant")
+    error_message = "`member_host_flavor` is required for Gen2 instances and cannot be `multitenant`, set a host flavor (for example `bx3d.4x20`) or select a classic `plan`."
+  }
 }
 
 variable "memory_mb" {
@@ -87,6 +98,11 @@ variable "admin_pass" {
   description = "The password for the database administrator. If the admin password is null, the admin user ID cannot be accessed. You can specify more users in a user block."
   default     = null
   sensitive   = true
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.admin_pass == null)
+    error_message = "`admin_pass` is only supported for classic instances, remove `admin_pass` or select a classic `plan`."
+  }
 }
 
 variable "users" {
@@ -99,6 +115,11 @@ variable "users" {
   description = "A list of users that you want to create on the database. Multiple blocks are allowed. The user password must be 10-32 characters. In most cases, you can use IAM service credentials (by specifying `service_credential_names`) to control access to the database instance. This block creates native database users. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-user-management&interface=ui)."
   default     = []
   sensitive   = true
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && length(var.users) == 0)
+    error_message = "`users` is only supported for classic instances, remove `users` or select a classic `plan`."
+  }
 }
 
 variable "service_credential_names" {
@@ -111,8 +132,13 @@ variable "service_credential_names" {
   default     = []
 
   validation {
-    condition     = alltrue([for credential in var.service_credential_names : contains(["Administrator", "Operator", "Viewer", "Editor"], credential.role)])
-    error_message = "`service_credential_names` role must be one of the following: `Administrator`, `Operator`, `Viewer` or `Editor`."
+    condition     = local.is_classic || (local.is_gen2 && alltrue([for credential in var.service_credential_names : contains(["Manager", "Writer"], credential.role)]))
+    error_message = "`service_credential_names` role must be one of the following: `Manager` or `Writer` for Gen2 instances."
+  }
+
+  validation {
+    condition     = local.is_gen2 || (local.is_classic && alltrue([for credential in var.service_credential_names : contains(["Administrator", "Operator", "Viewer", "Editor"], credential.role)]))
+    error_message = "`service_credential_names` role must be one of the following: `Administrator`, `Operator`, `Viewer` or `Editor` for classic instances."
   }
 
   validation {
@@ -145,6 +171,11 @@ variable "service_endpoints" {
   validation {
     condition     = can(regex("^(public|public-and-private|private)$", var.service_endpoints))
     error_message = "Valid values for service_endpoints are 'public', 'public-and-private', and 'private'"
+  }
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.service_endpoints == "private")
+    error_message = "`service_endpoints` must be `private` for Gen2 instances."
   }
 }
 
@@ -247,6 +278,11 @@ variable "auto_scaling" {
     ])
     error_message = "For disk: rate_limit_mb_per_member must be between 5 and 4096 GB (5120-4194304 MB, 5-4096 GB, or 0.005-4 TB). For memory: rate_limit_mb_per_member must be between 4 and 112 GB (4096-114688 MB, 4-112 GB, or 0.004-0.109 TB). The rate_units must be one of: mb, gb, tb."
   }
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.auto_scaling == null)
+    error_message = "`auto_scaling` is only supported for classic instances, remove `auto_scaling` or select a classic `plan`."
+  }
 }
 
 ##############################################################
@@ -279,9 +315,12 @@ variable "use_ibm_owned_encryption_key" {
 
   validation {
     condition = (
-      var.use_ibm_owned_encryption_key ||
-      var.backup_encryption_key_crn != null ||
-      var.use_same_kms_key_for_backups
+      local.is_gen2 ||
+      local.is_classic && (
+        var.use_ibm_owned_encryption_key ||
+        var.backup_encryption_key_crn != null ||
+        var.use_same_kms_key_for_backups
+      )
     )
     error_message = "When 'use_same_kms_key_for_backups' is set to false, a value needs to be passed for 'backup_encryption_key_crn'."
   }
@@ -326,6 +365,11 @@ variable "backup_encryption_key_crn" {
       can(regex(".*hs-crypto.*", var.backup_encryption_key_crn)),
     ])
     error_message = "Value must be the KMS key CRN from a Key Protect or Hyper Protect Crypto Services instance in one of the supported backup regions."
+  }
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.backup_encryption_key_crn == null)
+    error_message = "`backup_encryption_key_crn` is only supported for classic instances, remove `backup_encryption_key_crn` or select a classic `plan`."
   }
 }
 
@@ -379,6 +423,11 @@ variable "backup_crn" {
       can(regex("^crn:.*:backup:", var.backup_crn))
     ])
     error_message = "backup_crn must be null OR start with 'crn:' and contain ':backup:'"
+  }
+
+  validation {
+    condition     = local.is_classic || (local.is_gen2 && var.backup_crn == null)
+    error_message = "`backup_crn` is only supported for classic instances, remove `backup_crn` or select a classic `plan`."
   }
 }
 

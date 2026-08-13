@@ -46,21 +46,7 @@ var validICDRegions = []string{
 	"us-south",
 }
 
-func GetRegionVersions(region string) (string, string) {
-
-	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{
-		IcdRegion: region,
-	})
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersions(icdType)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+func GetLatestAndOldestVersions(icdAvailableVersions []string) (string, string) {
 
 	if len(icdAvailableVersions) == 0 {
 		log.Fatal("No available ICD versions found")
@@ -94,6 +80,68 @@ func GetRegionVersions(region string) (string, string) {
 	oldestVersion := icdAvailableVersions[0]
 
 	return latestVersion, oldestVersion
+}
+
+func GetRegionVersions(region string) (string, string) {
+
+	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{
+		IcdRegion: region,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersions(icdType)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return GetLatestAndOldestVersions(icdAvailableVersions)
+}
+
+func GetVersionsGen2(region string, plan string) (string, string) {
+
+	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersionsGen2("databases-for-elasticsearch", plan, region) // this function takes service, plan and region as arguments in this specific order
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return GetLatestAndOldestVersions(icdAvailableVersions)
+}
+
+func TestRunBasicGen2Example(t *testing.T) {
+	t.Parallel()
+
+	latestVersion, _ := GetVersionsGen2("eu-de", "enterprise-gen2")
+	fmt.Println("Latest version is ", latestVersion)
+
+	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
+		Testing:            t,
+		TerraformDir:       "examples/basic",
+		Prefix:             "es-gen2",
+		BestRegionYAMLPath: regionSelectionPath,
+		ResourceGroup:      resourceGroup,
+		TerraformVars: map[string]interface{}{ // Gen2 is currently only available in eu-de and eu-fr2
+			"region":                "eu-de",
+			"plan":                  "enterprise-gen2",
+			"elasticsearch_version": latestVersion,
+			"service_endpoints":     "private",
+		},
+		CloudInfoService: sharedInfoSvc,
+	})
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
 }
 
 // TestMain will be run before any parallel tests, used to read data from yaml for use with tests
@@ -378,7 +426,7 @@ func TestRunExistingInstance(t *testing.T) {
 			"prefix":                prefix,
 			"region":                region,
 			"elasticsearch_version": oldestVersion,
-			"service_endpoints":     "public-and-private",
+			"service_endpoints":     "public-and-private", // instance needs a private endpoint (the DA's existing_connection reads it) and a public one (the example's elasticsearch provider connects over it)
 		},
 		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
 		// This is the same as setting the -upgrade=true flag with terraform.
