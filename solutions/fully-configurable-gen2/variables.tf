@@ -188,7 +188,7 @@ variable "kms_encryption_enabled" {
 
 variable "existing_kms_instance_crn" {
   type        = string
-  description = "The CRN of a Key Protect or Hyper Protect Crypto Services instance. Required to create a new encryption key and key ring which will be used to encrypt deployment data. To use an existing key, pass a value for `existing_kms_key_crn`."
+  description = "The CRN of a Key Protect instance. Required to create a new encryption key and key ring which will be used to encrypt deployment data. To use an existing key, pass a value for `existing_kms_key_crn`."
   default     = null
 
   validation {
@@ -203,7 +203,7 @@ variable "existing_kms_instance_crn" {
 
 variable "existing_kms_key_crn" {
   type        = string
-  description = "The CRN of a Key Protect or Hyper Protect Crypto Services encryption key to encrypt your data. If no value is passed a new key will be created in the instance specified in the `existing_kms_instance_crn` input."
+  description = "The CRN of a Key Protect encryption key to encrypt your data. If no value is passed a new key will be created in the instance specified in the `existing_kms_instance_crn` input."
   default     = null
 
   validation {
@@ -218,7 +218,7 @@ variable "existing_kms_key_crn" {
 
 variable "kms_endpoint_type" {
   type        = string
-  description = "The type of endpoint to use for communicating with the Key Protect or Hyper Protect Crypto Services instance. Possible values: `public`, `private`. Applies only if `existing_kms_key_crn` is not specified."
+  description = "The type of endpoint to use for communicating with the Key Protect instance. Possible values: `public`, `private`. Applies only if `existing_kms_key_crn` is not specified."
   default     = "private"
 
   validation {
@@ -229,7 +229,7 @@ variable "kms_endpoint_type" {
 
 variable "skip_elasticsearch_kms_auth_policy" {
   type        = bool
-  description = "Set to true to skip the creation of IAM authorization policies that permits all Databases for Elasticsearch instances in the given resource group 'Reader' access to the Key Protect or Hyper Protect Crypto Services key. This policy is required in order to enable KMS encryption, so only skip creation if there is one already present in your account. No policy is created if `kms_encryption_enabled` is false."
+  description = "Set to true to skip the creation of IAM authorization policies that permits all Databases for Elasticsearch instances in the given resource group 'Reader' access to the Key Protect key. This policy is required in order to enable KMS encryption, so only skip creation if there is one already present in your account. No policy is created if `kms_encryption_enabled` is false."
   default     = false
 }
 

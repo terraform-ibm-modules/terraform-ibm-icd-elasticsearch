@@ -643,13 +643,6 @@
               ],
               "service_name": "kms",
               "notes": "[Optional] Editor access is required to create keys. It is only required when using Key Protect for encryption."
-            },
-            {
-              "role_crns": [
-                "crn:v1:bluemix:public:iam::::role:Editor"
-              ],
-              "service_name": "hs-crypto",
-              "notes": "[Optional] Editor access is required to create keys in HPCS. It is only required when using HPCS for encryption."
             }
           ],
           "architecture": {
