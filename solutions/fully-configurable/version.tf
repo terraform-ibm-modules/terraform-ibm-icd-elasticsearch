@@ -8,7 +8,7 @@ terraform {
     }
     time = {
       source  = "hashicorp/time"
-      version = "0.14.0"
+      version = "0.14.1"
     }
     random = {
       source  = "hashicorp/random"
@@ -16,7 +16,7 @@ terraform {
     }
     external = {
       source  = "hashicorp/external"
-      version = "2.4.0"
+      version = "2.4.1"
     }
   }
 }
