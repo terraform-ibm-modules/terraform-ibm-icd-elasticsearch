@@ -183,6 +183,10 @@
                   "value": "8.19"
                 },
                 {
+                  "displayname": "9.4",
+                  "value": "9.4"
+                },
+                {
                   "displayname": "9.1",
                   "value": "9.1"
                 },
@@ -729,7 +733,38 @@
               }
             },
             {
-              "key": "elasticsearch_version"
+              "key": "elasticsearch_version",
+              "options": [
+                {
+                  "displayname": "8.19",
+                  "value": "8.19"
+                },
+                {
+                  "displayname": "9.4",
+                  "value": "9.4"
+                },
+                {
+                  "displayname": "9.1",
+                  "value": "9.1"
+                },
+                {
+                  "displayname": "8.15",
+                  "value": "8.15"
+                },
+                {
+                  "displayname": "8.12",
+                  "value": "8.12"
+                },
+                {
+                  "displayname": "8.10",
+                  "value": "8.10"
+                },
+                {
+                  "displayname": "8.7",
+                  "value": "8.7"
+                }
+              ],
+              "default_value": "8.19"
             },
             {
               "key": "name"
