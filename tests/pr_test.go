@@ -481,10 +481,7 @@ func TestRunExistingInstance(t *testing.T) {
 	}
 }
 
-// Test the fully-configurable-gen2 DA
-func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
-	t.Parallel()
-
+func setupFullyConfigurableGen2Options(t *testing.T, prefix string) (*testschematic.TestSchematicOptions, string) {
 	options := testschematic.TestSchematicOptionsDefault(&testschematic.TestSchematicOptions{
 		Testing: t,
 		TarIncludePatterns: []string{
@@ -492,10 +489,9 @@ func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
 			fullyConfigurableGen2SolutionTerraformDir + "/*.tf",
 		},
 		TemplateFolder:             fullyConfigurableGen2SolutionTerraformDir,
-		Prefix:                     fmt.Sprintf("%s-gen2da", icdShortType),
+		Prefix:                     prefix,
 		ResourceGroup:              resourceGroup,
 		DeleteWorkspaceOnFail:      false,
-		WaitJobCompleteMinutes:     60,
 		CheckApplyResultForUpgrade: true,
 	})
 
@@ -531,8 +527,8 @@ func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
-		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
 		{Name: "region", Value: "eu-de", DataType: "string"},
+		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
 		{Name: "service_credential_names", Value: serviceCredentialNames, DataType: "list(object)"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
@@ -541,10 +537,36 @@ func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
 		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported Elasticsearch Gen2 version
 	}
 
+	return options, uniqueResourceGroup
+}
+
+// Test the fully-configurable-gen2 DA
+func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
+	t.Parallel()
+
+	options, uniqueResourceGroup := setupFullyConfigurableGen2Options(t, fmt.Sprintf("%s-gen2da", icdShortType))
+	options.WaitJobCompleteMinutes = 60
+
 	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
 		return options.RunSchematicTest()
 	})
 	assert.Nil(t, err, "This should not have errored")
+}
+
+// Upgrade test for the fully-configurable-gen2 DA
+func TestRunFullyConfigurableGen2UpgradeSolution(t *testing.T) {
+	t.Parallel()
+
+	options, uniqueResourceGroup := setupFullyConfigurableGen2Options(t, fmt.Sprintf("%s-gen2-upg", icdShortType))
+	options.Tags = []string{fmt.Sprintf("%s-gen2-upg", icdShortType)}
+	options.WaitJobCompleteMinutes = 120
+
+	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
+		return options.RunSchematicUpgradeTest()
+	})
+	if !options.UpgradeTestSkipped {
+		assert.Nil(t, err, "This should not have errored")
+	}
 }
 
 func generateUniqueResourceGroupName(baseName string) string {
