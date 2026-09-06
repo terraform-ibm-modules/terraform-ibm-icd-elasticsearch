@@ -341,3 +341,145 @@ variable "skip_elasticsearch_to_secrets_manager_auth_policy" {
   default     = false
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for Elasticsearch. If set to false, the Secrets Manager instance passed by the user is granted the Key Manager access to the Elasticsearch instance created by the Deployable Architecture. Set to `true` to use an existing policy. The value of this is ignored if any value for 'existing_secrets_manager_instance_crn' is not passed."
 }
+
+##############################################################
+# Kibana Configuration
+##############################################################
+
+variable "enable_kibana_dashboard" {
+  type        = bool
+  description = "Set to true to deploy Kibana in Code Engine. NOTE: By default, the Kibana image will be pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM, however this can be overridden using the `kibana_registry_namespace_image` and `kibana_image_digest` inputs."
+  default     = false
+}
+
+variable "kibana_code_engine_new_project_name" {
+  type        = string
+  description = "The Code Engine project name. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "ce-kibana-project"
+}
+
+variable "kibana_code_engine_new_app_name" {
+  type        = string
+  description = "The Code Engine application name. If a prefix input variable is specified, the prefix is added to the name in the `<prefix>-<name>` format."
+  default     = "ce-kibana-app"
+}
+
+variable "existing_code_engine_project_id" {
+  type        = string
+  description = "Existing code engine project ID to deploy Kibana. If no value is passed, a new code engine project will be created."
+  default     = null
+}
+
+variable "use_private_registry" {
+  description = "Set to true if the Kibana image is being pulled from a private registry."
+  type        = bool
+  default     = false
+}
+
+variable "use_existing_registry_secret" {
+  description = "Set to true to use an existing image registry secret instead of creating a new one."
+  type        = bool
+  default     = false
+}
+
+variable "kibana_registry_namespace_image" {
+  type        = string
+  description = "The Kibana image reference in the format of `[registry-url]/[namespace]/[image]`. This value is used only when `enable_kibana_dashboard` is set to true."
+  default     = "docker.elastic.co/kibana/kibana"
+}
+
+variable "kibana_registry_server" {
+  type        = string
+  description = "The server URL of the container registry used to pull the Kibana image."
+  default     = "https://index.docker.io/v1/"
+  validation {
+    condition = (
+      !(var.use_private_registry && !var.use_existing_registry_secret)
+      || (var.kibana_registry_server != null && var.kibana_registry_server != "")
+    )
+    error_message = "The `kibana_registry_server` must not be null or empty when `use_private_registry` is true and `use_existing_registry_secret` is false."
+  }
+}
+
+variable "kibana_image_digest" {
+  type        = string
+  description = "When `enable_kibana_dashboard` is set to true, Kibana is deployed using an image tag compatible with the Elasticsearch version. Alternatively, an image digest in the format `sha256:xxxxx...` can also be specified but it must correspond to a version compatible with the Elasticsearch instance."
+  default     = null
+  validation {
+    condition     = var.kibana_image_digest == null || can(regex("^sha256:", var.kibana_image_digest))
+    error_message = "If provided, the value of kibana_image_digest must start with 'sha256:'."
+  }
+}
+
+variable "kibana_image_port" {
+  description = "Specify the port number used to connect to the Kibana service exposed by the container image. Default port is 5601 and it is only applicable if `enable_kibana_dashboard` is true"
+  type        = number
+  default     = 5601
+}
+
+variable "kibana_image_secret" {
+  description = "The name of the image registry access secret."
+  type        = string
+  default     = null
+}
+
+variable "kibana_visibility" {
+  description = "Specify the visibility of Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/blob/main/solutions/fully-configurable-gen2/DA-types.md#options-for-kibana_visibility)."
+  type        = string
+  default     = "local_private"
+  validation {
+    condition     = can(regex("local_public|local_private|local", var.kibana_visibility))
+    error_message = "Valid values are 'local_public', 'local_private', or 'local'."
+  }
+}
+
+variable "kibana_registry_username" {
+  description = "Username for the for the container registry."
+  type        = string
+  default     = null
+  validation {
+    condition = (
+      !(var.use_private_registry && !var.use_existing_registry_secret)
+      || (var.kibana_registry_username != null && var.kibana_registry_username != "")
+    )
+    error_message = "The `kibana_registry_username` must not be null or empty when `use_private_registry` is true and `use_existing_registry_secret` is false."
+  }
+}
+
+variable "kibana_registry_personal_access_token" {
+  description = "Pesonal access token for the container registry."
+  type        = string
+  default     = null
+  sensitive   = true
+  validation {
+    condition = (
+      !(var.use_private_registry && !var.use_existing_registry_secret)
+      || (var.kibana_registry_personal_access_token != null && var.kibana_registry_personal_access_token != "")
+    )
+    error_message = "The `kibana_registry_personal_access_token` must not be null or empty when `use_private_registry` is true and `use_existing_registry_secret` is false."
+  }
+}
+
+##############################################################
+# Context-based restriction (CBR)
+##############################################################
+
+variable "cbr_code_engine_kibana_project_rules" {
+  type = list(object({
+    description = string
+    account_id  = string
+    rule_contexts = list(object({
+      attributes = optional(list(object({
+        name  = string
+        value = string
+    }))) }))
+    enforcement_mode = string
+    operations = optional(list(object({
+      api_types = list(object({
+        api_type_id = string
+      }))
+    })))
+  }))
+  description = "(Optional, list) List of context-based restrictions rules to create for the Kibana dashboard and it is only applicable if `enable_kibana_dashboard` is true. [Learn more](https://github.com/terraform-ibm-modules/terraform-ibm-icd-elasticsearch/tree/main/solutions/fully-configurable-gen2/DA-cbr_rules.md)"
+  default     = []
+}

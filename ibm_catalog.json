@@ -939,6 +939,82 @@
                   "value": "^__NULL__$|^crn:v\\d:(.*:){2}databases-for-elasticsearch:(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$"
                 }
               ]
+            },
+            {
+              "key": "enable_kibana_dashboard"
+            },
+            {
+              "key": "kibana_code_engine_new_project_name"
+            },
+            {
+              "key": "kibana_code_engine_new_app_name"
+            },
+            {
+              "key": "existing_code_engine_project_id"
+            },
+            {
+              "key": "use_existing_registry_secret"
+            },
+            {
+              "key": "kibana_registry_namespace_image"
+            },
+            {
+              "key": "kibana_image_digest",
+              "value_constraints": [
+                {
+                  "type": "regex",
+                  "description": "The value provided for 'kibana_image_digest' is not valid.",
+                  "value": "^__NULL__$|^sha256:"
+                }
+              ]
+            },
+            {
+              "key": "kibana_image_port"
+            },
+            {
+              "key": "cbr_code_engine_kibana_project_rules",
+              "custom_config": {
+                "type": "code_editor",
+                "grouping": "deployment",
+                "original_grouping": "deployment",
+                "config_constraints": {
+                  "supportedLanguages": [
+                    "hcl"
+                  ]
+                }
+              }
+            },
+            {
+              "key": "use_private_registry"
+            },
+            {
+              "key": "kibana_image_secret"
+            },
+            {
+              "key": "kibana_registry_username"
+            },
+            {
+              "key": "kibana_registry_personal_access_token"
+            },
+            {
+              "key": "kibana_registry_server"
+            },
+            {
+              "key": "kibana_visibility",
+              "options": [
+                {
+                  "displayname": "local_public",
+                  "value": "local_public"
+                },
+                {
+                  "displayname": "local_private",
+                  "value": "local_private"
+                },
+                {
+                  "displayname": "local",
+                  "value": "local"
+                }
+              ]
             }
           ],
           "terraform_version": "1.12.2",

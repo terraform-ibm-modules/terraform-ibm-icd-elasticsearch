@@ -73,3 +73,14 @@ output "next_step_secondary_url" {
   value       = "https://cloud.ibm.com/docs/databases-for-elasticsearch-gen2"
   description = "Secondary URL"
 }
+
+output "kibana_app_endpoint" {
+  description = "Code Engine Kibana endpoint URL"
+  value       = var.enable_kibana_dashboard ? module.code_engine_kibana[0].app[local.code_engine_app_name].endpoint : null
+}
+
+output "kibana_credentials" {
+  description = "Kibana login credentials. Gen2 has no native database users, so this is the same Manager-role service credential used as Kibana's Elasticsearch backend authentication."
+  value       = var.enable_kibana_dashboard ? { username = local.kibana_username, password = local.kibana_password } : null
+  sensitive   = true
+}

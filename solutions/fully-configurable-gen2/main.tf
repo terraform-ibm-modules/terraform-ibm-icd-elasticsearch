@@ -309,3 +309,114 @@ module "secrets_manager_service_credentials" {
   endpoint_type               = var.existing_secrets_manager_endpoint_type
   secrets                     = local.secrets
 }
+
+########################################################################################################################
+# Code Engine Kibana Dashboard instance
+########################################################################################################################
+
+locals {
+  code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
+  code_engine_project_name = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
+  code_engine_app_name     = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
+  # Gen2 already reports the exact deployment version (e.g. 8.19.11) via local.elasticsearch_version, so
+  # unlike the classic DA there is no need to query the live Elasticsearch API for it - which would also
+  # require a TLS certificate that Gen2 does not expose.
+  kibana_version = var.enable_kibana_dashboard ? local.elasticsearch_version : null
+}
+
+# Gen2 has no native database users (the module's 'users' input is not supported), and every service
+# credential is granted the same admin-equivalent role (ibm_admin_role) regardless of the IAM role picked -
+# so a single dedicated Manager-role credential is used both as Kibana's backend authentication and as the
+# human login to the Kibana web UI.
+resource "ibm_resource_key" "kibana_credential" {
+  count                = var.enable_kibana_dashboard ? 1 : 0
+  name                 = "${local.prefix}kibana-credential"
+  role                 = null
+  resource_instance_id = local.elasticsearch_id
+  parameters = {
+    service-endpoints = "private"
+    role_crn          = "crn:v1:bluemix:public:iam::::role:Manager"
+  }
+}
+
+locals {
+  kibana_username = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["username"] : null
+  kibana_password = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["password"] : null
+}
+
+module "code_engine_kibana" {
+  count               = var.enable_kibana_dashboard ? 1 : 0
+  source              = "terraform-ibm-modules/code-engine/ibm"
+  version             = "4.9.9"
+  resource_group_id   = module.resource_group.resource_group_id
+  project_name        = local.code_engine_project_name
+  existing_project_id = local.code_engine_project_id
+  cbr_rules           = var.cbr_code_engine_kibana_project_rules
+  secrets = merge(
+    {
+      # Unlike the classic DA (which uses the literal, well-known username 'kibana_system'), Gen2's
+      # credential username is itself a per-instance generated value, so it is treated as a secret too.
+      "es-secret" = {
+        format = "generic"
+        data = {
+          "ELASTICSEARCH_USERNAME" = local.kibana_username
+          "ELASTICSEARCH_PASSWORD" = local.kibana_password
+        }
+      }
+    },
+    var.use_private_registry && !var.use_existing_registry_secret ? {
+      "registry-secret" = {
+        format = "registry"
+        data = {
+          username = var.kibana_registry_username
+          password = var.kibana_registry_personal_access_token
+          server   = var.kibana_registry_server
+        }
+      }
+    } : {}
+  )
+
+  apps = {
+    (local.code_engine_app_name) = {
+      image_reference = var.kibana_image_digest != null ? "${var.kibana_registry_namespace_image}@${var.kibana_image_digest}" : "${var.kibana_registry_namespace_image}:${local.kibana_version}"
+      image_port      = var.kibana_image_port
+      image_secret    = var.use_private_registry ? (var.use_existing_registry_secret ? var.kibana_image_secret : "registry-secret") : null
+      run_env_variables = [{
+        type  = "literal"
+        name  = "ELASTICSEARCH_HOSTS"
+        value = "[\"https://${local.elasticsearch_hostname}:${local.elasticsearch_port}\"]"
+        },
+        {
+          type      = "secret_key_reference"
+          name      = "ELASTICSEARCH_USERNAME"
+          key       = "ELASTICSEARCH_USERNAME"
+          reference = "es-secret"
+        },
+        {
+          type      = "secret_key_reference"
+          name      = "ELASTICSEARCH_PASSWORD"
+          key       = "ELASTICSEARCH_PASSWORD"
+          reference = "es-secret"
+        },
+        {
+          type  = "literal"
+          name  = "ELASTICSEARCH_SSL_ENABLED"
+          value = "true"
+        },
+        {
+          type  = "literal"
+          name  = "SERVER_HOST"
+          value = "0.0.0.0"
+        },
+        {
+          type  = "literal"
+          name  = "ELASTICSEARCH_SSL_VERIFICATIONMODE"
+          value = "none"
+        }
+      ]
+      scale_min_instances     = 1
+      scale_max_instances     = 3
+      managed_domain_mappings = var.kibana_visibility
+    }
+  }
+}
