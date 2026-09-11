@@ -311,13 +311,16 @@ module "secrets_manager_service_credentials" {
 }
 
 ########################################################################################################################
-# Code Engine Kibana Dashboard instance
+# Kibana Dashboard (VSI in a dedicated VPC, connected to Elasticsearch via a Virtual Private Endpoint)
 ########################################################################################################################
 
+# Gen2 Elasticsearch instances are only reachable from inside a VPC that has a Virtual Private Endpoint
+# (VPE) gateway targeting them - this is IBM's own documented pattern for Gen2 private connectivity
+# ("VPE via VSI": https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-private-connections).
+# Code Engine (used by the classic DA's Kibana feature) has no way to join a VPC, so Kibana instead runs
+# on a small VSI inside a dedicated VPC alongside the VPE.
+
 locals {
-  code_engine_project_id   = var.existing_code_engine_project_id != null ? var.existing_code_engine_project_id : null
-  code_engine_project_name = local.code_engine_project_id != null ? null : (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_project_name}" : var.kibana_code_engine_new_project_name
-  code_engine_app_name     = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.kibana_code_engine_new_app_name}" : var.kibana_code_engine_new_app_name
   # Gen2 already reports the exact deployment version (e.g. 8.19.11) via local.elasticsearch_version, so
   # unlike the classic DA there is no need to query the live Elasticsearch API for it - which would also
   # require a TLS certificate that Gen2 does not expose.
@@ -342,81 +345,213 @@ resource "ibm_resource_key" "kibana_credential" {
 locals {
   kibana_username = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["username"] : null
   kibana_password = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["password"] : null
+  # The 'ibm_database_connection' data source's typed schema (.https[]) is only ever populated for
+  # classic instances and is null for Gen2 - the resource key's own nested 'connection.elasticsearch.*'
+  # credential keys are the only reliable source of the hostname/port for a Gen2 instance.
+  kibana_es_hostname = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["connection.elasticsearch.hosts.0.hostname"] : null
+  kibana_es_port     = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["connection.elasticsearch.hosts.0.port"] : null
 }
 
-module "code_engine_kibana" {
-  count               = var.enable_kibana_dashboard ? 1 : 0
-  source              = "terraform-ibm-modules/code-engine/ibm"
-  version             = "4.9.9"
-  resource_group_id   = module.resource_group.resource_group_id
-  project_name        = local.code_engine_project_name
-  existing_project_id = local.code_engine_project_id
-  cbr_rules           = var.cbr_code_engine_kibana_project_rules
-  secrets = merge(
-    {
-      # Unlike the classic DA (which uses the literal, well-known username 'kibana_system'), Gen2's
-      # credential username is itself a per-instance generated value, so it is treated as a secret too.
-      "es-secret" = {
-        format = "generic"
-        data = {
-          "ELASTICSEARCH_USERNAME" = local.kibana_username
-          "ELASTICSEARCH_PASSWORD" = local.kibana_password
-        }
-      }
-    },
-    var.use_private_registry && !var.use_existing_registry_secret ? {
-      "registry-secret" = {
-        format = "registry"
-        data = {
-          username = var.kibana_registry_username
-          password = var.kibana_registry_personal_access_token
-          server   = var.kibana_registry_server
-        }
-      }
-    } : {}
-  )
+# Dedicated VPC for the Kibana VSI and its VPE gateway to Elasticsearch.
+module "kibana_vpc" {
+  count             = var.enable_kibana_dashboard ? 1 : 0
+  source            = "terraform-ibm-modules/landing-zone-vpc/ibm"
+  version           = "10.0.6"
+  resource_group_id = module.resource_group.resource_group_id
+  region            = var.region
+  prefix            = "${local.prefix}kibana"
+  name              = "vpc"
 
-  apps = {
-    (local.code_engine_app_name) = {
-      image_reference = var.kibana_image_digest != null ? "${var.kibana_registry_namespace_image}@${var.kibana_image_digest}" : "${var.kibana_registry_namespace_image}:${local.kibana_version}"
-      image_port      = var.kibana_image_port
-      image_secret    = var.use_private_registry ? (var.use_existing_registry_secret ? var.kibana_image_secret : "registry-secret") : null
-      run_env_variables = [{
-        type  = "literal"
-        name  = "ELASTICSEARCH_HOSTS"
-        value = "[\"https://${local.elasticsearch_hostname}:${local.elasticsearch_port}\"]"
+  # The module's default ACL only allows internal (10.0.0.0/8) traffic. Kibana needs inbound access from
+  # outside the VPC, and NACLs are stateless, so an outbound-initiated connection's return leg (e.g.
+  # pulling the Kibana image from the public internet) also needs its own explicit inbound allow.
+  network_acls = [
+    {
+      name                         = "vpc-acl"
+      add_ibm_cloud_internal_rules = true
+      add_vpc_connectivity_rules   = true
+      prepend_ibm_rules            = true
+      rules = [
+        {
+          name        = "allow-ssh-inbound"
+          action      = "allow"
+          direction   = "inbound"
+          source      = "0.0.0.0/0"
+          destination = "0.0.0.0/0"
+          protocol    = "tcp"
+          port_min    = 22
+          port_max    = 22
         },
         {
-          type      = "secret_key_reference"
-          name      = "ELASTICSEARCH_USERNAME"
-          key       = "ELASTICSEARCH_USERNAME"
-          reference = "es-secret"
+          name        = "allow-kibana-inbound"
+          action      = "allow"
+          direction   = "inbound"
+          source      = "0.0.0.0/0"
+          destination = "0.0.0.0/0"
+          protocol    = "tcp"
+          port_min    = 5601
+          port_max    = 5601
         },
         {
-          type      = "secret_key_reference"
-          name      = "ELASTICSEARCH_PASSWORD"
-          key       = "ELASTICSEARCH_PASSWORD"
-          reference = "es-secret"
+          name        = "allow-return-traffic-inbound"
+          action      = "allow"
+          direction   = "inbound"
+          source      = "0.0.0.0/0"
+          destination = "0.0.0.0/0"
+          protocol    = "tcp"
+          port_min    = 1024
+          port_max    = 65535
         },
         {
-          type  = "literal"
-          name  = "ELASTICSEARCH_SSL_ENABLED"
-          value = "true"
-        },
-        {
-          type  = "literal"
-          name  = "SERVER_HOST"
-          value = "0.0.0.0"
-        },
-        {
-          type  = "literal"
-          name  = "ELASTICSEARCH_SSL_VERIFICATIONMODE"
-          value = "none"
+          name        = "allow-all-outbound"
+          action      = "allow"
+          direction   = "outbound"
+          source      = "0.0.0.0/0"
+          destination = "0.0.0.0/0"
         }
       ]
-      scale_min_instances     = 1
-      scale_max_instances     = 3
-      managed_domain_mappings = var.kibana_visibility
     }
+  ]
+}
+
+# Managed directly (rather than through the VSI module's own security_group input) so the VPE gateway and
+# the "allow ES traffic from members of this group" rule can both reference its ID without a circular
+# dependency - the VPE gateway has its own security group by default, separate from the VSI's, which only
+# allows inbound from members of itself.
+resource "ibm_is_security_group" "kibana_sg" {
+  count          = var.enable_kibana_dashboard ? 1 : 0
+  name           = "${local.prefix}kibana-sg"
+  resource_group = module.resource_group.resource_group_id
+  vpc            = module.kibana_vpc[0].vpc_id
+}
+
+resource "ibm_is_security_group_rule" "kibana_allow_ssh_inbound" {
+  count     = var.enable_kibana_dashboard ? 1 : 0
+  group     = ibm_is_security_group.kibana_sg[0].id
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+  protocol  = "tcp"
+  port_min  = 22
+  port_max  = 22
+}
+
+resource "ibm_is_security_group_rule" "kibana_allow_kibana_inbound" {
+  count     = var.enable_kibana_dashboard ? 1 : 0
+  group     = ibm_is_security_group.kibana_sg[0].id
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+  protocol  = "tcp"
+  port_min  = 5601
+  port_max  = 5601
+}
+
+resource "ibm_is_security_group_rule" "kibana_allow_es_inbound" {
+  count     = var.enable_kibana_dashboard ? 1 : 0
+  group     = ibm_is_security_group.kibana_sg[0].id
+  direction = "inbound"
+  remote    = ibm_is_security_group.kibana_sg[0].id
+  protocol  = "tcp"
+  port_min  = 9200
+  port_max  = 9200
+}
+
+resource "ibm_is_security_group_rule" "kibana_allow_all_outbound" {
+  count     = var.enable_kibana_dashboard ? 1 : 0
+  group     = ibm_is_security_group.kibana_sg[0].id
+  direction = "outbound"
+  remote    = "0.0.0.0/0"
+}
+
+resource "ibm_is_virtual_endpoint_gateway" "kibana_es_vpe" {
+  count = var.enable_kibana_dashboard ? 1 : 0
+  name  = "${local.prefix}kibana-es-vpe"
+  target {
+    crn           = local.elasticsearch_crn
+    resource_type = "provider_cloud_service"
   }
+  vpc             = module.kibana_vpc[0].vpc_id
+  resource_group  = module.resource_group.resource_group_id
+  security_groups = [ibm_is_security_group.kibana_sg[0].id]
+
+  ips {
+    subnet = module.kibana_vpc[0].subnet_zone_list[0].id
+    name   = "${local.prefix}kibana-es-vpe-ip"
+  }
+}
+
+# SSH access is used for operational troubleshooting of the Kibana VSI (checking container logs,
+# restarting the service) - an existing key can be supplied, otherwise one is generated and surfaced as a
+# sensitive output.
+resource "tls_private_key" "kibana_ssh_key" {
+  count     = var.enable_kibana_dashboard && var.kibana_existing_ssh_key_name == null ? 1 : 0
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "ibm_is_ssh_key" "kibana_ssh_key" {
+  count          = var.enable_kibana_dashboard && var.kibana_existing_ssh_key_name == null ? 1 : 0
+  name           = "${local.prefix}kibana-ssh-key"
+  public_key     = tls_private_key.kibana_ssh_key[0].public_key_openssh
+  resource_group = module.resource_group.resource_group_id
+}
+
+data "ibm_is_ssh_key" "kibana_existing_ssh_key" {
+  count = var.enable_kibana_dashboard && var.kibana_existing_ssh_key_name != null ? 1 : 0
+  name  = var.kibana_existing_ssh_key_name
+}
+
+locals {
+  kibana_ssh_key_id = var.enable_kibana_dashboard ? (
+    var.kibana_existing_ssh_key_name != null ? data.ibm_is_ssh_key.kibana_existing_ssh_key[0].id : ibm_is_ssh_key.kibana_ssh_key[0].id
+  ) : null
+}
+
+module "kibana_vsi_image" {
+  count            = var.enable_kibana_dashboard ? 1 : 0
+  source           = "terraform-ibm-modules/common-utilities/ibm//modules/vsi-image-selector"
+  version          = "1.9.0"
+  architecture     = "amd64"
+  operating_system = "ubuntu"
+}
+
+locals {
+  kibana_docker_run_cmd = var.enable_kibana_dashboard ? join(" ", [
+    "docker run -d --name kibana --restart unless-stopped -p 5601:5601",
+    "-e ELASTICSEARCH_HOSTS='https://${local.kibana_es_hostname}:${local.kibana_es_port}'",
+    "-e ELASTICSEARCH_USERNAME='${local.kibana_username}'",
+    "-e ELASTICSEARCH_PASSWORD='${local.kibana_password}'",
+    "-e ELASTICSEARCH_SSL_VERIFICATIONMODE=none",
+    "-e SERVER_HOST=0.0.0.0",
+    var.kibana_image_digest != null ? "${var.kibana_image}@${var.kibana_image_digest}" : "${var.kibana_image}:${local.kibana_version}",
+  ]) : null
+
+  # landing-zone-vsi only auto-prepends '#cloud-config' when install_logging_agent/install_monitoring_agent
+  # is true; since neither is used here, it must be added explicitly or cloud-init ignores the user data.
+  kibana_user_data = var.enable_kibana_dashboard ? "#cloud-config\n${yamlencode({
+    runcmd = [
+      "apt-get update -y",
+      "apt-get install -y docker.io",
+      "systemctl enable docker",
+      "systemctl start docker",
+      local.kibana_docker_run_cmd,
+    ]
+  })}" : null
+}
+
+module "kibana_vsi" {
+  count                 = var.enable_kibana_dashboard ? 1 : 0
+  source                = "terraform-ibm-modules/landing-zone-vsi/ibm"
+  version               = "6.6.2"
+  resource_group_id     = module.resource_group.resource_group_id
+  image_id              = module.kibana_vsi_image[0].latest_image_id
+  create_security_group = false
+  security_group_ids    = [ibm_is_security_group.kibana_sg[0].id]
+  subnets               = [module.kibana_vpc[0].subnet_zone_list[0]]
+  vpc_id                = module.kibana_vpc[0].vpc_id
+  prefix                = "${local.prefix}kibana"
+  machine_type          = var.kibana_vsi_profile
+  user_data             = local.kibana_user_data
+  vsi_per_subnet        = 1
+  enable_floating_ip    = var.kibana_public_endpoint
+  ssh_key_ids           = [local.kibana_ssh_key_id]
 }

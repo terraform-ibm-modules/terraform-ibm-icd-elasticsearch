@@ -944,19 +944,7 @@
               "key": "enable_kibana_dashboard"
             },
             {
-              "key": "kibana_code_engine_new_project_name"
-            },
-            {
-              "key": "kibana_code_engine_new_app_name"
-            },
-            {
-              "key": "existing_code_engine_project_id"
-            },
-            {
-              "key": "use_existing_registry_secret"
-            },
-            {
-              "key": "kibana_registry_namespace_image"
+              "key": "kibana_image"
             },
             {
               "key": "kibana_image_digest",
@@ -969,52 +957,13 @@
               ]
             },
             {
-              "key": "kibana_image_port"
+              "key": "kibana_vsi_profile"
             },
             {
-              "key": "cbr_code_engine_kibana_project_rules",
-              "custom_config": {
-                "type": "code_editor",
-                "grouping": "deployment",
-                "original_grouping": "deployment",
-                "config_constraints": {
-                  "supportedLanguages": [
-                    "hcl"
-                  ]
-                }
-              }
+              "key": "kibana_public_endpoint"
             },
             {
-              "key": "use_private_registry"
-            },
-            {
-              "key": "kibana_image_secret"
-            },
-            {
-              "key": "kibana_registry_username"
-            },
-            {
-              "key": "kibana_registry_personal_access_token"
-            },
-            {
-              "key": "kibana_registry_server"
-            },
-            {
-              "key": "kibana_visibility",
-              "options": [
-                {
-                  "displayname": "local_public",
-                  "value": "local_public"
-                },
-                {
-                  "displayname": "local_private",
-                  "value": "local_private"
-                },
-                {
-                  "displayname": "local",
-                  "value": "local"
-                }
-              ]
+              "key": "kibana_existing_ssh_key_name"
             }
           ],
           "terraform_version": "1.12.2",
