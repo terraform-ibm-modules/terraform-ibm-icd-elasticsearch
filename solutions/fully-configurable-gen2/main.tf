@@ -320,13 +320,6 @@ module "secrets_manager_service_credentials" {
 # Code Engine (used by the classic DA's Kibana feature) has no way to join a VPC, so Kibana instead runs
 # on a small VSI inside a dedicated VPC alongside the VPE.
 
-locals {
-  # Gen2 already reports the exact deployment version (e.g. 8.19.11) via local.elasticsearch_version, so
-  # unlike the classic DA there is no need to query the live Elasticsearch API for it - which would also
-  # require a TLS certificate that Gen2 does not expose.
-  kibana_version = var.enable_kibana_dashboard ? local.elasticsearch_version : null
-}
-
 # Gen2 has no native database users (the module's 'users' input is not supported), and every service
 # credential is granted the same admin-equivalent role (ibm_admin_role) regardless of the IAM role picked -
 # so a single dedicated Manager-role credential is used both as Kibana's backend authentication and as the
@@ -515,14 +508,22 @@ module "kibana_vsi_image" {
 }
 
 locals {
+  kibana_es_url = var.enable_kibana_dashboard ? "https://${local.kibana_es_hostname}:${local.kibana_es_port}" : null
+
+  # Elastic only publishes full patch-version image tags (e.g. "8.19.11"), but Gen2's reported 'version'
+  # is just the requested value - for the common case that's this module's own hardcoded "8.0" default,
+  # which isn't a real tag at all. So unless a digest is pinned, the VSI looks up the real running
+  # version live from the Elasticsearch API at boot (same approach the classic DA takes with its
+  # es_metadata.sh, minus the certificate - Gen2 doesn't expose one).
   kibana_docker_run_cmd = var.enable_kibana_dashboard ? join(" ", [
+    "ES_VERSION=$(curl -s -k -u '${local.kibana_username}:${local.kibana_password}' '${local.kibana_es_url}/' | jq -r '.version.number') ;",
     "docker run -d --name kibana --restart unless-stopped -p 5601:5601",
-    "-e ELASTICSEARCH_HOSTS='https://${local.kibana_es_hostname}:${local.kibana_es_port}'",
+    "-e ELASTICSEARCH_HOSTS='${local.kibana_es_url}'",
     "-e ELASTICSEARCH_USERNAME='${local.kibana_username}'",
     "-e ELASTICSEARCH_PASSWORD='${local.kibana_password}'",
     "-e ELASTICSEARCH_SSL_VERIFICATIONMODE=none",
     "-e SERVER_HOST=0.0.0.0",
-    var.kibana_image_digest != null ? "${var.kibana_image}@${var.kibana_image_digest}" : "${var.kibana_image}:${local.kibana_version}",
+    var.kibana_image_digest != null ? "${var.kibana_image}@${var.kibana_image_digest}" : "${var.kibana_image}:$ES_VERSION",
   ]) : null
 
   # landing-zone-vsi only auto-prepends '#cloud-config' when install_logging_agent/install_monitoring_agent
@@ -530,7 +531,7 @@ locals {
   kibana_user_data = var.enable_kibana_dashboard ? "#cloud-config\n${yamlencode({
     runcmd = [
       "apt-get update -y",
-      "apt-get install -y docker.io",
+      "apt-get install -y docker.io jq",
       "systemctl enable docker",
       "systemctl start docker",
       local.kibana_docker_run_cmd,
