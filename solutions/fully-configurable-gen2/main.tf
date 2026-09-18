@@ -321,9 +321,16 @@ module "secrets_manager_service_credentials" {
 # on a small VSI inside a dedicated VPC alongside the VPE.
 
 # Gen2 has no native database users (the module's 'users' input is not supported), and every service
-# credential is granted the same admin-equivalent role (ibm_admin_role) regardless of the IAM role picked -
-# so a single dedicated Manager-role credential is used both as Kibana's backend authentication and as the
-# human login to the Kibana web UI.
+# credential is granted the same admin-equivalent role (ibm_admin_role) regardless of the IAM role picked.
+# ibm_admin_role has allow_restricted_indices=false, so it can never create/manage the .kibana* system
+# indices Kibana's own backend needs - every savedObjects migration attempt gets a silent 403 and retries
+# forever (invisible at default log level, indistinguishable from a hang). Classic avoids this by creating
+# a native user literally named "kibana_system", which Elasticsearch auto-grants its built-in, correctly
+# scoped "kibana_system" role. Gen2 can't create that user via Terraform, but the reserved "kibana_system"
+# ES user already exists on every cluster (just needs its password set) - so this Manager credential is
+# used only to reset that reserved user's password at VSI boot, and only that user's credentials are ever
+# given to the Kibana process itself. It is also used as the human login to the Kibana web UI, since it is
+# the only credential with password-reset access.
 resource "ibm_resource_key" "kibana_credential" {
   count                = var.enable_kibana_dashboard ? 1 : 0
   name                 = "${local.prefix}kibana-credential"
@@ -335,6 +342,17 @@ resource "ibm_resource_key" "kibana_credential" {
   }
 }
 
+resource "random_password" "kibana_system_password" {
+  count            = var.enable_kibana_dashboard ? 1 : 0
+  length           = 32
+  special          = true
+  override_special = "#$%&*()-_=+[]{}<>:?"
+  min_special      = 1
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+}
+
 locals {
   kibana_username = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["username"] : null
   kibana_password = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["password"] : null
@@ -343,6 +361,10 @@ locals {
   # credential keys are the only reliable source of the hostname/port for a Gen2 instance.
   kibana_es_hostname = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["connection.elasticsearch.hosts.0.hostname"] : null
   kibana_es_port     = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["connection.elasticsearch.hosts.0.port"] : null
+
+  # The reserved "kibana_system" ES user Kibana's own backend authenticates as - never used for UI login.
+  kibana_system_username = var.enable_kibana_dashboard ? "kibana_system" : null
+  kibana_system_password = var.enable_kibana_dashboard ? random_password.kibana_system_password[0].result : null
 }
 
 # Dedicated VPC for the Kibana VSI and its VPE gateway to Elasticsearch.
@@ -455,6 +477,19 @@ resource "ibm_is_security_group_rule" "kibana_allow_all_outbound" {
   remote    = "0.0.0.0/0"
 }
 
+# Without this, ICMP "fragmentation needed" replies from the path back to the VSI are dropped, which
+# breaks Path MTU Discovery and silently black-holes larger TLS responses (e.g. Kibana's saved objects
+# migrations hang indefinitely mid-response instead of erroring).
+resource "ibm_is_security_group_rule" "kibana_allow_icmp_inbound" {
+  count     = var.enable_kibana_dashboard ? 1 : 0
+  group     = ibm_is_security_group.kibana_sg[0].id
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+  protocol  = "icmp"
+  type      = 3
+  code      = 4
+}
+
 resource "ibm_is_virtual_endpoint_gateway" "kibana_es_vpe" {
   count = var.enable_kibana_dashboard ? 1 : 0
   name  = "${local.prefix}kibana-es-vpe"
@@ -515,12 +550,19 @@ locals {
   # which isn't a real tag at all. So unless a digest is pinned, the VSI looks up the real running
   # version live from the Elasticsearch API at boot (same approach the classic DA takes with its
   # es_metadata.sh, minus the certificate - Gen2 doesn't expose one).
+  #
+  # Before starting Kibana, the reserved "kibana_system" ES user's password is reset (using the Manager
+  # credential, which has manage_security via ibm_admin_role) so Kibana's backend can authenticate as it.
+  # Using the Manager credential directly for Kibana's own connection instead would 403 forever on every
+  # savedObjects migration request, since ibm_admin_role cannot touch restricted (.kibana*) indices.
+  kibana_reset_system_user_cmd = "curl -s -k -u '${local.kibana_username}:${local.kibana_password}' -X PUT '${local.kibana_es_url}/_security/user/${local.kibana_system_username}/_password' -H 'Content-Type: application/json' -d '{\"password\":\"${local.kibana_system_password}\"}'"
+
   kibana_docker_run_cmd = var.enable_kibana_dashboard ? join(" ", [
-    "ES_VERSION=$(curl -s -k -u '${local.kibana_username}:${local.kibana_password}' '${local.kibana_es_url}/' | jq -r '.version.number') ;",
+    "ES_VERSION=$(curl -s -k -u '${local.kibana_system_username}:${local.kibana_system_password}' '${local.kibana_es_url}/' | jq -r '.version.number') ;",
     "docker run -d --name kibana --restart unless-stopped -p 5601:5601",
     "-e ELASTICSEARCH_HOSTS='${local.kibana_es_url}'",
-    "-e ELASTICSEARCH_USERNAME='${local.kibana_username}'",
-    "-e ELASTICSEARCH_PASSWORD='${local.kibana_password}'",
+    "-e ELASTICSEARCH_USERNAME='${local.kibana_system_username}'",
+    "-e ELASTICSEARCH_PASSWORD='${local.kibana_system_password}'",
     "-e ELASTICSEARCH_SSL_VERIFICATIONMODE=none",
     "-e SERVER_HOST=0.0.0.0",
     var.kibana_image_digest != null ? "${var.kibana_image}@${var.kibana_image_digest}" : "${var.kibana_image}:$ES_VERSION",
@@ -534,6 +576,7 @@ locals {
       "apt-get install -y docker.io jq",
       "systemctl enable docker",
       "systemctl start docker",
+      local.kibana_reset_system_user_cmd,
       local.kibana_docker_run_cmd,
     ]
   })}" : null
