@@ -68,6 +68,8 @@ locals {
   create_kms_auth_policy = !var.use_ibm_owned_encryption_key && !var.skip_iam_authorization_policy ? 1 : 0
   # only create backup auth policy if 'use_ibm_owned_encryption_key' is false, 'skip_iam_authorization_policy' is false and 'use_same_kms_key_for_backups' is false
   create_backup_kms_auth_policy = local.is_classic && !var.use_ibm_owned_encryption_key && !var.skip_iam_authorization_policy && !var.use_same_kms_key_for_backups ? 1 : 0
+  # only create gen2 auth policies if plan is gen2 and skip_iam_authorization_policy is false
+  create_gen2_auth_policies = local.is_gen2 && !var.skip_iam_authorization_policy ? 1 : 0
 }
 
 # Create IAM Authorization Policies to allow Elasticsearch to access KMS for the encryption key
@@ -166,12 +168,6 @@ resource "time_sleep" "wait_for_backup_kms_authorization_policy" {
 ########################################################################################################################
 # Gen2 IAM Authorization Policies
 ########################################################################################################################
-
-locals {
-  # only create gen2 auth policies if plan is gen2 and skip_iam_authorization_policy is false
-  create_gen2_auth_policies = local.is_gen2 && !var.skip_iam_authorization_policy ? 1 : 0
-}
-
 data "ibm_iam_account_settings" "iam_account_settings" {
 }
 
@@ -198,6 +194,7 @@ resource "ibm_iam_authorization_policy" "gen2_independent_backups_policy" {
   }
 }
 
+# Authorization policy for databases-for-elasticsearch to access resource-group with Viewer role
 resource "ibm_iam_authorization_policy" "gen2_resource_group_policy" {
   count                    = local.create_gen2_auth_policies
   source_service_name      = "databases-for-elasticsearch"
