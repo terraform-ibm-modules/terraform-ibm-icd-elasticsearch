@@ -939,6 +939,31 @@
                   "value": "^__NULL__$|^crn:v\\d:(.*:){2}databases-for-elasticsearch:(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$"
                 }
               ]
+            },
+            {
+              "key": "enable_kibana_dashboard"
+            },
+            {
+              "key": "kibana_image"
+            },
+            {
+              "key": "kibana_image_digest",
+              "value_constraints": [
+                {
+                  "type": "regex",
+                  "description": "The value provided for 'kibana_image_digest' is not valid.",
+                  "value": "^__NULL__$|^sha256:"
+                }
+              ]
+            },
+            {
+              "key": "kibana_vsi_profile"
+            },
+            {
+              "key": "kibana_public_endpoint"
+            },
+            {
+              "key": "kibana_existing_ssh_key_name"
             }
           ],
           "terraform_version": "1.12.2",

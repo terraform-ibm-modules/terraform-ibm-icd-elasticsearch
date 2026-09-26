@@ -341,3 +341,47 @@ variable "skip_elasticsearch_to_secrets_manager_auth_policy" {
   default     = false
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for Elasticsearch. If set to false, the Secrets Manager instance passed by the user is granted the Key Manager access to the Elasticsearch instance created by the Deployable Architecture. Set to `true` to use an existing policy. The value of this is ignored if any value for 'existing_secrets_manager_instance_crn' is not passed."
 }
+
+##############################################################
+# Kibana Configuration
+##############################################################
+
+variable "enable_kibana_dashboard" {
+  type        = bool
+  description = "Set to true to deploy Kibana on a dedicated VSI, connected to the Elasticsearch instance through a Virtual Private Endpoint (VPE) in a dedicated VPC. This is required because Gen2 instances only expose a VPC-private endpoint, and Code Engine (used by the classic DA's Kibana feature) has no way to join a VPC. NOTE: By default, the Kibana image is pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM; this can be overridden using the `kibana_image` and `kibana_image_digest` inputs."
+  default     = false
+}
+
+variable "kibana_image" {
+  type        = string
+  description = "The Kibana image reference in the format of `[registry-url]/[namespace]/[image]`. This value is used only when `enable_kibana_dashboard` is set to true."
+  default     = "docker.elastic.co/kibana/kibana"
+}
+
+variable "kibana_image_digest" {
+  type        = string
+  description = "When `enable_kibana_dashboard` is set to true, Kibana is deployed using an image tag compatible with the Elasticsearch version. Alternatively, an image digest in the format `sha256:xxxxx...` can also be specified but it must correspond to a version compatible with the Elasticsearch instance."
+  default     = null
+  validation {
+    condition     = var.kibana_image_digest == null || can(regex("^sha256:", var.kibana_image_digest))
+    error_message = "If provided, the value of kibana_image_digest must start with 'sha256:'."
+  }
+}
+
+variable "kibana_vsi_profile" {
+  type        = string
+  description = "The VSI profile to use for the Kibana instance. Only applicable if `enable_kibana_dashboard` is true. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)."
+  default     = "cx2-4x8"
+}
+
+variable "kibana_public_endpoint" {
+  type        = bool
+  description = "Set to true to attach a public floating IP to the Kibana VSI so the dashboard is reachable from the internet. Set to false to only allow access from within the dedicated VPC (for example, via a VPN or Direct Link connection into it). Only applicable if `enable_kibana_dashboard` is true."
+  default     = true
+}
+
+variable "kibana_existing_ssh_key_name" {
+  type        = string
+  description = "The name of an existing SSH key to use for the Kibana VSI. If no value is passed, a new SSH key pair is generated and the private key is surfaced as a sensitive output. Only applicable if `enable_kibana_dashboard` is true."
+  default     = null
+}
