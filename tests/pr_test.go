@@ -536,7 +536,7 @@ func setupFullyConfigurableGen2Options(t *testing.T, prefix string) (*testschema
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
 		{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
-		{Name: "existing_kms_instance_crn", Value: permanentResources["kp_dedicated_us_south_crn"], DataType: "string"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["kp_multitenant_us_south_crn"], DataType: "string"},
 		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"}, // Always lock this test into the latest supported Elasticsearch Gen2 version
 	}
 
