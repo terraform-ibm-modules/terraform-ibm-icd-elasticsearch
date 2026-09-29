@@ -376,7 +376,7 @@ variable "kibana_vsi_profile" {
 
 variable "kibana_public_endpoint" {
   type        = bool
-  description = "Set to true to attach a public floating IP to the Kibana VSI so the dashboard is reachable from the internet. Set to false to only allow access from within the dedicated VPC (for example, via a VPN or Direct Link connection into it). Only applicable if `enable_kibana_dashboard` is true."
+  description = "Set to true to attach a public floating IP to the Kibana VSI so the dashboard is reachable from the internet (over HTTPS, with a self-signed certificate). Set to false to only allow access from within the dedicated VPC (for example, via a VPN or Direct Link connection into it). Only applicable if `enable_kibana_dashboard` is true."
   default     = true
 }
 

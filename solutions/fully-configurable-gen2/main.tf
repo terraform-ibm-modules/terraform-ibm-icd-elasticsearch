@@ -542,8 +542,30 @@ module "kibana_vsi_image" {
   operating_system = "ubuntu"
 }
 
+# Kibana's web UI is served over HTTPS since users log in with a Manager-level credential. The certificate is
+# self-signed (browsers will warn), and it can't carry the floating IP as a SAN: the IP only exists once the
+# VSI is created, and the VSI's user_data carries this certificate. It is also not renewed in place - the VSI
+# module ignores user_data changes - hence the long validity.
+resource "tls_private_key" "kibana_tls_key" {
+  count     = var.enable_kibana_dashboard ? 1 : 0
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+resource "tls_self_signed_cert" "kibana_tls_cert" {
+  count                 = var.enable_kibana_dashboard ? 1 : 0
+  private_key_pem       = tls_private_key.kibana_tls_key[0].private_key_pem
+  validity_period_hours = 87600
+  allowed_uses          = ["key_encipherment", "digital_signature", "server_auth"]
+  subject {
+    common_name  = "${local.prefix}kibana"
+    organization = "IBM Cloud Databases for Elasticsearch - Kibana"
+  }
+}
+
 locals {
-  kibana_es_url = var.enable_kibana_dashboard ? "https://${local.kibana_es_hostname}:${local.kibana_es_port}" : null
+  kibana_es_url       = var.enable_kibana_dashboard ? "https://${local.kibana_es_hostname}:${local.kibana_es_port}" : null
+  kibana_tls_host_dir = "/etc/kibana/certs"
 
   # Elastic only publishes full patch-version image tags (e.g. "8.19.11"), but Gen2's reported 'version'
   # is just the requested value - for the common case that's this module's own hardcoded "8.0" default,
@@ -551,31 +573,60 @@ locals {
   # version live from the Elasticsearch API at boot (same approach the classic DA takes with its
   # es_metadata.sh, minus the certificate - Gen2 doesn't expose one).
   #
+  # Every Elasticsearch call is retried: at first boot the VPE's DNS record and the new credential's IAM
+  # access can both lag behind their Terraform resources reporting as created. --fail turns HTTP errors
+  # (e.g. a transient 401) into failures so they are retried too, instead of silently "succeeding".
+  # TLS is verified normally, here and in Kibana: through the VPE the instance serves a publicly trusted
+  # certificate for its real hostname, so no CA certificate is needed (and Gen2 doesn't expose one).
+  kibana_curl = "curl -sS --fail --retry 30 --retry-delay 10 --retry-all-errors --connect-timeout 10"
+
   # Before starting Kibana, the reserved "kibana_system" ES user's password is reset (using the Manager
   # credential, which has manage_security via ibm_admin_role) so Kibana's backend can authenticate as it.
   # Using the Manager credential directly for Kibana's own connection instead would 403 forever on every
   # savedObjects migration request, since ibm_admin_role cannot touch restricted (.kibana*) indices.
-  kibana_reset_system_user_cmd = "curl -s -k -u '${local.kibana_username}:${local.kibana_password}' -X PUT '${local.kibana_es_url}/_security/user/${local.kibana_system_username}/_password' -H 'Content-Type: application/json' -d '{\"password\":\"${local.kibana_system_password}\"}'"
+  kibana_reset_system_user_cmd = var.enable_kibana_dashboard ? "${local.kibana_curl} -u '${local.kibana_username}:${local.kibana_password}' -X PUT '${local.kibana_es_url}/_security/user/${local.kibana_system_username}/_password' -H 'Content-Type: application/json' -d '{\"password\":\"${local.kibana_system_password}\"}'" : null
 
   kibana_docker_run_cmd = var.enable_kibana_dashboard ? join(" ", [
-    "ES_VERSION=$(curl -s -k -u '${local.kibana_system_username}:${local.kibana_system_password}' '${local.kibana_es_url}/' | jq -r '.version.number') ;",
+    # jq -e exits non-zero on empty input, so a lookup that still fails after its retries aborts the
+    # setup (see 'set -e' below) rather than starting a container from an invalid "kibana:" image tag.
+    "ES_VERSION=$(${local.kibana_curl} -u '${local.kibana_system_username}:${local.kibana_system_password}' '${local.kibana_es_url}/' | jq -er '.version.number') ;",
     "docker run -d --name kibana --restart unless-stopped -p 5601:5601",
     "-e ELASTICSEARCH_HOSTS='${local.kibana_es_url}'",
     "-e ELASTICSEARCH_USERNAME='${local.kibana_system_username}'",
     "-e ELASTICSEARCH_PASSWORD='${local.kibana_system_password}'",
-    "-e ELASTICSEARCH_SSL_VERIFICATIONMODE=none",
     "-e SERVER_HOST=0.0.0.0",
+    "-v ${local.kibana_tls_host_dir}:/usr/share/kibana/config/certs:ro",
+    "-e SERVER_SSL_ENABLED=true",
+    "-e SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/kibana.crt",
+    "-e SERVER_SSL_KEY=/usr/share/kibana/config/certs/kibana.key",
     var.kibana_image_digest != null ? "${var.kibana_image}@${var.kibana_image_digest}" : "${var.kibana_image}:$ES_VERSION",
   ]) : null
 
   # landing-zone-vsi only auto-prepends '#cloud-config' when install_logging_agent/install_monitoring_agent
   # is true; since neither is used here, it must be added explicitly or cloud-init ignores the user data.
   kibana_user_data = var.enable_kibana_dashboard ? "#cloud-config\n${yamlencode({
+    write_files = [
+      {
+        path        = "${local.kibana_tls_host_dir}/kibana.crt"
+        permissions = "0644"
+        content     = tls_self_signed_cert.kibana_tls_cert[0].cert_pem
+      },
+      {
+        path        = "${local.kibana_tls_host_dir}/kibana.key"
+        permissions = "0600"
+        content     = tls_private_key.kibana_tls_key[0].private_key_pem
+      },
+    ]
     runcmd = [
+      # cloud-init runs all runcmd entries as one /bin/sh script, which otherwise carries on past a failed
+      # step - e.g. starting Kibana with a kibana_system password that was never actually set.
+      "set -e",
       "apt-get update -y",
       "apt-get install -y docker.io jq",
       "systemctl enable docker",
       "systemctl start docker",
+      # The official Kibana image runs as uid 1000, which can't read a root-owned 0600 key.
+      "chown -R 1000:0 ${local.kibana_tls_host_dir}",
       local.kibana_reset_system_user_cmd,
       local.kibana_docker_run_cmd,
     ]
