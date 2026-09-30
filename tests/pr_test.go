@@ -549,6 +549,11 @@ func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
 
 	options, uniqueResourceGroup := setupFullyConfigurableGen2Options(t, fmt.Sprintf("%s-gen2da", icdShortType))
 	options.WaitJobCompleteMinutes = 60
+	// Only enabled here, not in the shared setup: the upgrade test applies the base branch first, where the gen2 DA
+	// has no Kibana inputs.
+	options.TerraformVars = append(options.TerraformVars,
+		testschematic.TestSchematicTerraformVar{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
+	)
 
 	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
 		return options.RunSchematicTest()
