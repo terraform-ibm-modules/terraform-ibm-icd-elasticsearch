@@ -43,6 +43,7 @@ var permanentResources map[string]interface{}
 
 var sharedInfoSvc *cloudinfo.CloudInfoService
 var validICDRegions = []string{
+	"eu-de",
 	"us-south",
 }
 
