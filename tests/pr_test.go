@@ -85,16 +85,7 @@ func GetLatestAndOldestVersions(icdAvailableVersions []string) (string, string) 
 
 func GetRegionVersions(region string) (string, string) {
 
-	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{
-		IcdRegion: region,
-	})
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersions(icdType)
-
+	icdAvailableVersions, err := sharedInfoSvc.GetAvailableIcdVersions(icdType)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -103,15 +94,7 @@ func GetRegionVersions(region string) (string, string) {
 }
 
 func GetVersionsGen2(region string, plan string) (string, string) {
-
-	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{})
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersionsGen2("databases-for-elasticsearch", plan, region) // this function takes service, plan and region as arguments in this specific order
-
+	icdAvailableVersions, err := sharedInfoSvc.GetAvailableIcdVersionsGen2("databases-for-elasticsearch", plan, region) // this function takes service, plan and region as arguments in this specific order
 	if err != nil {
 		log.Fatal(err)
 	}
