@@ -43,7 +43,6 @@ var permanentResources map[string]interface{}
 
 var sharedInfoSvc *cloudinfo.CloudInfoService
 var validICDRegions = []string{
-	"eu-de",
 	"us-south",
 }
 
@@ -85,7 +84,16 @@ func GetLatestAndOldestVersions(icdAvailableVersions []string) (string, string) 
 
 func GetRegionVersions(region string) (string, string) {
 
-	icdAvailableVersions, err := sharedInfoSvc.GetAvailableIcdVersions(icdType)
+	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{
+		IcdRegion: region,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersions(icdType)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,7 +102,15 @@ func GetRegionVersions(region string) (string, string) {
 }
 
 func GetVersionsGen2(region string, plan string) (string, string) {
-	icdAvailableVersions, err := sharedInfoSvc.GetAvailableIcdVersionsGen2("databases-for-elasticsearch", plan, region) // this function takes service, plan and region as arguments in this specific order
+
+	cloudInfoSvc, err := cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	icdAvailableVersions, err := cloudInfoSvc.GetAvailableIcdVersionsGen2("databases-for-elasticsearch", plan, region) // this function takes service, plan and region as arguments in this specific order
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,7 +121,7 @@ func GetVersionsGen2(region string, plan string) (string, string) {
 func TestRunBasicGen2Example(t *testing.T) {
 	t.Parallel()
 
-	latestVersion, _ := GetVersionsGen2("eu-de", "enterprise-gen2")
+	latestVersion, _ := GetVersionsGen2("us-south", "enterprise-gen2")
 	fmt.Println("Latest version is ", latestVersion)
 
 	// ResourceGroup is intentionally not set so a unique group is created per run for this test.
@@ -116,8 +132,8 @@ func TestRunBasicGen2Example(t *testing.T) {
 		TerraformDir:       "examples/basic",
 		Prefix:             "es-gen2",
 		BestRegionYAMLPath: regionSelectionPath,
-		TerraformVars: map[string]interface{}{ // Gen2 is currently only available in eu-de and eu-fr2
-			"region":                "eu-de",
+		TerraformVars: map[string]interface{}{
+			"region":                "us-south",
 			"plan":                  "enterprise-gen2",
 			"elasticsearch_version": latestVersion,
 			"service_endpoints":     "private",
@@ -507,13 +523,13 @@ func setupFullyConfigurableGen2Options(t *testing.T, prefix string) (*testschema
 		},
 	}
 
-	latestVersion, _ := GetVersionsGen2("eu-de", "enterprise-gen2")
+	latestVersion, _ := GetVersionsGen2("us-south", "enterprise-gen2")
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
 		{Name: "ibmcloud_api_key", Value: options.RequiredEnvironmentVars["TF_VAR_ibmcloud_api_key"], DataType: "string", Secure: true},
 		{Name: "access_tags", Value: permanentResources["accessTags"], DataType: "list(string)"},
 		{Name: "deletion_protection", Value: false, DataType: "bool"},
-		{Name: "region", Value: "eu-de", DataType: "string"},
+		{Name: "region", Value: "us-south", DataType: "string"},
 		{Name: "existing_resource_group_name", Value: uniqueResourceGroup, DataType: "string"},
 		{Name: "service_credential_names", Value: serviceCredentialNames, DataType: "list(object)"},
 		{Name: "service_credential_secrets", Value: serviceCredentialSecrets, DataType: "list(object)"},
