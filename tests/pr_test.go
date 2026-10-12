@@ -45,6 +45,7 @@ var sharedInfoSvc *cloudinfo.CloudInfoService
 var validICDRegions = []string{
 	"eu-de",
 	"us-south",
+	"eu-fr2",
 }
 
 func GetLatestAndOldestVersions(icdAvailableVersions []string) (string, string) {
@@ -210,7 +211,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		},
 	}
 
-	region := "us-south"
+	region := "eu-fr2"
 	latestVersion, _ := GetRegionVersions(region)
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
@@ -226,7 +227,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		{Name: "admin_pass_secrets_manager_secret_name", Value: options.Prefix, DataType: "string"},
 		{Name: "admin_pass", Value: common.GetRandomPasswordWithPrefix(), DataType: "string"},
 		{Name: "kms_encryption_enabled", Value: true, DataType: "bool"},
-		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_south_crn"], DataType: "string"},
+		{Name: "existing_kms_instance_crn", Value: permanentResources["hpcs_eufr2_crn"], DataType: "string"},
 		{Name: "kms_endpoint_type", Value: "private", DataType: "string"},
 		{Name: "elasticsearch_version", Value: latestVersion, DataType: "string"},
 		{Name: "plan", Value: "platinum", DataType: "string"},
