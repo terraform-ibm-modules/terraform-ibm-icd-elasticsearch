@@ -920,6 +920,9 @@
               "key": "skip_elasticsearch_kms_auth_policy"
             },
             {
+              "key": "skip_independent_backup_policies"
+            },
+            {
               "key": "existing_elasticsearch_instance_crn",
               "display_name": "existing_elasticsearch_instance",
               "custom_config": {
