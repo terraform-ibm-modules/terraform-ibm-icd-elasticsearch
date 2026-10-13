@@ -45,7 +45,6 @@ var sharedInfoSvc *cloudinfo.CloudInfoService
 var validICDRegions = []string{
 	"eu-de",
 	"us-south",
-	"eu-fr2",
 }
 
 func GetLatestAndOldestVersions(icdAvailableVersions []string) (string, string) {
@@ -211,7 +210,7 @@ func TestRunFullyConfigurableSolutionSchematics(t *testing.T) {
 		},
 	}
 
-	region := "eu-fr2"
+	region := "us-south"
 	latestVersion, _ := GetRegionVersions(region)
 	options.TerraformVars = []testschematic.TestSchematicTerraformVar{
 		{Name: "prefix", Value: options.Prefix, DataType: "string"},
