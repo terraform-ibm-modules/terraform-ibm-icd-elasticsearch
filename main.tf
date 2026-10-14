@@ -497,7 +497,7 @@ locals {
   es_username    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["username"] : var.admin_pass != null ? "admin" : null
   es_password    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["password"] : var.admin_pass != null ? ibm_database.elasticsearch.adminpassword : null
   # ELSER is only supported on the classic 'platinum' plan, so the connection data source (classic only) is always present when the URL is needed
-  es_url        = local.es_username != null && local.es_password != null ? "https://${local.es_username}:${local.es_password}@${data.ibm_database_connection.database_connection[0].https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection[0].https[0].hosts[0].port}" : null
+  es_url        = local.es_username != null && local.es_password != null ? sensitive("https://${local.es_username}:${local.es_password}@${data.ibm_database_connection.database_connection[0].https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection[0].https[0].hosts[0].port}") : null
   binaries_path = "/tmp"
 }
 
