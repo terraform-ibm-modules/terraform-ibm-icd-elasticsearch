@@ -73,3 +73,24 @@ output "next_step_secondary_url" {
   value       = "https://cloud.ibm.com/docs/databases-for-elasticsearch-gen2"
   description = "Secondary URL"
 }
+
+output "kibana_url" {
+  description = "Kibana dashboard URL. Served over HTTPS with a self-signed certificate, so browsers show a certificate warning."
+  value = var.enable_kibana_dashboard ? (
+    var.kibana_public_endpoint ?
+    "https://${module.kibana_vsi[0].list[0].floating_ip}:5601" :
+    "https://${module.kibana_vsi[0].list[0].ipv4_address}:5601"
+  ) : null
+}
+
+output "kibana_credentials" {
+  description = "Kibana web UI login credentials (a Manager-role service credential). Kibana's own backend connection to Elasticsearch uses the reserved kibana_system user instead."
+  value       = var.enable_kibana_dashboard ? { username = local.kibana_username, password = local.kibana_password } : null
+  sensitive   = true
+}
+
+output "kibana_ssh_private_key" {
+  description = "Generated SSH private key for the Kibana VSI. Null if an existing key was supplied via `kibana_existing_ssh_key_name`."
+  value       = var.enable_kibana_dashboard && var.kibana_existing_ssh_key_name == null ? tls_private_key.kibana_ssh_key[0].private_key_pem : null
+  sensitive   = true
+}
