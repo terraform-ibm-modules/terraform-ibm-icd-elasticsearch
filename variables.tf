@@ -375,7 +375,7 @@ variable "backup_encryption_key_crn" {
 
 variable "skip_iam_authorization_policy" {
   type        = bool
-  description = "Set to true to skip the creation of IAM authorization policies. When set to false (default), a policy that permits all Databases for Elasticsearch instances in the given resource group 'Reader' access to the Key Protect or Hyper Protect Crypto Services key provided in the `kms_key_crn` and `backup_encryption_key_crn` inputs (required for KMS encryption) will be created. Skip only if one already exists in your account; no policy is created if `use_ibm_owned_encryption_key` is true."
+  description = "Set to true to skip the creation of IAM authorization policies. When set to false (default), a policy that permits all Databases for Elasticsearch instances in the given resource group 'Reader' access to the Key Protect encryption key provided in the `kms_key_crn` and `backup_encryption_key_crn` inputs (required for KMS encryption) will be created. Skip only if one already exists in your account; no policy is created if `use_ibm_owned_encryption_key` is true."
   default     = false
 }
 

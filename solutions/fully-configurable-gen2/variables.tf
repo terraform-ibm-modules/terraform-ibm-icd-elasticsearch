@@ -229,7 +229,7 @@ variable "kms_endpoint_type" {
 
 variable "skip_elasticsearch_kms_auth_policy" {
   type        = bool
-  description = "Whether to skip the creation of IAM authorization policies for the Elasticsearch instance. When set to false (default) and `kms_encryption_enabled` is true, a policy that permits all Databases for Elasticsearch instances in the resource group 'Reader' access to the encryption key from the Key Protect instance specified in the `existing_kms_instance_crn` variable (required for KMS encryption) will be created. Skip only if one already exists in your account."
+  description = "Whether to skip the creation of IAM authorization policies for the Elasticsearch instance. When set to false (default) and `kms_encryption_enabled` is true, a policy that permits all Databases for Elasticsearch instances in the resource group 'Reader' access to the encryption key from the Key Protect instance specified in the `existing_kms_instance_crn` variable (required for KMS encryption) is created. Skip only if one already exists in your account."
   default     = false
 }
 
