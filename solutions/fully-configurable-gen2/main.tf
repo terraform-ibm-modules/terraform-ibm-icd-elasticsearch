@@ -174,17 +174,8 @@ data "ibm_database" "existing_db_instance" {
   count             = var.existing_elasticsearch_instance_crn != null ? 1 : 0
   name              = data.ibm_resource_instance.existing_instance_resource[0].name
   resource_group_id = data.ibm_resource_instance.existing_instance_resource[0].resource_group_id
-  location          = var.region
+  location          = data.ibm_resource_instance.existing_instance_resource[0].location
   service           = "databases-for-elasticsearch"
-}
-
-# Lookup existing instance connection details
-data "ibm_database_connection" "existing_connection" {
-  count         = var.existing_elasticsearch_instance_crn != null ? 1 : 0
-  endpoint_type = "private"
-  deployment_id = data.ibm_database.existing_db_instance[0].id
-  user_id       = data.ibm_database.existing_db_instance[0].adminuser
-  user_type     = "database"
 }
 
 # Create new instance
@@ -229,8 +220,8 @@ locals {
   elasticsearch_id       = var.existing_elasticsearch_instance_crn != null ? data.ibm_database.existing_db_instance[0].id : module.elasticsearch[0].id
   elasticsearch_version  = var.existing_elasticsearch_instance_crn != null ? data.ibm_database.existing_db_instance[0].version : module.elasticsearch[0].version
   elasticsearch_crn      = var.existing_elasticsearch_instance_crn != null ? var.existing_elasticsearch_instance_crn : module.elasticsearch[0].crn
-  elasticsearch_hostname = var.existing_elasticsearch_instance_crn != null ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].hostname
-  elasticsearch_port     = var.existing_elasticsearch_instance_crn != null ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
+  elasticsearch_hostname = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].hostname
+  elasticsearch_port     = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].port
 }
 
 #######################################################################################################################
