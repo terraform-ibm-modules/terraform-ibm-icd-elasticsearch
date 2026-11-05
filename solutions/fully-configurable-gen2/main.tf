@@ -303,14 +303,16 @@ module "secrets_manager_service_credentials" {
 }
 
 ########################################################################################################################
-# Kibana Dashboard (VSI in a dedicated VPC, connected to Elasticsearch via a Virtual Private Endpoint)
+# Kibana Dashboard (Code Engine app, connected to Elasticsearch through Private Path)
 ########################################################################################################################
 
-# Gen2 Elasticsearch instances are only reachable from inside a VPC that has a Virtual Private Endpoint
-# (VPE) gateway targeting them - this is IBM's own documented pattern for Gen2 private connectivity
-# ("VPE via VSI": https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-private-connections).
-# Code Engine (used by the classic DA's Kibana feature) has no way to join a VPC, so Kibana instead runs
-# on a small VSI inside a dedicated VPC alongside the VPE.
+# Gen2 Elasticsearch instances are only reachable from inside a VPC, through a Virtual Private Endpoint (VPE)
+# gateway. A Code Engine app cannot join a VPC, but it can reach one over a Code Engine Private Path connection
+# (https://cloud.ibm.com/docs/codeengine?topic=codeengine-connectivity-outbound). So Kibana runs as a Code Engine app
+# (which also gives it a publicly trusted certificate), and a dedicated VPC exposes the instance to it:
+#   Code Engine app -> Private Path connection -> Private Path NLB -> ALB -> VPE gateway -> Elasticsearch
+# A Private Path NLB cannot target a VPE gateway's IP directly, hence the ALB in between. Both load balancers only
+# pass TCP through, so TLS runs end to end between Kibana and Elasticsearch.
 
 # Gen2 has no native database users (the module's 'users' input is not supported), and every service
 # credential is granted the same admin-equivalent role (ibm_admin_role) regardless of the IAM role picked.
@@ -320,8 +322,8 @@ module "secrets_manager_service_credentials" {
 # a native user literally named "kibana_system", which Elasticsearch auto-grants its built-in, correctly
 # scoped "kibana_system" role. Gen2 can't create that user via Terraform, but the reserved "kibana_system"
 # ES user already exists on every cluster (just needs its password set) - so this Manager credential is
-# used only to reset that reserved user's password at VSI boot, and only that user's credentials are ever
-# given to the Kibana process itself. It is also used as the human login to the Kibana web UI, since it is
+# used only to reset that reserved user's password when Kibana starts, and only that user's credentials are
+# used by the Kibana process itself. It is also used as the human login to the Kibana web UI, since it is
 # the only credential with password-reset access.
 resource "ibm_resource_key" "kibana_credential" {
   count                = var.enable_kibana_dashboard ? 1 : 0
@@ -352,14 +354,15 @@ locals {
   # classic instances and is null for Gen2 - the resource key's own nested 'connection.elasticsearch.*'
   # credential keys are the only reliable source of the hostname/port for a Gen2 instance.
   kibana_es_hostname = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["connection.elasticsearch.hosts.0.hostname"] : null
-  kibana_es_port     = var.enable_kibana_dashboard ? ibm_resource_key.kibana_credential[0].credentials["connection.elasticsearch.hosts.0.port"] : null
+  kibana_es_port     = var.enable_kibana_dashboard ? tonumber(ibm_resource_key.kibana_credential[0].credentials["connection.elasticsearch.hosts.0.port"]) : null
 
-  # The reserved "kibana_system" ES user Kibana's own backend authenticates as - never used for UI login.
-  kibana_system_username = var.enable_kibana_dashboard ? "kibana_system" : null
-  kibana_system_password = var.enable_kibana_dashboard ? random_password.kibana_system_password[0].result : null
+  # Hostname of the Private Path endpoint that Code Engine resolves. The .internal top-level domain is exempt from
+  # Private Path's domain ownership verification, so no DNS records are needed.
+  kibana_private_path_endpoint = "es.${local.prefix}kibana.internal"
+  kibana_scripts_dir           = "/kibana-scripts"
 }
 
-# Dedicated VPC for the Kibana VSI and its VPE gateway to Elasticsearch.
+# Dedicated VPC for the VPE gateway and the two load balancers.
 module "kibana_vpc" {
   count             = var.enable_kibana_dashboard ? 1 : 0
   source            = "terraform-ibm-modules/landing-zone-vpc/ibm"
@@ -369,9 +372,16 @@ module "kibana_vpc" {
   prefix            = "${local.prefix}kibana"
   name              = "vpc"
 
-  # The module's default ACL only allows internal (10.0.0.0/8) traffic. Kibana needs inbound access from
-  # outside the VPC, and NACLs are stateless, so an outbound-initiated connection's return leg (e.g.
-  # pulling the Kibana image from the public internet) also needs its own explicit inbound allow.
+  # Nothing in this VPC needs to reach the internet.
+  use_public_gateways = {
+    zone-1 = false
+    zone-2 = false
+    zone-3 = false
+  }
+
+  # The module's default ACL only allows internal (10.0.0.0/8) traffic. Connections from Code Engine arrive through
+  # Private Path, so the Elasticsearch port is allowed from anywhere; NACLs are stateless, so its responses need
+  # their own outbound rule. The VPC has no public gateway or floating IPs, so nothing is reachable from the internet.
   network_acls = [
     {
       name                         = "vpc-acl"
@@ -380,51 +390,32 @@ module "kibana_vpc" {
       prepend_ibm_rules            = true
       rules = [
         {
-          name        = "allow-ssh-inbound"
+          name        = "allow-es-inbound"
           action      = "allow"
           direction   = "inbound"
           source      = "0.0.0.0/0"
           destination = "0.0.0.0/0"
           protocol    = "tcp"
-          port_min    = 22
-          port_max    = 22
+          port_min    = local.kibana_es_port
+          port_max    = local.kibana_es_port
         },
         {
-          name        = "allow-kibana-inbound"
-          action      = "allow"
-          direction   = "inbound"
-          source      = "0.0.0.0/0"
-          destination = "0.0.0.0/0"
-          protocol    = "tcp"
-          port_min    = 5601
-          port_max    = 5601
-        },
-        {
-          name        = "allow-return-traffic-inbound"
-          action      = "allow"
-          direction   = "inbound"
-          source      = "0.0.0.0/0"
-          destination = "0.0.0.0/0"
-          protocol    = "tcp"
-          port_min    = 1024
-          port_max    = 65535
-        },
-        {
-          name        = "allow-all-outbound"
-          action      = "allow"
-          direction   = "outbound"
-          source      = "0.0.0.0/0"
-          destination = "0.0.0.0/0"
+          name            = "allow-es-outbound"
+          action          = "allow"
+          direction       = "outbound"
+          source          = "0.0.0.0/0"
+          destination     = "0.0.0.0/0"
+          protocol        = "tcp"
+          source_port_min = local.kibana_es_port
+          source_port_max = local.kibana_es_port
         }
       ]
     }
   ]
 }
 
-# Managed directly (rather than through the VSI module's own security_group input) so the VPE gateway and
-# the "allow ES traffic from members of this group" rule can both reference its ID without a circular
-# dependency - the VPE gateway has its own security group by default, separate from the VSI's, which only
-# allows inbound from members of itself.
+# Shared by the VPE gateway and the ALB. A VPE gateway otherwise gets its own security group, which only allows
+# inbound traffic from members of itself.
 resource "ibm_is_security_group" "kibana_sg" {
   count          = var.enable_kibana_dashboard ? 1 : 0
   name           = "${local.prefix}kibana-sg"
@@ -432,34 +423,14 @@ resource "ibm_is_security_group" "kibana_sg" {
   vpc            = module.kibana_vpc[0].vpc_id
 }
 
-resource "ibm_is_security_group_rule" "kibana_allow_ssh_inbound" {
-  count     = var.enable_kibana_dashboard ? 1 : 0
-  group     = ibm_is_security_group.kibana_sg[0].id
-  direction = "inbound"
-  remote    = "0.0.0.0/0"
-  protocol  = "tcp"
-  port_min  = 22
-  port_max  = 22
-}
-
-resource "ibm_is_security_group_rule" "kibana_allow_kibana_inbound" {
-  count     = var.enable_kibana_dashboard ? 1 : 0
-  group     = ibm_is_security_group.kibana_sg[0].id
-  direction = "inbound"
-  remote    = "0.0.0.0/0"
-  protocol  = "tcp"
-  port_min  = 5601
-  port_max  = 5601
-}
-
 resource "ibm_is_security_group_rule" "kibana_allow_es_inbound" {
   count     = var.enable_kibana_dashboard ? 1 : 0
   group     = ibm_is_security_group.kibana_sg[0].id
   direction = "inbound"
-  remote    = ibm_is_security_group.kibana_sg[0].id
+  remote    = "0.0.0.0/0"
   protocol  = "tcp"
-  port_min  = 9200
-  port_max  = 9200
+  port_min  = local.kibana_es_port
+  port_max  = local.kibana_es_port
 }
 
 resource "ibm_is_security_group_rule" "kibana_allow_all_outbound" {
@@ -467,19 +438,6 @@ resource "ibm_is_security_group_rule" "kibana_allow_all_outbound" {
   group     = ibm_is_security_group.kibana_sg[0].id
   direction = "outbound"
   remote    = "0.0.0.0/0"
-}
-
-# Without this, ICMP "fragmentation needed" replies from the path back to the VSI are dropped, which
-# breaks Path MTU Discovery and silently black-holes larger TLS responses (e.g. Kibana's saved objects
-# migrations hang indefinitely mid-response instead of erroring).
-resource "ibm_is_security_group_rule" "kibana_allow_icmp_inbound" {
-  count     = var.enable_kibana_dashboard ? 1 : 0
-  group     = ibm_is_security_group.kibana_sg[0].id
-  direction = "inbound"
-  remote    = "0.0.0.0/0"
-  protocol  = "icmp"
-  type      = 3
-  code      = 4
 }
 
 resource "ibm_is_virtual_endpoint_gateway" "kibana_es_vpe" {
@@ -499,146 +457,212 @@ resource "ibm_is_virtual_endpoint_gateway" "kibana_es_vpe" {
   }
 }
 
-# SSH access is used for operational troubleshooting of the Kibana VSI (checking container logs,
-# restarting the service) - an existing key can be supplied, otherwise one is generated and surfaced as a
-# sensitive output.
-resource "tls_private_key" "kibana_ssh_key" {
-  count     = var.enable_kibana_dashboard && var.kibana_existing_ssh_key_name == null ? 1 : 0
-  algorithm = "RSA"
-  rsa_bits  = 4096
+# Passes TCP through to the VPE gateway's IP, for the Private Path NLB to target.
+resource "ibm_is_lb" "kibana_alb" {
+  count           = var.enable_kibana_dashboard ? 1 : 0
+  name            = "${local.prefix}kibana-alb"
+  type            = "private"
+  subnets         = [module.kibana_vpc[0].subnet_zone_list[0].id]
+  security_groups = [ibm_is_security_group.kibana_sg[0].id]
+  resource_group  = module.resource_group.resource_group_id
 }
 
-resource "ibm_is_ssh_key" "kibana_ssh_key" {
-  count          = var.enable_kibana_dashboard && var.kibana_existing_ssh_key_name == null ? 1 : 0
-  name           = "${local.prefix}kibana-ssh-key"
-  public_key     = tls_private_key.kibana_ssh_key[0].public_key_openssh
-  resource_group = module.resource_group.resource_group_id
+resource "ibm_is_lb_pool" "kibana_alb_pool" {
+  count          = var.enable_kibana_dashboard ? 1 : 0
+  name           = "${local.prefix}kibana-alb-pool"
+  lb             = ibm_is_lb.kibana_alb[0].id
+  algorithm      = "round_robin"
+  protocol       = "tcp"
+  health_type    = "tcp"
+  health_delay   = 10
+  health_retries = 2
+  health_timeout = 5
 }
 
-data "ibm_is_ssh_key" "kibana_existing_ssh_key" {
-  count = var.enable_kibana_dashboard && var.kibana_existing_ssh_key_name != null ? 1 : 0
-  name  = var.kibana_existing_ssh_key_name
+resource "ibm_is_lb_pool_member" "kibana_alb_pool_member" {
+  count          = var.enable_kibana_dashboard ? 1 : 0
+  lb             = ibm_is_lb.kibana_alb[0].id
+  pool           = ibm_is_lb_pool.kibana_alb_pool[0].pool_id
+  port           = local.kibana_es_port
+  target_address = ibm_is_virtual_endpoint_gateway.kibana_es_vpe[0].ips[0].address
+}
+
+resource "ibm_is_lb_listener" "kibana_alb_listener" {
+  count        = var.enable_kibana_dashboard ? 1 : 0
+  lb           = ibm_is_lb.kibana_alb[0].id
+  port         = local.kibana_es_port
+  protocol     = "tcp"
+  default_pool = ibm_is_lb_pool.kibana_alb_pool[0].pool_id
+}
+
+# Connection requests are reviewed by default, and only the request from this deployment's Code Engine project is
+# permitted (see ibm_is_private_path_service_gateway_endpoint_gateway_binding_operations below). Publishing is needed
+# because Code Engine connects from its own account.
+module "kibana_private_path" {
+  count                              = var.enable_kibana_dashboard ? 1 : 0
+  depends_on                         = [ibm_is_lb_listener.kibana_alb_listener, ibm_is_lb_pool_member.kibana_alb_pool_member]
+  source                             = "terraform-ibm-modules/vpc-private-path/ibm"
+  version                            = "1.10.2"
+  resource_group_id                  = module.resource_group.resource_group_id
+  subnet_id                          = module.kibana_vpc[0].subnet_zone_list[0].id
+  nlb_name                           = "${local.prefix}kibana-pp-nlb"
+  private_path_name                  = "${local.prefix}kibana-pp"
+  private_path_service_endpoints     = [local.kibana_private_path_endpoint]
+  private_path_default_access_policy = "review"
+  private_path_publish               = true
+  nlb_backend_pools = [{
+    pool_name                                = "${local.prefix}kibana-pp-pool"
+    pool_health_delay                        = 10
+    pool_health_timeout                      = 5
+    pool_health_type                         = "tcp"
+    pool_health_monitor_port                 = local.kibana_es_port
+    pool_member_port                         = local.kibana_es_port
+    pool_member_application_load_balancer_id = ibm_is_lb.kibana_alb[0].id
+    listener_port                            = local.kibana_es_port
+  }]
+}
+
+module "kibana_code_engine_project" {
+  count             = var.enable_kibana_dashboard ? 1 : 0
+  source            = "terraform-ibm-modules/code-engine/ibm//modules/project"
+  version           = "4.9.17"
+  name              = "${local.prefix}kibana"
+  resource_group_id = module.resource_group.resource_group_id
+}
+
+# Code Engine removes the VPE gateway behind its Private Path connection asynchronously, and the Private Path service
+# cannot be deleted while that VPE gateway is still bound to it (409 "in use").
+resource "time_sleep" "wait_for_kibana_private_path_release" {
+  count            = var.enable_kibana_dashboard ? 1 : 0
+  depends_on       = [module.kibana_private_path]
+  destroy_duration = "120s"
+}
+
+resource "ibm_code_engine_allowed_outbound_destination" "kibana_private_path" {
+  count                            = var.enable_kibana_dashboard ? 1 : 0
+  depends_on                       = [time_sleep.wait_for_kibana_private_path_release]
+  project_id                       = module.kibana_code_engine_project[0].project_id
+  name                             = "${local.prefix}kibana-es"
+  type                             = "private_path_service_gateway"
+  private_path_service_gateway_crn = module.kibana_private_path[0].private_path_crn
+  isolation_policy                 = "dedicated"
+}
+
+# Creating the Code Engine Private Path connection only completes once its connection request (an endpoint gateway
+# binding) is permitted. So the request is looked up and permitted in parallel with that creation, rather than after
+# it: this wait starts at the same time, giving Code Engine time to send the request.
+resource "time_sleep" "wait_for_kibana_private_path_request" {
+  count           = var.enable_kibana_dashboard ? 1 : 0
+  depends_on      = [time_sleep.wait_for_kibana_private_path_release]
+  create_duration = "120s"
+}
+
+# The Code Engine project's connection is the only one expected on this dedicated Private Path service.
+data "ibm_is_private_path_service_gateway_endpoint_gateway_bindings" "kibana_private_path" {
+  count                        = var.enable_kibana_dashboard ? 1 : 0
+  depends_on                   = [time_sleep.wait_for_kibana_private_path_request]
+  private_path_service_gateway = module.kibana_private_path[0].private_path_id
 }
 
 locals {
-  kibana_ssh_key_id = var.enable_kibana_dashboard ? (
-    var.kibana_existing_ssh_key_name != null ? data.ibm_is_ssh_key.kibana_existing_ssh_key[0].id : ibm_is_ssh_key.kibana_ssh_key[0].id
-  ) : null
+  kibana_private_path_bindings = var.enable_kibana_dashboard ? data.ibm_is_private_path_service_gateway_endpoint_gateway_bindings.kibana_private_path[0].endpoint_gateway_bindings : []
+  # The pending request is the one to permit. Once permitted, any binding is fine to reference: the value is ignored
+  # after creation (see ignore_changes below).
+  kibana_private_path_binding_id = try(
+    [for binding in local.kibana_private_path_bindings : binding.id if binding.status == "pending"][0],
+    local.kibana_private_path_bindings[0].id,
+    null
+  )
 }
 
-module "kibana_vsi_image" {
-  count            = var.enable_kibana_dashboard ? 1 : 0
-  source           = "terraform-ibm-modules/common-utilities/ibm//modules/vsi-image-selector"
-  version          = "1.9.0"
-  architecture     = "amd64"
-  operating_system = "ubuntu"
+resource "ibm_is_private_path_service_gateway_endpoint_gateway_binding_operations" "kibana_private_path" {
+  count                        = var.enable_kibana_dashboard ? 1 : 0
+  private_path_service_gateway = module.kibana_private_path[0].private_path_id
+  endpoint_gateway_binding     = local.kibana_private_path_binding_id
+  access_policy                = "permit"
+  lifecycle {
+    # The binding list is read again on every plan; only the first approval matters.
+    ignore_changes = [endpoint_gateway_binding]
+    precondition {
+      condition     = local.kibana_private_path_binding_id != null
+      error_message = "No connection request from the Kibana Code Engine project was found on the Kibana Private Path service. Apply again to retry."
+    }
+  }
 }
 
-# Kibana's web UI is served over HTTPS since users log in with a Manager-level credential. The certificate is
-# self-signed (browsers will warn), and it can't carry the floating IP as a SAN: the IP only exists once the
-# VSI is created, and the VSI's user_data carries this certificate. It is also not renewed in place - the VSI
-# module ignores user_data changes - hence the long validity.
-resource "tls_private_key" "kibana_tls_key" {
-  count     = var.enable_kibana_dashboard ? 1 : 0
-  algorithm = "RSA"
-  rsa_bits  = 2048
+module "kibana_code_engine_scripts" {
+  count      = var.enable_kibana_dashboard ? 1 : 0
+  source     = "terraform-ibm-modules/code-engine/ibm//modules/config_map"
+  version    = "4.9.17"
+  project_id = module.kibana_code_engine_project[0].project_id
+  name       = "${local.prefix}kibana-scripts"
+  data = {
+    "kibana-start.sh"    = file("${path.module}/scripts/kibana-start.sh")
+    "es-dns-override.js" = file("${path.module}/scripts/es-dns-override.js")
+  }
 }
 
-resource "tls_self_signed_cert" "kibana_tls_cert" {
-  count                 = var.enable_kibana_dashboard ? 1 : 0
-  private_key_pem       = tls_private_key.kibana_tls_key[0].private_key_pem
-  validity_period_hours = 87600
-  allowed_uses          = ["key_encipherment", "digital_signature", "server_auth"]
-  subject {
-    common_name  = "${local.prefix}kibana"
-    organization = "IBM Cloud Databases for Elasticsearch - Kibana"
+module "kibana_code_engine_secret" {
+  count      = var.enable_kibana_dashboard ? 1 : 0
+  source     = "terraform-ibm-modules/code-engine/ibm//modules/secret"
+  version    = "4.9.17"
+  project_id = module.kibana_code_engine_project[0].project_id
+  name       = "${local.prefix}kibana-es-credentials"
+  format     = "generic"
+  data = {
+    ES_ADMIN_USERNAME      = local.kibana_username
+    ES_ADMIN_PASSWORD      = local.kibana_password
+    ELASTICSEARCH_PASSWORD = random_password.kibana_system_password[0].result
   }
 }
 
 locals {
-  kibana_es_url       = var.enable_kibana_dashboard ? "https://${local.kibana_es_hostname}:${local.kibana_es_port}" : null
-  kibana_tls_host_dir = "/etc/kibana/certs"
-
-  # Elastic only publishes full patch-version image tags (e.g. "8.19.11"), but Gen2's reported 'version'
-  # is just the requested value - for the common case that's this module's own hardcoded "8.0" default,
-  # which isn't a real tag at all. So unless a digest is pinned, the VSI looks up the real running
-  # version live from the Elasticsearch API at boot (same approach the classic DA takes with its
-  # es_metadata.sh, minus the certificate - Gen2 doesn't expose one).
-  #
-  # Every Elasticsearch call is retried: at first boot the VPE's DNS record and the new credential's IAM
-  # access can both lag behind their Terraform resources reporting as created. --fail turns HTTP errors
-  # (e.g. a transient 401) into failures so they are retried too, instead of silently "succeeding".
-  # TLS is verified normally, here and in Kibana: through the VPE the instance serves a publicly trusted
-  # certificate for its real hostname, so no CA certificate is needed (and Gen2 doesn't expose one).
-  kibana_curl = "curl -sS --fail --retry 30 --retry-delay 10 --retry-all-errors --connect-timeout 10"
-
-  # Before starting Kibana, the reserved "kibana_system" ES user's password is reset (using the Manager
-  # credential, which has manage_security via ibm_admin_role) so Kibana's backend can authenticate as it.
-  # Using the Manager credential directly for Kibana's own connection instead would 403 forever on every
-  # savedObjects migration request, since ibm_admin_role cannot touch restricted (.kibana*) indices.
-  kibana_reset_system_user_cmd = var.enable_kibana_dashboard ? "${local.kibana_curl} -u '${local.kibana_username}:${local.kibana_password}' -X PUT '${local.kibana_es_url}/_security/user/${local.kibana_system_username}/_password' -H 'Content-Type: application/json' -d '{\"password\":\"${local.kibana_system_password}\"}'" : null
-
-  kibana_docker_run_cmd = var.enable_kibana_dashboard ? join(" ", [
-    # jq -e exits non-zero on empty input, so a lookup that still fails after its retries aborts the
-    # setup (see 'set -e' below) rather than starting a container from an invalid "kibana:" image tag.
-    "ES_VERSION=$(${local.kibana_curl} -u '${local.kibana_system_username}:${local.kibana_system_password}' '${local.kibana_es_url}/' | jq -er '.version.number') ;",
-    "docker run -d --name kibana --restart unless-stopped -p 5601:5601",
-    "-e ELASTICSEARCH_HOSTS='${local.kibana_es_url}'",
-    "-e ELASTICSEARCH_USERNAME='${local.kibana_system_username}'",
-    "-e ELASTICSEARCH_PASSWORD='${local.kibana_system_password}'",
-    "-e SERVER_HOST=0.0.0.0",
-    "-v ${local.kibana_tls_host_dir}:/usr/share/kibana/config/certs:ro",
-    "-e SERVER_SSL_ENABLED=true",
-    "-e SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/kibana.crt",
-    "-e SERVER_SSL_KEY=/usr/share/kibana/config/certs/kibana.key",
-    var.kibana_image_digest != null ? "${var.kibana_image}@${var.kibana_image_digest}" : "${var.kibana_image}:$ES_VERSION",
-  ]) : null
-
-  # landing-zone-vsi only auto-prepends '#cloud-config' when install_logging_agent/install_monitoring_agent
-  # is true; since neither is used here, it must be added explicitly or cloud-init ignores the user data.
-  kibana_user_data = var.enable_kibana_dashboard ? "#cloud-config\n${yamlencode({
-    write_files = [
-      {
-        path        = "${local.kibana_tls_host_dir}/kibana.crt"
-        permissions = "0644"
-        content     = tls_self_signed_cert.kibana_tls_cert[0].cert_pem
-      },
-      {
-        path        = "${local.kibana_tls_host_dir}/kibana.key"
-        permissions = "0600"
-        content     = tls_private_key.kibana_tls_key[0].private_key_pem
-      },
-    ]
-    runcmd = [
-      # cloud-init runs all runcmd entries as one /bin/sh script, which otherwise carries on past a failed
-      # step - e.g. starting Kibana with a kibana_system password that was never actually set.
-      "set -e",
-      "apt-get update -y",
-      "apt-get install -y docker.io jq",
-      "systemctl enable docker",
-      "systemctl start docker",
-      # The official Kibana image runs as uid 1000, which can't read a root-owned 0600 key.
-      "chown -R 1000:0 ${local.kibana_tls_host_dir}",
-      local.kibana_reset_system_user_cmd,
-      local.kibana_docker_run_cmd,
-    ]
-  })}" : null
+  kibana_secret_env = [for key in ["ES_ADMIN_USERNAME", "ES_ADMIN_PASSWORD", "ELASTICSEARCH_PASSWORD"] : {
+    type      = "secret_key_reference"
+    name      = key
+    key       = key
+    reference = var.enable_kibana_dashboard ? module.kibana_code_engine_secret[0].name : null
+  }]
 }
 
-module "kibana_vsi" {
-  count                 = var.enable_kibana_dashboard ? 1 : 0
-  source                = "terraform-ibm-modules/landing-zone-vsi/ibm"
-  version               = "6.6.2"
-  resource_group_id     = module.resource_group.resource_group_id
-  image_id              = module.kibana_vsi_image[0].latest_image_id
-  create_security_group = false
-  security_group_ids    = [ibm_is_security_group.kibana_sg[0].id]
-  subnets               = [module.kibana_vpc[0].subnet_zone_list[0]]
-  vpc_id                = module.kibana_vpc[0].vpc_id
-  prefix                = "${local.prefix}kibana"
-  machine_type          = var.kibana_vsi_profile
-  user_data             = local.kibana_user_data
-  vsi_per_subnet        = 1
-  enable_floating_ip    = var.kibana_public_endpoint
-  ssh_key_ids           = [local.kibana_ssh_key_id]
+module "kibana_code_engine_app" {
+  count = var.enable_kibana_dashboard ? 1 : 0
+  depends_on = [
+    ibm_code_engine_allowed_outbound_destination.kibana_private_path,
+    ibm_is_private_path_service_gateway_endpoint_gateway_binding_operations.kibana_private_path,
+    module.kibana_code_engine_scripts,
+  ]
+  source          = "terraform-ibm-modules/code-engine/ibm//modules/app"
+  version         = "4.9.17"
+  project_id      = module.kibana_code_engine_project[0].project_id
+  name            = "${local.prefix}kibana"
+  image_reference = var.kibana_image_digest != null ? "${var.kibana_image}@${var.kibana_image_digest}" : "${var.kibana_image}:${var.kibana_version}"
+  image_port      = 5601
+  run_commands    = ["/bin/bash", "${local.kibana_scripts_dir}/kibana-start.sh"]
+  run_volume_mounts = [{
+    mount_path = local.kibana_scripts_dir
+    reference  = module.kibana_code_engine_scripts[0].name
+    type       = "config_map"
+  }]
+  run_env_variables = concat(local.kibana_secret_env, [
+    for name, value in {
+      ES_HOSTNAME           = local.kibana_es_hostname
+      ES_PORT               = tostring(local.kibana_es_port)
+      PRIVATE_PATH_ENDPOINT = local.kibana_private_path_endpoint
+      KIBANA_SCRIPTS_DIR    = local.kibana_scripts_dir
+      # Code Engine doesn't restart an app when a mounted config map changes, so this rolls out script changes.
+      KIBANA_SCRIPTS_HASH = sha256(join("", values(module.kibana_code_engine_scripts[0].data)))
+      SERVER_HOST         = "0.0.0.0"
+      } : {
+      type  = "literal"
+      name  = name
+      value = value
+    }
+  ])
+  # A single instance: Kibana sessions are not shared between instances without a common encryption key.
+  scale_min_instances     = 1
+  scale_max_instances     = 1
+  scale_cpu_limit         = "1"
+  scale_memory_limit      = "4G"
+  managed_domain_mappings = var.kibana_visibility
 }

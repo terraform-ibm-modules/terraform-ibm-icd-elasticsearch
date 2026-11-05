@@ -354,19 +354,29 @@ variable "skip_elasticsearch_to_secrets_manager_auth_policy" {
 
 variable "enable_kibana_dashboard" {
   type        = bool
-  description = "Set to true to deploy Kibana on a dedicated VSI, connected to the Elasticsearch instance through a Virtual Private Endpoint (VPE) in a dedicated VPC. This is required because Gen2 instances only expose a VPC-private endpoint, and Code Engine (used by the classic DA's Kibana feature) has no way to join a VPC. NOTE: By default, the Kibana image is pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM; this can be overridden using the `kibana_image` and `kibana_image_digest` inputs."
+  description = "Set to true to deploy Kibana as a Code Engine app, connected to the Elasticsearch instance through a Code Engine Private Path connection to a dedicated VPC with a Virtual Private Endpoint (VPE) gateway. Gen2 instances only expose a VPC-private endpoint, which a Code Engine app can only reach this way. NOTE: By default, the Kibana image is pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM; this can be overridden using the `kibana_image` and `kibana_image_digest` inputs."
   default     = false
 }
 
 variable "kibana_image" {
   type        = string
-  description = "The Kibana image reference in the format of `[registry-url]/[namespace]/[image]`. This value is used only when `enable_kibana_dashboard` is set to true."
+  description = "The Kibana image reference in the format of `[registry-url]/[namespace]/[image]`. The image must be publicly pullable. This value is used only when `enable_kibana_dashboard` is set to true."
   default     = "docker.elastic.co/kibana/kibana"
+}
+
+variable "kibana_version" {
+  type        = string
+  description = "The Kibana image tag to deploy, as a full release version such as `8.19.23`. It must have the same major and minor version as the Elasticsearch instance, otherwise Kibana does not start (its startup log reports the mismatch). Ignored if `kibana_image_digest` is set. This value is used only when `enable_kibana_dashboard` is set to true."
+  default     = "8.19.23"
+  validation {
+    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+$", var.kibana_version))
+    error_message = "The value of kibana_version must be a full release version, for example '8.19.23'."
+  }
 }
 
 variable "kibana_image_digest" {
   type        = string
-  description = "When `enable_kibana_dashboard` is set to true, Kibana is deployed using an image tag compatible with the Elasticsearch version. Alternatively, an image digest in the format `sha256:xxxxx...` can also be specified but it must correspond to a version compatible with the Elasticsearch instance."
+  description = "An image digest in the format `sha256:xxxxx...` to deploy instead of the `kibana_version` tag. It must correspond to a Kibana version with the same major and minor version as the Elasticsearch instance. This value is used only when `enable_kibana_dashboard` is set to true."
   default     = null
   validation {
     condition     = var.kibana_image_digest == null || can(regex("^sha256:", var.kibana_image_digest))
@@ -374,20 +384,12 @@ variable "kibana_image_digest" {
   }
 }
 
-variable "kibana_vsi_profile" {
+variable "kibana_visibility" {
+  description = "Specify the visibility of the Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. [Learn more](https://cloud.ibm.com/docs/codeengine?topic=codeengine-application-workloads#optionsvisibility)."
   type        = string
-  description = "The VSI profile to use for the Kibana instance. Only applicable if `enable_kibana_dashboard` is true. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)."
-  default     = "cx2-4x8"
-}
-
-variable "kibana_public_endpoint" {
-  type        = bool
-  description = "Set to true to attach a public floating IP to the Kibana VSI so the dashboard is reachable from the internet (over HTTPS, with a self-signed certificate). Set to false to only allow access from within the dedicated VPC (for example, via a VPN or Direct Link connection into it). Only applicable if `enable_kibana_dashboard` is true."
-  default     = true
-}
-
-variable "kibana_existing_ssh_key_name" {
-  type        = string
-  description = "The name of an existing SSH key to use for the Kibana VSI. If no value is passed, a new SSH key pair is generated and the private key is surfaced as a sensitive output. Only applicable if `enable_kibana_dashboard` is true."
-  default     = null
+  default     = "local_private"
+  validation {
+    condition     = contains(["local_public", "local_private", "local"], var.kibana_visibility)
+    error_message = "Valid values are 'local_public', 'local_private', or 'local'."
+  }
 }
