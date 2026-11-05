@@ -1,6 +1,6 @@
 {
   "ibmcloud_api_key": $VALIDATION_APIKEY,
-  "region": "eu-de",
+  "region": "us-south",
   "resource_tags": $TAGS,
   "name": $PREFIX,
   "existing_resource_group_name": "geretain-test-permanent",

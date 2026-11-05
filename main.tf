@@ -68,8 +68,8 @@ locals {
   create_kms_auth_policy = !var.use_ibm_owned_encryption_key && !var.skip_iam_authorization_policy ? 1 : 0
   # only create backup auth policy if 'use_ibm_owned_encryption_key' is false, 'skip_iam_authorization_policy' is false and 'use_same_kms_key_for_backups' is false
   create_backup_kms_auth_policy = local.is_classic && !var.use_ibm_owned_encryption_key && !var.skip_iam_authorization_policy && !var.use_same_kms_key_for_backups ? 1 : 0
-  # only create gen2 auth policies if plan is gen2 and skip_iam_authorization_policy is false
-  create_gen2_auth_policies = local.is_gen2 && !var.skip_iam_authorization_policy ? 1 : 0
+  # only create gen2 independent backup auth policies if plan is gen2 and skip_independent_backup_auth_policies is false
+  create_gen2_auth_policies = local.is_gen2 && !var.skip_independent_backup_auth_policies ? 1 : 0
 }
 
 # Create IAM Authorization Policies to allow Elasticsearch to access KMS for the encryption key
@@ -466,6 +466,20 @@ data "ibm_database_connection" "database_connection" {
 }
 
 ##############################################################################
+# Check Blocks
+##############################################################################
+
+check "warn_hpcs_deprecation" {
+  assert {
+    condition = !(
+      (var.kms_key_crn != null && can(regex(".*hs-crypto.*", var.kms_key_crn))) ||
+      (var.backup_encryption_key_crn != null && can(regex(".*hs-crypto.*", var.backup_encryption_key_crn)))
+    )
+    error_message = "WARNING (Non-fatal, execution will continue): An IBM Cloud Hyper Protect Crypto Services (hs-crypto) instance or key CRN was provided. Note that IBM Cloud Hyper Protect Crypto Services is deprecated. Consider migrating to a supported alternative."
+  }
+}
+
+##############################################################################
 # ELSER support
 ##############################################################################
 
@@ -483,7 +497,7 @@ locals {
   es_username    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["username"] : var.admin_pass != null ? "admin" : null
   es_password    = local.es_admin_user != null ? local.service_credentials_object["credentials"][local.es_admin_user]["password"] : var.admin_pass != null ? ibm_database.elasticsearch.adminpassword : null
   # ELSER is only supported on the classic 'platinum' plan, so the connection data source (classic only) is always present when the URL is needed
-  es_url        = local.es_username != null && local.es_password != null ? "https://${local.es_username}:${local.es_password}@${data.ibm_database_connection.database_connection[0].https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection[0].https[0].hosts[0].port}" : null
+  es_url        = local.es_username != null && local.es_password != null ? sensitive("https://${local.es_username}:${local.es_password}@${data.ibm_database_connection.database_connection[0].https[0].hosts[0].hostname}:${data.ibm_database_connection.database_connection[0].https[0].hosts[0].port}") : null
   binaries_path = "/tmp"
 }
 

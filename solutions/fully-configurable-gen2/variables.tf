@@ -229,7 +229,13 @@ variable "kms_endpoint_type" {
 
 variable "skip_elasticsearch_kms_auth_policy" {
   type        = bool
-  description = "Whether to skip the creation of IAM authorization policies for the Elasticsearch instance. When set to false (default) and `kms_encryption_enabled` is true, the following policies are created: (1) a policy that permits all Databases for Elasticsearch instances in the resource group 'Reader' access to the encryption key from the Key Protect instance specified in the `existing_kms_instance_crn` variable (required for KMS encryption — skip only if one already exists in your account), (2) a policy that permits Databases for Elasticsearch instances in the resource group 'Editor' access to the independent backups service (`gen2_independent_backups_policy`), and (3) a policy that permits Databases for Elasticsearch instances in the resource group 'Viewer' access to the resource group (`gen2_resource_group_policy`). If `kms_encryption_enabled` is false, all IAM authorization policies are skipped regardless of this setting."
+  description = "Whether to skip the creation of IAM authorization policies for the Elasticsearch instance. When set to false (default) and `kms_encryption_enabled` is true, a policy that permits all Databases for Elasticsearch instances in the resource group 'Reader' access to the encryption key from the Key Protect instance specified in the `existing_kms_instance_crn` variable (required for KMS encryption) is created. Skip only if one already exists in your account."
+  default     = false
+}
+
+variable "skip_independent_backup_auth_policies" {
+  type        = bool
+  description = "Set to true to skip the creation of independent backup authorization policies. When set to false (default). The following 2 policies will be created - (1) a policy that permits Databases for Elasticsearch instances in the given resource group 'Editor' access to the independent backups service (`gen2_independent_backups_policy`), (2) a policy that permits Databases for Elasticsearch instances in the given resource group 'Viewer' access to the resource group (`gen2_resource_group_policy`)."
   default     = false
 }
 

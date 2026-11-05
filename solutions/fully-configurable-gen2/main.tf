@@ -174,53 +174,45 @@ data "ibm_database" "existing_db_instance" {
   count             = var.existing_elasticsearch_instance_crn != null ? 1 : 0
   name              = data.ibm_resource_instance.existing_instance_resource[0].name
   resource_group_id = data.ibm_resource_instance.existing_instance_resource[0].resource_group_id
-  location          = var.region
+  location          = data.ibm_resource_instance.existing_instance_resource[0].location
   service           = "databases-for-elasticsearch"
-}
-
-# Lookup existing instance connection details
-data "ibm_database_connection" "existing_connection" {
-  count         = var.existing_elasticsearch_instance_crn != null ? 1 : 0
-  endpoint_type = "private"
-  deployment_id = data.ibm_database.existing_db_instance[0].id
-  user_id       = data.ibm_database.existing_db_instance[0].adminuser
-  user_type     = "database"
 }
 
 # Create new instance
 module "elasticsearch" {
-  count                             = var.existing_elasticsearch_instance_crn != null ? 0 : 1
-  source                            = "../.."
-  depends_on                        = [time_sleep.wait_for_authorization_policy]
-  resource_group_id                 = module.resource_group.resource_group_id
-  name                              = "${local.prefix}${var.name}"
-  plan                              = "enterprise-gen2" # this is the only gen2 plan for Elasticsearch
-  region                            = var.region
-  elasticsearch_version             = var.elasticsearch_version
-  skip_iam_authorization_policy     = var.skip_elasticsearch_kms_auth_policy
-  use_ibm_owned_encryption_key      = local.use_ibm_owned_encryption_key
-  kms_key_crn                       = local.kms_key_crn
-  backup_encryption_key_crn         = null  # not supported by gen2
-  use_same_kms_key_for_backups      = false # not supported by gen2
-  use_default_backup_encryption_key = false # not supported by gen2
-  access_tags                       = var.access_tags
-  resource_tags                     = var.resource_tags
-  admin_pass                        = null # not supported by gen2
-  users                             = []   # not supported by gen2
-  members                           = var.members
-  member_host_flavor                = var.member_host_flavor
-  memory_mb                         = var.member_memory_mb
-  disk_mb                           = var.member_disk_mb
-  cpu_count                         = var.member_cpu_count
-  auto_scaling                      = null # not supported by gen2
-  service_credential_names          = var.service_credential_names
-  backup_crn                        = null      # not supported by gen2
-  service_endpoints                 = "private" # this is the only supported service endpoint for gen2
-  deletion_protection               = var.deletion_protection
-  version_upgrade_skip_backup       = false
-  create_timeout                    = var.create_timeout
-  update_timeout                    = var.update_timeout
-  delete_timeout                    = var.delete_timeout
+  count                                 = var.existing_elasticsearch_instance_crn != null ? 0 : 1
+  source                                = "../.."
+  depends_on                            = [time_sleep.wait_for_authorization_policy]
+  resource_group_id                     = module.resource_group.resource_group_id
+  name                                  = "${local.prefix}${var.name}"
+  plan                                  = "enterprise-gen2" # this is the only gen2 plan for Elasticsearch
+  region                                = var.region
+  elasticsearch_version                 = var.elasticsearch_version
+  skip_iam_authorization_policy         = var.skip_elasticsearch_kms_auth_policy
+  skip_independent_backup_auth_policies = var.skip_independent_backup_auth_policies
+  use_ibm_owned_encryption_key          = local.use_ibm_owned_encryption_key
+  kms_key_crn                           = local.kms_key_crn
+  backup_encryption_key_crn             = null  # not supported by gen2
+  use_same_kms_key_for_backups          = false # not supported by gen2
+  use_default_backup_encryption_key     = false # not supported by gen2
+  access_tags                           = var.access_tags
+  resource_tags                         = var.resource_tags
+  admin_pass                            = null # not supported by gen2
+  users                                 = []   # not supported by gen2
+  members                               = var.members
+  member_host_flavor                    = var.member_host_flavor
+  memory_mb                             = var.member_memory_mb
+  disk_mb                               = var.member_disk_mb
+  cpu_count                             = var.member_cpu_count
+  auto_scaling                          = null # not supported by gen2
+  service_credential_names              = var.service_credential_names
+  backup_crn                            = null      # not supported by gen2
+  service_endpoints                     = "private" # this is the only supported service endpoint for gen2
+  deletion_protection                   = var.deletion_protection
+  version_upgrade_skip_backup           = false
+  create_timeout                        = var.create_timeout
+  update_timeout                        = var.update_timeout
+  delete_timeout                        = var.delete_timeout
 }
 
 locals {
@@ -228,8 +220,8 @@ locals {
   elasticsearch_id       = var.existing_elasticsearch_instance_crn != null ? data.ibm_database.existing_db_instance[0].id : module.elasticsearch[0].id
   elasticsearch_version  = var.existing_elasticsearch_instance_crn != null ? data.ibm_database.existing_db_instance[0].version : module.elasticsearch[0].version
   elasticsearch_crn      = var.existing_elasticsearch_instance_crn != null ? var.existing_elasticsearch_instance_crn : module.elasticsearch[0].crn
-  elasticsearch_hostname = var.existing_elasticsearch_instance_crn != null ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].hostname : module.elasticsearch[0].hostname
-  elasticsearch_port     = var.existing_elasticsearch_instance_crn != null ? data.ibm_database_connection.existing_connection[0].https[0].hosts[0].port : module.elasticsearch[0].port
+  elasticsearch_hostname = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].hostname
+  elasticsearch_port     = var.existing_elasticsearch_instance_crn != null ? null : module.elasticsearch[0].port
 }
 
 #######################################################################################################################
