@@ -32,6 +32,7 @@ module "restored_icd_elasticsearch" {
   elasticsearch_version = var.elasticsearch_version
   access_tags           = var.access_tags
   resource_tags         = var.resource_tags
+  service_endpoints     = local.is_gen2 ? "private" : "public" # gen2 supports private endpoints only
   member_host_flavor    = local.is_gen2 ? local.gen2_host_flavor : local.classic_host_flavor
   disk_mb               = var.disk_mb
   deletion_protection   = false
