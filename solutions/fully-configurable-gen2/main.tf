@@ -206,7 +206,7 @@ module "elasticsearch" {
   cpu_count                             = var.member_cpu_count
   auto_scaling                          = null # not supported by gen2
   service_credential_names              = var.service_credential_names
-  backup_crn                            = null      # not supported by gen2
+  backup_crn                            = var.backup_crn
   service_endpoints                     = "private" # this is the only supported service endpoint for gen2
   deletion_protection                   = var.deletion_protection
   version_upgrade_skip_backup           = false

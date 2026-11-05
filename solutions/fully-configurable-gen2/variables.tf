@@ -259,6 +259,24 @@ variable "key_name" {
 }
 
 ##############################################################
+# Backup
+##############################################################
+
+variable "backup_crn" {
+  type        = string
+  description = "The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. Supports only Gen2 independent backup CRNs in the format `crn:v1:<…>:databases-independent-backups:<…>`. If omitted, the database is provisioned empty."
+  default     = null
+
+  validation {
+    condition = anytrue([
+      var.backup_crn == null,
+      can(regex("^crn:.*:databases-independent-backups:", var.backup_crn))
+    ])
+    error_message = "backup_crn must be null, OR a Gen2 independent backup CRN containing ':databases-independent-backups:'"
+  }
+}
+
+##############################################################
 # Endpoint Configuration
 ##############################################################
 

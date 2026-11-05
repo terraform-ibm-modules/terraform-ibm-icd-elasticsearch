@@ -10,6 +10,12 @@ variable "region" {
   default     = "us-south"
 }
 
+variable "plan" {
+  type        = string
+  description = "The name of the service plan that you choose for your Elasticsearch instance. Use `enterprise-gen2` to restore a Gen2 backup."
+  default     = "enterprise"
+}
+
 variable "prefix" {
   type        = string
   description = "Prefix to append to all resources created by this example"
@@ -32,6 +38,12 @@ variable "elasticsearch_version" {
   type        = string
   description = "Version of the elasticsearch instance. If no value passed, the current ICD preferred version is used."
   default     = null
+}
+
+variable "disk_mb" {
+  type        = number
+  description = "Allocated disk per member. Gen2 requires 10240 or more, classic requires 5120 or more. [Learn more](https://cloud.ibm.com/docs/databases-for-elasticsearch?topic=databases-for-elasticsearch-resources-scaling)"
+  default     = 12288
 }
 
 variable "resource_tags" {

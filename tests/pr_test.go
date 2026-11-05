@@ -147,6 +147,29 @@ func TestRunBasicGen2Example(t *testing.T) {
 	assert.NotNil(t, output, "Expected some output")
 }
 
+func TestRunRestoredDBGen2Example(t *testing.T) {
+	t.Parallel()
+	// ResourceGroup is intentionally not set so a unique group is created per run for this test.
+	// Independent backup policies may not be destroyed on failure, causing conflicts on re-runs within the same group.
+	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
+		Testing:      t,
+		TerraformDir: "examples/backup-restore",
+		Prefix:       "g2-r",
+		TerraformVars: map[string]interface{}{
+			"plan":                  "enterprise-gen2",
+			"disk_mb":               permanentResources["elasticGen2DiskMb"],
+			"elasticsearch_version": permanentResources["elasticGen2Version"],
+			"region":                permanentResources["elasticGen2Region"],
+			"existing_database_crn": permanentResources["elasticGen2Crn"],
+		},
+		CloudInfoService: sharedInfoSvc,
+	})
+
+	output, err := options.RunTestConsistency()
+	assert.Nil(t, err, "This should not have errored")
+	assert.NotNil(t, output, "Expected some output")
+}
+
 // TestMain will be run before any parallel tests, used to read data from yaml for use with tests
 func TestMain(m *testing.M) {
 	var err error
