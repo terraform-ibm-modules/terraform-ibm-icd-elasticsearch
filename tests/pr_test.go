@@ -515,6 +515,8 @@ func setupFullyConfigurableGen2Options(t *testing.T, prefix string) (*testschema
 		TarIncludePatterns: []string{
 			"*.tf",
 			fullyConfigurableGen2SolutionTerraformDir + "/*.tf",
+			fullyConfigurableGen2SolutionTerraformDir + "/scripts/*.sh",
+			fullyConfigurableGen2SolutionTerraformDir + "/scripts/*.js",
 		},
 		TemplateFolder:             fullyConfigurableGen2SolutionTerraformDir,
 		Prefix:                     prefix,
@@ -573,6 +575,18 @@ func TestRunFullyConfigurableGen2SolutionSchematics(t *testing.T) {
 
 	options, uniqueResourceGroup := setupFullyConfigurableGen2Options(t, fmt.Sprintf("%s-gen2da", icdShortType))
 	options.WaitJobCompleteMinutes = 60
+	// Only enabled here, not in the shared setup: the upgrade test applies the base branch first, where the gen2 DA
+	// has no Kibana inputs.
+	options.TerraformVars = append(options.TerraformVars,
+		testschematic.TestSchematicTerraformVar{Name: "enable_kibana_dashboard", Value: true, DataType: "bool"},
+	)
+
+	// need to ignore because of a provider issue: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6330
+	options.IgnoreUpdates = testhelper.Exemptions{
+		List: []string{
+			"module.kibana_code_engine_app[0].ibm_code_engine_app.ce_app",
+		},
+	}
 
 	err := sharedInfoSvc.WithNewResourceGroup(uniqueResourceGroup, func() error {
 		return options.RunSchematicTest()

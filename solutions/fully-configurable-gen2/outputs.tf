@@ -73,3 +73,14 @@ output "next_step_secondary_url" {
   value       = "https://cloud.ibm.com/docs/databases-for-elasticsearch-gen2"
   description = "Secondary URL"
 }
+
+output "kibana_url" {
+  description = "Kibana dashboard URL. Which endpoint this is depends on `kibana_visibility`."
+  value       = var.enable_kibana_dashboard ? module.kibana_code_engine_app[0].endpoint : null
+}
+
+output "kibana_credentials" {
+  description = "Kibana web UI login credentials (a Manager-role service credential). Kibana's own backend connection to Elasticsearch uses the reserved kibana_system user instead."
+  value       = var.enable_kibana_dashboard ? { username = local.kibana_username, password = local.kibana_password } : null
+  sensitive   = true
+}

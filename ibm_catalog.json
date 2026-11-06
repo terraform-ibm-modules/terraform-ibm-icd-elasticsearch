@@ -661,6 +661,21 @@
               ],
               "service_name": "secrets-manager",
               "notes": "[Optional] Required to write service credentials to an existing IBM Cloud Secrets Manager instance. 'Manager' access is required if new secret groups need to be created."
+            },
+            {
+              "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Editor"
+              ],
+              "service_name": "is",
+              "notes": "[Optional] Required to create the VPC, Virtual Private Endpoint gateway, load balancers and Private Path service that connect Kibana to the instance. It is only required when `enable_kibana_dashboard` is true."
+            },
+            {
+              "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Editor",
+                "crn:v1:bluemix:public:iam::::serviceRole:Writer"
+              ],
+              "service_name": "codeengine",
+              "notes": "[Optional] Required to create the Code Engine project and app that run Kibana. It is only required when `enable_kibana_dashboard` is true."
             }
           ],
           "architecture": {
@@ -954,6 +969,42 @@
                   "type": "regex",
                   "description": "The value provided for 'existing_elasticsearch_instance_crn' is not valid.",
                   "value": "^__NULL__$|^crn:v\\d:(.*:){2}databases-for-elasticsearch:(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$"
+                }
+              ]
+            },
+            {
+              "key": "enable_kibana_dashboard"
+            },
+            {
+              "key": "kibana_image"
+            },
+            {
+              "key": "kibana_image_digest",
+              "value_constraints": [
+                {
+                  "type": "regex",
+                  "description": "The value provided for 'kibana_image_digest' is not valid.",
+                  "value": "^__NULL__$|^sha256:"
+                }
+              ]
+            },
+            {
+              "key": "kibana_version"
+            },
+            {
+              "key": "kibana_visibility",
+              "options": [
+                {
+                  "displayname": "local_public",
+                  "value": "local_public"
+                },
+                {
+                  "displayname": "local_private",
+                  "value": "local_private"
+                },
+                {
+                  "displayname": "local",
+                  "value": "local"
                 }
               ]
             }
