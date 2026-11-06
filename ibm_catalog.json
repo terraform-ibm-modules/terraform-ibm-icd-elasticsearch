@@ -668,6 +668,10 @@
               {
                 "title": " ",
                 "description": "Configured to use IBM secure by default standards, but can be edited to fit your use case."
+              },
+              {
+                "title": "Restore from backup",
+                "description": "Provides [database restoration](https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-dashboard-backups&interface=ui) using a backup."
               }
             ],
             "diagrams": [
@@ -915,6 +919,16 @@
             },
             {
               "key": "key_name"
+            },
+            {
+              "key": "backup_crn",
+              "value_constraints": [
+                {
+                  "type": "regex",
+                  "description": "The value provided for 'backup_crn' is not valid.'",
+                  "value": "^__NULL__$|^crn:v\\d:(.*:){2}databases-independent-backups:(.*:)([aos]\\/[\\w_\\-]+):[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}::$"
+                }
+              ]
             },
             {
               "key": "skip_elasticsearch_kms_auth_policy"
