@@ -19,6 +19,11 @@ locals {
       name     = "elasticsearch_writer"
       role     = "Writer"
       endpoint = local.endpoint_type
+    },
+    {
+      name     = "elasticsearch_reader"
+      role     = "Reader"
+      endpoint = local.endpoint_type
     }
   ]
   classic_service_credential_names = [
