@@ -365,3 +365,49 @@ variable "skip_elasticsearch_to_secrets_manager_auth_policy" {
   default     = false
   description = "Whether an IAM authorization policy is created for Secrets Manager instance to create a service credential secrets for Databases for Elasticsearch. If set to false, the Secrets Manager instance passed by the user is granted the Key Manager access to the Elasticsearch instance created by the Deployable Architecture. Set to `true` to use an existing policy. The value of this is ignored if any value for 'existing_secrets_manager_instance_crn' is not passed."
 }
+
+##############################################################
+# Kibana Configuration
+##############################################################
+
+variable "enable_kibana_dashboard" {
+  type        = bool
+  description = "Set to true to deploy Kibana as a Code Engine app, connected to the Elasticsearch instance through a Code Engine Private Path connection to a dedicated VPC with a Virtual Private Endpoint (VPE) gateway. Gen2 instances only expose a VPC-private endpoint, which a Code Engine app can only reach this way. NOTE: By default, the Kibana image is pulled from the official Elastic registry (docker.elastic.co) and is not certified by IBM; this can be overridden using the `kibana_image` and `kibana_image_digest` inputs."
+  default     = false
+}
+
+variable "kibana_image" {
+  type        = string
+  description = "The Kibana image reference in the format of `[registry-url]/[namespace]/[image]`. The image must be publicly pullable. This value is used only when `enable_kibana_dashboard` is set to true."
+  default     = "docker.elastic.co/kibana/kibana"
+}
+
+variable "kibana_version" {
+  type        = string
+  description = "The Kibana image tag to deploy, as a full release version such as `8.19.23`. It must have the same major and minor version as the Elasticsearch instance, otherwise Kibana does not start (its startup log reports the mismatch). Ignored if `kibana_image_digest` is set. This value is used only when `enable_kibana_dashboard` is set to true."
+  default     = "8.19.23"
+  validation {
+    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+$", var.kibana_version))
+    error_message = "The value of kibana_version must be a full release version, for example '8.19.23'."
+  }
+}
+
+variable "kibana_image_digest" {
+  type        = string
+  description = "An image digest in the format `sha256:xxxxx...` to deploy instead of the `kibana_version` tag. It must correspond to a Kibana version with the same major and minor version as the Elasticsearch instance. This value is used only when `enable_kibana_dashboard` is set to true."
+  default     = null
+  validation {
+    condition     = var.kibana_image_digest == null || can(regex("^sha256:", var.kibana_image_digest))
+    error_message = "If provided, the value of kibana_image_digest must start with 'sha256:'."
+  }
+}
+
+variable "kibana_visibility" {
+  description = "Specify the visibility of the Kibana application in order to define which endpoint is available for receiving the requests. Valid values are 'local_public', 'local_private' and 'local' and it is only applicable if `enable_kibana_dashboard` is true. [Learn more](https://cloud.ibm.com/docs/codeengine?topic=codeengine-application-workloads#optionsvisibility)."
+  type        = string
+  default     = "local_private"
+  validation {
+    condition     = contains(["local_public", "local_private", "local"], var.kibana_visibility)
+    error_message = "Valid values are 'local_public', 'local_private', or 'local'."
+  }
+}
